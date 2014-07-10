@@ -1,1 +1,8 @@
-/node_modules
+/*.suo
+/*.testsettings
+/*.vsmdi
+/Measurement/bin/*
+/Measurement/obj/*
+/MeasurementTests/bin/*
+/MeasurementTests/obj/*
+/TestResults/*

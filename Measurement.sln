@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Measurement", "Measurement\Measurement.csproj", "{839FE4B8-975C-4D5F-8226-5E520B33764B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeasurementTests", "MeasurementTests\MeasurementTests.csproj", "{B73038C2-248F-44B0-8E6E-CF8C268FBD4D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DD995BCE-E1E8-4931-B524-BE703DFD0E1D}"
+	ProjectSection(SolutionItems) = preProject
+		Local.testsettings = Local.testsettings
+		Measurement.vsmdi = Measurement.vsmdi
+		common\systems.json = common\systems.json
+		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(TestCaseManagementSettings) = postSolution
+		CategoryFile = Measurement.vsmdi
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{839FE4B8-975C-4D5F-8226-5E520B33764B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{839FE4B8-975C-4D5F-8226-5E520B33764B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{839FE4B8-975C-4D5F-8226-5E520B33764B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{839FE4B8-975C-4D5F-8226-5E520B33764B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B73038C2-248F-44B0-8E6E-CF8C268FBD4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B73038C2-248F-44B0-8E6E-CF8C268FBD4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B73038C2-248F-44B0-8E6E-CF8C268FBD4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B73038C2-248F-44B0-8E6E-CF8C268FBD4D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
