@@ -1,5 +1,4 @@
 ﻿
-
 namespace ForgedSoftware.Measurement {
 
 	public class Unit {

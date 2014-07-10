@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace ForgedSoftware.Measurement {
 
-	public class Dimension : ICopyable<Dimension> {
+	[DataContract]
+	public class Dimension : ISerializable, ICopyable<Dimension> {
 
 		#region Constructors
 
@@ -40,8 +42,22 @@ namespace ForgedSoftware.Measurement {
 
 		#endregion
 
+		[DataMember(Name = "power")]
 		public int Power { get; set; }
+		
 		public Unit Unit { get; set; }
+
+		[DataMember(Name = "unitName")]
+		public string UnitName {
+			get { return Unit.Name; }
+			private set { }
+		}
+
+		[DataMember(Name = "systemName")]
+		public string SystemName {
+			get { return Unit.System.Name; }
+			private set { }
+		}
 
 		public KeyValuePair<Dimension, double> ConvertToBase(double value) {
 			if (Unit.IsBaseUnit()) {
@@ -76,6 +92,10 @@ namespace ForgedSoftware.Measurement {
 
 		public Dimension Copy() {
 			return new Dimension(this);
+		}
+
+		string ISerializable.ToJson() {
+			return this.ToJson();
 		}
 	}
 }

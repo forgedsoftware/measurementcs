@@ -45,6 +45,7 @@
     <Compile Include="Dimension.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="ICopyable.cs" />
+    <Compile Include="ISerializable.cs" />
     <Compile Include="MeasurementFactory.cs" />
     <Compile Include="Quantity.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
