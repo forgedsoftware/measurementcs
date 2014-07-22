@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Runtime.Serialization;
 
 namespace ForgedSoftware.Measurement {
 
 	[DataContract]
-	public class Quantity : ISerializable {
+	public class Quantity : ISerializable, IFormatter, IFormattable {
 
 		private Quantity() {
 			Dimensions = new List<Dimension>();
@@ -75,6 +77,14 @@ namespace ForgedSoftware.Measurement {
 				}
 			}
 			return new Quantity(convertedValue, newDimensions);
+		}
+
+		#endregion
+
+		#region Simplification
+
+		public Quantity Simplify() {
+			throw new NotImplementedException();
 		}
 
 		#endregion
@@ -155,6 +165,116 @@ namespace ForgedSoftware.Measurement {
 
 		string ISerializable.ToJson() {
 			return this.ToJson();
+		}
+
+		#region Formatting
+
+		public string Format() {
+			return Format(new FormatOptions(CultureInfo.CurrentCulture));
+		}
+
+		public string Format(FormatOptions options) {
+			string valueStr = "";
+
+			// Precision/Fixed
+			if (options.Fixed >= 0) {
+				valueStr += Value.ToString("F" + options.Fixed);
+			} else if (options.Precision > 0) {
+				valueStr += Value.ToString("G" + options.Fixed);
+			} else {
+				valueStr += Value.ToString("G");
+			}
+
+			// Separator/Decimal
+			int numLength = valueStr.IndexOf(".");
+			if (numLength == -1) {
+				numLength = valueStr.Length;
+			}
+			var separatorPos = numLength - options.GroupSize;
+			valueStr = valueStr.Replace(".", options.DecimalSeparator);
+			if (options.GroupSeparator.Length > 0) {
+				while (separatorPos > 0) {
+					valueStr = valueStr.Insert(separatorPos, options.GroupSeparator);
+					separatorPos -= options.GroupSize;
+				}
+			}
+
+			// Exponents
+			if (options.ExpandExponent) {
+				int eIndex = valueStr.IndexOf("E");
+				if (eIndex >= 0) {
+					double exponent = Math.Floor(Math.Log(Value) / Math.Log(10));
+					valueStr = valueStr.Substring(0, eIndex);
+					string exponentStr = (options.Ascii) ? "^" + exponent : exponent.ToSuperScript();
+					valueStr += " x 10" + exponentStr;
+				}
+			}
+
+			// Dimensions
+			List<Dimension> clonedDimensions = Dimensions.CopyList();
+			if (options.Sort) {
+				//clonedDimensions.Sort((d1, d2) => (d1.Power == d2.Power) ? -2 : d2.Power - d1.Power);
+				clonedDimensions = clonedDimensions.OrderBy(d => -d.Power).ToList();
+			}
+			IEnumerable<string> dimensionStrings = clonedDimensions.Select(d => d.Format(options));
+
+			string joiner = (options.FullName) ? " " : options.UnitSeparator;
+			string dimStr = dimensionStrings.Aggregate((current, next) => current + joiner + next);
+
+			// Returning
+			if (options.Show == FormatOptions.QuantityParts.DimensionsOnly) {
+				return dimStr;
+			}
+			if (options.Show == FormatOptions.QuantityParts.ValueOnly) {
+				return valueStr;
+			}
+			if (dimStr.Length > 0) {
+				valueStr += " ";
+			}
+			return valueStr + dimStr;
+		}
+
+		#endregion
+
+		public override string ToString() {
+			return ToString("G", CultureInfo.CurrentCulture);
+		}
+
+		public string ToString(string format) {
+			return ToString(format, CultureInfo.CurrentCulture);
+		}
+
+		public string ToString(string format, IFormatProvider provider) {
+			if (String.IsNullOrEmpty(format)) {
+				format = "G";
+			}
+			format = format.Trim().ToUpperInvariant();
+
+			if (provider == null) {
+				provider = CultureInfo.CurrentCulture;
+			}
+
+			FormatOptions options;
+
+			switch (format) {
+				case "G":
+				case "S":
+					options = FormatOptions.Default(provider);
+					break;
+				case "R":
+					options = FormatOptions.Raw(provider);
+					break;
+				case "N":
+					options = FormatOptions.ValueOnly(provider);
+					break;
+				case "U":
+					options = FormatOptions.DimensionsOnly(provider);
+					break;
+				default:
+					throw new ArgumentException("Provided format string is not recognized");
+			}
+
+			return Format(options);
 		}
 	}
 }

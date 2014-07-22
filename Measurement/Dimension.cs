@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Runtime.Serialization;
 
 namespace ForgedSoftware.Measurement {
 
 	[DataContract]
-	public class Dimension : ISerializable, ICopyable<Dimension> {
+	public class Dimension : ISerializable, IFormatter, IFormattable, ICopyable<Dimension> {
 
 		#region Constructors
 
@@ -97,5 +99,77 @@ namespace ForgedSoftware.Measurement {
 		string ISerializable.ToJson() {
 			return this.ToJson();
 		}
+
+		#region Formatting
+
+		public string Format() {
+			return Format(new FormatOptions(CultureInfo.CurrentCulture));
+		}
+
+		public string Format(FormatOptions options) {
+			string dimensionString;
+
+			if (options.FullName) {
+				var dimParts = new List<string>();
+				if (Power < 0) {
+					dimParts.Add("per");
+				}
+				dimParts.Add(Unit.Name); // TODO - plurals??
+				int absPower = Math.Abs(Power);
+				if (absPower == 2) {
+					dimParts.Add("squared");
+				} else if (absPower == 3) {
+					dimParts.Add("cubed");
+				} else if (absPower > 3 || absPower == 0) {
+					dimParts.Add("to the power of " + absPower);
+				}
+				dimensionString = dimParts.Aggregate((current, next) => current + " " + next);
+			} else {
+				dimensionString = Unit.Symbol;
+				if (options.ShowAllPowers || Power != 1) {
+					string powerStr = (options.Ascii) ? "^" + Power : Power.ToSuperScript();
+					dimensionString += powerStr;
+				}
+			}
+			return dimensionString;
+		}
+
+		#endregion
+
+		public override string ToString() {
+			return ToString("G", CultureInfo.CurrentCulture);
+		}
+
+		public string ToString(string format) {
+			return ToString(format, CultureInfo.CurrentCulture);
+		}
+
+		public string ToString(string format, IFormatProvider provider) {
+			if (String.IsNullOrEmpty(format)) {
+				format = "G";
+			}
+			format = format.Trim().ToUpperInvariant();
+
+			if (provider == null) {
+				provider = CultureInfo.CurrentCulture;
+			}
+
+			FormatOptions options;
+
+			switch (format) {
+				case "G":
+				case "S":
+					options = FormatOptions.Default(provider);
+					break;
+				case "R":
+					options = FormatOptions.Raw(provider);
+					break;
+				default:
+					throw new ArgumentException("Provided format string is not recognized");
+			}
+
+			return Format(options);
+		}
+
 	}
 }

@@ -67,8 +67,16 @@ namespace ForgedSoftware.Measurement {
 			return new Quantity(val, new List<string> {unitName });
 		}
 
+		public static Quantity CreateQuantity(double val, IEnumerable<string> unitNames) {
+			return new Quantity(val, unitNames);
+		}
+
+		public static Quantity CreateQuantity(double val, IEnumerable<Dimension> dimensions) {
+			return new Quantity(val, dimensions);
+		}
+
 		public static Unit FindUnit(string unitName) {
-			return Systems.Select(system => system.Units.First(u => u.Name == unitName)).FirstOrDefault();
+			return Systems.SelectMany(s => s.Units).First(u => u.Name == unitName);
 		}
 
 		public static Unit FindUnit(string unitName, string systemName) {
