@@ -80,22 +80,37 @@ namespace ForgedSoftware.Measurement {
 
 		#endregion
 
+		/// <summary>
+		/// The Value of a Quantity is an unqualified, dimensionless measurement.
+		/// In this case it is a scalar.
+		/// </summary>
+		// TODO - Separate out this value as a generic 'V'
+		// Structure: Measure <-- Scalar <-- PrefixedScalar
+		//					  <-- Vector <-- PrefixedVector
 		[DataMember(Name = "value")]
 		public double Value { get; private set; }
+
+		/// <summary>
+		/// The Dimensions of a Quantity are the combination of units of measurement
+		/// that qualify this quantity in the real world.
+		/// </summary>
 		[DataMember(Name = "dimensions")]
 		public List<Dimension> Dimensions { get; private set; }
 
 		#region Conversion
 
+		// TODO - Documentation
 		public Quantity Convert(string unitName) {
 			return Convert(MeasurementFactory.FindUnit(unitName));
 		}
 
+		// TODO - Documentation
 		public Quantity Convert(Unit unit) {
 			Quantity quantityAsBase = ConvertToBase();
 			return quantityAsBase.ConvertFromBase(unit);
 		}
 
+		// TODO - Documentation
 		public Quantity Convert(Quantity quantity) {
 			Quantity quantityAsBase = ConvertToBase();
 			if (!IsCommensurable(quantity)) {
@@ -105,6 +120,7 @@ namespace ForgedSoftware.Measurement {
 			return quantityAsBase;
 		}
 
+		// TODO - Documentation
 		public Quantity ConvertToBase() {
 			double convertedValue = Value;
 			var newDimensions = new List<Dimension>();
@@ -117,6 +133,7 @@ namespace ForgedSoftware.Measurement {
 			return new Quantity(convertedValue, newDimensions);
 		}
 
+		// TODO - Documentation
 		protected Quantity ConvertFromBase(Unit unit) {
 			double convertedValue = Value;
 			var newDimensions = new List<Dimension>();
@@ -227,10 +244,12 @@ namespace ForgedSoftware.Measurement {
 
 		#region Dimensionless
 
+		// TODO - Documentation
 		public Quantity Multiply(double value) {
 			return new Quantity(Value*value, Dimensions.CopyList());
 		}
 
+		// TODO - Documentation
 		public Quantity Divide(double value) {
 			return new Quantity(Value/value, Dimensions.CopyList());
 		}
@@ -257,6 +276,7 @@ namespace ForgedSoftware.Measurement {
 
 		#endregion
 
+		// TODO - Documentation
 		public Quantity Multiply(Quantity q) {
 			List<Dimension> clonedDimensions = Dimensions.CopyList();
 			clonedDimensions.AddRange(q.Dimensions.CopyList());
@@ -264,6 +284,7 @@ namespace ForgedSoftware.Measurement {
 			return newQuantity.Simplify();
 		}
 
+		// TODO - Documentation
 		public Quantity Divide(Quantity q) {
 			List<Dimension> clonedDimensions = Dimensions.CopyList();
 			clonedDimensions.AddRange(q.Dimensions.CopyList().Select(d => d.Invert()));
@@ -271,12 +292,14 @@ namespace ForgedSoftware.Measurement {
 			return newQuantity.Simplify();
 		}
 
+		// TODO - Documentation
 		public Quantity Add(Quantity q) {
 			// Convert value into same units
 			Quantity convertedQuantity = q.Convert(this);
 			return new Quantity(Value + convertedQuantity.Value, Dimensions.CopyList());
 		}
 
+		// TODO - Documentation
 		public Quantity Subtract(Quantity q) {
 			// Convert value into same units
 			Quantity convertedQuantity = q.Convert(this);
@@ -475,12 +498,25 @@ namespace ForgedSoftware.Measurement {
 			return Min(y.Convert(this).Value);
 		}
 
+		/// <summary>
+		/// A varargs function for calculating the min value of a set of values including this.
+		/// All values are assumed to have the same dimensions as the initial quantity.
+		/// </summary>
+		/// <param name="values">The varargs of values to test</param>
+		/// <returns>The smallest value as a quantity</returns>
 		public Quantity Min(params double[] values) {
 			List<double> vals = values.ToList();
 			vals.Add(Value);
 			return new Quantity(vals.Min(), Dimensions.CopyList());
 		}
 
+		/// <summary>
+		/// A varargs function for calculating the smallest quantity of a set of quantities including this.
+		/// All quantities must be commensurable. The dimensions of the first quantity are preserved.
+		/// </summary>
+		/// <exception cref="System.Exception">Thrown when one or more quantities are not commensurable</exception>
+		/// <param name="values">The varargs of quantities to test</param>
+		/// <returns>The smallest value as a quantity</returns>
 		public Quantity Min(params Quantity[] values) {
 			// TODO option controlled whether to keep base units or use new units
 			return Min(values.ToList().Select(q => q.Convert(this).Value).ToArray());
@@ -490,16 +526,23 @@ namespace ForgedSoftware.Measurement {
 
 		#endregion
 
+		#region Serialization
+
+		// TODO - Documentation
 		string ISerializable.ToJson() {
 			return this.ToJson();
 		}
 
+		#endregion
+
 		#region Formatting
 
+		// TODO - Documentation
 		public string Format() {
 			return Format(new FormatOptions(CultureInfo.CurrentCulture));
 		}
 
+		// TODO - Documentation
 		public string Format(FormatOptions options) {
 			string valueStr = "";
 
@@ -563,14 +606,19 @@ namespace ForgedSoftware.Measurement {
 
 		#endregion
 
+		#region ToString
+
+		// TODO - Documentation
 		public override string ToString() {
 			return ToString("G", CultureInfo.CurrentCulture);
 		}
 
+		// TODO - Documentation
 		public string ToString(string format) {
 			return ToString(format, CultureInfo.CurrentCulture);
 		}
 
+		// TODO - Documentation
 		public string ToString(string format, IFormatProvider provider) {
 			if (String.IsNullOrEmpty(format)) {
 				format = "G";
@@ -603,5 +651,8 @@ namespace ForgedSoftware.Measurement {
 
 			return Format(options);
 		}
+
+		#endregion
+
 	}
 }
