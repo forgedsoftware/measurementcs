@@ -256,12 +256,42 @@ namespace ForgedSoftware.MeasurementTests {
 
 		[TestMethod]
 		public void TestMathFuncMax() {
-			//TODO
+			Assert.AreEqual(3, new Quantity(2).Max(3).Value);
+			Assert.AreEqual(8.7, new Quantity(8.7).Max(new Quantity(7.2)).Value);
+			Assert.AreEqual(60, new Quantity(59, new[] { "second" }).Max(new Quantity(1, new[] { "minute" })).Value);
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(Exception), "Only commensurable quantities are allowed.")]
+		public void TestMathFuncMaxMustBeCommensurable() {
+			new Quantity(4, new[] { "second" }).Max(new Quantity(5, new[] { "metre" }));
+		}
+
+		[TestMethod]
+		public void TestMathFuncMaxVarargs() {
+			Assert.AreEqual(12.1, new Quantity(2).Max(3, 7, 8, 2.4, 12.1).Value);
+			Assert.AreEqual(42.1, new Quantity(42.1).Max(new Quantity(7.2), new Quantity(1.4)).Value);
+			Assert.AreEqual(7.5, new Quantity(6, "hour").Max(new Quantity(0.2, "day"), new Quantity(450, "minute")).Value);
 		}
 
 		[TestMethod]
 		public void TestMathFuncMin() {
-			//TODO
+			Assert.AreEqual(2, new Quantity(2).Min(3).Value);
+			Assert.AreEqual(7.2, new Quantity(8.7).Min(new Quantity(7.2)).Value);
+			Assert.AreEqual(59, new Quantity(59, new[] { "second" }).Min(new Quantity(1, new[] { "minute" })).Value);
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(Exception), "Only commensurable quantities are allowed.")]
+		public void TestMathFuncMinMustBeCommensurable() {
+			new Quantity(4, new[] { "second" }).Min(new Quantity(5, new[] { "metre" }));
+		}
+
+		[TestMethod]
+		public void TestMathFuncMinVarargs() {
+			Assert.AreEqual(2, new Quantity(2).Min(3, 7, 8, 2.4, 12.1).Value);
+			Assert.AreEqual(1.4, new Quantity(42.1).Min(new Quantity(7.2), new Quantity(1.4)).Value);
+			Assert.AreEqual(4.8, new Quantity(6, "hour").Min(new Quantity(0.2, "day"), new Quantity(450, "minute")).Value);
 		}
 
 		#endregion

@@ -18,6 +18,11 @@ namespace ForgedSoftware.Measurement {
 			Value = value;
 		}
 
+		public Quantity(double value, string unitName)
+			: this(value) {
+			Dimensions.Add(new Dimension(unitName));
+		}
+
 		public Quantity(double value, IEnumerable<string> unitNames)
 			: this(value) {
 			foreach (string unitName in unitNames) {
@@ -213,26 +218,92 @@ namespace ForgedSoftware.Measurement {
 
 		// Extensions of System.Math functions
 
-		public Quantity Abs() { return new Quantity(Math.Abs(Value), Dimensions.CopyList()); }
-		public Quantity Acos() { return new Quantity(Math.Acos(Value), Dimensions.CopyList()); }
-		public Quantity Asin() { return new Quantity(Math.Asin(Value), Dimensions.CopyList()); }
-		public Quantity Atan() { return new Quantity(Math.Atan(Value), Dimensions.CopyList()); }
-		public Quantity Ceiling() { return new Quantity(Math.Ceiling(Value), Dimensions.CopyList()); }
-		public Quantity Cos() { return new Quantity(Math.Cos(Value), Dimensions.CopyList()); }
-		public Quantity Exp() { return new Quantity(Math.Exp(Value), Dimensions.CopyList()); }
-		public Quantity Floor() { return new Quantity(Math.Floor(Value), Dimensions.CopyList()); }
-		public Quantity Log() { return new Quantity(Math.Log(Value), Dimensions.CopyList()); }
-		public Quantity Log10() { return new Quantity(Math.Log10(Value), Dimensions.CopyList()); }
-		public Quantity Round() { return new Quantity(Math.Round(Value), Dimensions.CopyList()); }
-		public Quantity Sin() { return new Quantity(Math.Sin(Value), Dimensions.CopyList()); }
-		public Quantity Sqrt() { return new Quantity(Math.Sqrt(Value), Dimensions.CopyList()); }
-		public Quantity Tan() { return new Quantity(Math.Tan(Value), Dimensions.CopyList()); }
+		/// <seealso cref="System.Math.Abs(double)"/>
+		public Quantity Abs() {
+			return new Quantity(Math.Abs(Value), Dimensions.CopyList());
+		}
+
+		/// <seealso cref="System.Math.Acos(double)"/>
+		public Quantity Acos() {
+			return new Quantity(Math.Acos(Value), Dimensions.CopyList());
+		}
+
+		/// <seealso cref="System.Math.Asin(double)"/>
+		public Quantity Asin() {
+			return new Quantity(Math.Asin(Value), Dimensions.CopyList());
+		}
+
+		/// <seealso cref="System.Math.Atan(double)"/>
+		public Quantity Atan() {
+			return new Quantity(Math.Atan(Value), Dimensions.CopyList());
+		}
+
+		/// <seealso cref="System.Math.Ceiling(double)"/>
+		public Quantity Ceiling() {
+			return new Quantity(Math.Ceiling(Value), Dimensions.CopyList());
+		}
+
+		/// <seealso cref="System.Math.Cos(double)"/>
+		public Quantity Cos() {
+			return new Quantity(Math.Cos(Value), Dimensions.CopyList());
+		}
+
+		/// <seealso cref="System.Math.Exp(double)"/>
+		public Quantity Exp() {
+			return new Quantity(Math.Exp(Value), Dimensions.CopyList());
+		}
+
+		/// <seealso cref="System.Math.Floor(double)"/>
+		public Quantity Floor() {
+			return new Quantity(Math.Floor(Value), Dimensions.CopyList());
+		}
+
+		/// <seealso cref="System.Math.Log(double)"/>
+		public Quantity Log() {
+			return new Quantity(Math.Log(Value), Dimensions.CopyList());
+		}
+
+		/// <seealso cref="System.Math.Log10(double)"/>
+		public Quantity Log10() {
+			return new Quantity(Math.Log10(Value), Dimensions.CopyList());
+		}
+
+		/// <seealso cref="System.Math.Round(double)"/>
+		public Quantity Round() {
+			return new Quantity(Math.Round(Value), Dimensions.CopyList());
+		}
+
+		/// <seealso cref="System.Math.Sin(double)"/>
+		public Quantity Sin() {
+			return new Quantity(Math.Sin(Value), Dimensions.CopyList());
+		}
+
+		/// <seealso cref="System.Math.Sqrt(double)"/>
+		public Quantity Sqrt() {
+			return new Quantity(Math.Sqrt(Value), Dimensions.CopyList());
+		}
+
+		/// <seealso cref="System.Math.Tan(double)"/>
+		public Quantity Tan() {
+			return new Quantity(Math.Tan(Value), Dimensions.CopyList());
+		}
 
 		// Extra functions not avaliable in JS version
 
-		public Quantity Cosh() { return new Quantity(Math.Cosh(Value), Dimensions.CopyList()); }
-		public Quantity Sinh() { return new Quantity(Math.Sinh(Value), Dimensions.CopyList()); }
-		public Quantity Tanh() { return new Quantity(Math.Tanh(Value), Dimensions.CopyList()); }
+		/// <seealso cref="System.Math.Cosh(double)"/>
+		public Quantity Cosh() {
+			return new Quantity(Math.Cosh(Value), Dimensions.CopyList());
+		}
+
+		/// <seealso cref="System.Math.Sinh(double)"/>
+		public Quantity Sinh() {
+			return new Quantity(Math.Sinh(Value), Dimensions.CopyList());
+		}
+
+		/// <seealso cref="System.Math.Tanh(double)"/>
+		public Quantity Tanh() {
+			return new Quantity(Math.Tanh(Value), Dimensions.CopyList());
+		}
 
 		// Functions requiring a parameter
 
@@ -240,6 +311,7 @@ namespace ForgedSoftware.Measurement {
 		/// A standard atan2 function where this provides the x coordinate and a provided value provides the y.
 		/// It's assumed that any value has the same dimensions as the original quantity.
 		/// </summary>
+		/// <seealso cref="System.Math.Atan2(double, double)"/>
 		/// <param name="y">A raw y value for the atan2 function</param>
 		/// <returns>The atan2 result</returns>
 		public Quantity Atan2(double y) {
@@ -250,6 +322,7 @@ namespace ForgedSoftware.Measurement {
 		/// A standard atan2 function where this provides the y coordinate and the provided quantity provides the y.
 		/// Both quantities must be commensurable. The parameter quantity is converted to make sure the coordinates are equivalent.
 		/// </summary>
+		/// <seealso cref="System.Math.Atan2(double, double)"/>
 		/// <param name="y">A quantity that describes the y coordinate</param>
 		/// <returns>The atan2 result with the dimensions of the x value</returns>
 		public Quantity Atan2(Quantity y) {
@@ -259,6 +332,7 @@ namespace ForgedSoftware.Measurement {
 		/// <summary>
 		/// A basic power function where this acts as the base value.
 		/// </summary>
+		/// <seealso cref="System.Math.Pow(double, double)"/>
 		/// <param name="y">The raw power value</param>
 		/// <returns>The base raised to the provided power</returns>
 		public Quantity Pow(double y) {
@@ -269,6 +343,7 @@ namespace ForgedSoftware.Measurement {
 		/// A basic power function taking in the power value as a quantity.
 		/// The power parameter must be dimensionless.
 		/// </summary>
+		/// <seealso cref="System.Math.Pow(double, double)"/>
 		/// <exception cref="System.Exception">Thrown when the power parameter is not dimensionless</exception>
 		/// <param name="y">The dimensionless quantity</param>
 		/// <returns>The base raised to the provided power</returns>
@@ -281,8 +356,15 @@ namespace ForgedSoftware.Measurement {
 
 		#region Max
 
-		public Quantity Max(double y) { return new Quantity(Math.Max(Value, y), Dimensions.CopyList()); }
-		public Quantity Max(Quantity y) { return Max(y.Convert(this).Value); }
+		/// <seealso cref="System.Math.Max(double, double)"/>
+		public Quantity Max(double y) {
+			return new Quantity(Math.Max(Value, y), Dimensions.CopyList());
+		}
+
+		/// <seealso cref="System.Math.Max(double, double)"/>
+		public Quantity Max(Quantity y) {
+			return Max(y.Convert(this).Value);
+		}
 
 		public Quantity Max(params double[] values) {
 			List<double> vals = values.ToList();
@@ -291,6 +373,7 @@ namespace ForgedSoftware.Measurement {
 		}
 
 		public Quantity Max(params Quantity[] values) {
+			// TODO option controlled whether to keep base units or use new units
 			return Max(values.ToList().Select(q => q.Convert(this).Value).ToArray());
 		}
 
@@ -298,8 +381,15 @@ namespace ForgedSoftware.Measurement {
 
 		#region Min
 
-		public Quantity Min(double y) { return new Quantity(Math.Min(Value, y), Dimensions.CopyList()); }
-		public Quantity Min(Quantity y) { return Min(y.Convert(this).Value); }
+		/// <seealso cref="System.Math.Min(double, double)"/>
+		public Quantity Min(double y) {
+			return new Quantity(Math.Min(Value, y), Dimensions.CopyList());
+		}
+
+		/// <seealso cref="System.Math.Min(double, double)"/>
+		public Quantity Min(Quantity y) {
+			return Min(y.Convert(this).Value);
+		}
 
 		public Quantity Min(params double[] values) {
 			List<double> vals = values.ToList();
@@ -308,6 +398,7 @@ namespace ForgedSoftware.Measurement {
 		}
 
 		public Quantity Min(params Quantity[] values) {
+			// TODO option controlled whether to keep base units or use new units
 			return Min(values.ToList().Select(q => q.Convert(this).Value).ToArray());
 		}
 
