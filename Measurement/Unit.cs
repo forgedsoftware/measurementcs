@@ -14,7 +14,7 @@ namespace ForgedSoftware.Measurement {
 		public double Offset { get; set; }
 
 		public bool IsBaseUnit() {
-			return System.BaseUnit == this;
+			return System.BaseUnit.Equals(this);
 		}
 	}
 }

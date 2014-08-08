@@ -50,6 +50,7 @@
     <Compile Include="TestDimension.cs" />
     <Compile Include="TestExtensions.cs" />
     <Compile Include="TestQuantity.cs" />
+    <Compile Include="TestQuantityMath.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Measurement\Measurement.csproj">

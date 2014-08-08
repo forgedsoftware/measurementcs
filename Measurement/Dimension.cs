@@ -61,6 +61,11 @@ namespace ForgedSoftware.Measurement {
 			private set { }
 		}
 
+		public KeyValuePair<Dimension, double> Convert(double value, Unit unit) {
+			KeyValuePair<Dimension, double> baseDimension = ConvertToBase(value);
+			return baseDimension.Key.ConvertFromBase(baseDimension.Value, unit);
+		}
+
 		public KeyValuePair<Dimension, double> ConvertToBase(double value) {
 			if (Unit.IsBaseUnit()) {
 				return new KeyValuePair<Dimension, double>(Copy(), value);
@@ -77,7 +82,8 @@ namespace ForgedSoftware.Measurement {
 			if (!Unit.IsBaseUnit()) {
 				throw new Exception("Existing unit is not base unit");
 			}
-			return new KeyValuePair<Dimension, double>(new Dimension(unit, Power), DoConvert(value, unit, false));
+			double convertedValue = unit.IsBaseUnit() ? value : DoConvert(value, unit, false);
+			return new KeyValuePair<Dimension, double>(new Dimension(unit, Power), convertedValue);
 		}
 
 		private double DoConvert(double value, Unit unit, bool toBase) {
@@ -92,8 +98,37 @@ namespace ForgedSoftware.Measurement {
 			return calculatedValue;
 		}
 
+		public bool IsCommensurableMatch(Dimension dimension) {
+			return Unit.System.Name == dimension.Unit.System.Name && Power == dimension.Power;
+		}
+
+		public KeyValuePair<Dimension, double> Combine(double computedValue, Dimension dimension) {
+			// Some validation
+			if (Unit.System.Name != dimension.Unit.System.Name) {
+				throw new Exception("Dimensions must have the same system to combine");
+			}
+
+			// Do conversion if necessary
+			int aggregatePower;
+			if (Unit.Name != dimension.Unit.Name) {
+				KeyValuePair<Dimension, double> dimValuePair = Convert(computedValue, Unit);
+				computedValue = dimValuePair.Value;
+				aggregatePower = Power + dimValuePair.Key.Power;
+			} else {
+				aggregatePower = Power + dimension.Power;
+			}
+
+			return new KeyValuePair<Dimension, double>(new Dimension(Unit, aggregatePower), computedValue);
+		}
+
 		public Dimension Copy() {
 			return new Dimension(this);
+		}
+
+		public Dimension Invert() {
+			Dimension d = Copy();
+			d.Power = -d.Power;
+			return d;
 		}
 
 		string ISerializable.ToJson() {
@@ -170,6 +205,5 @@ namespace ForgedSoftware.Measurement {
 
 			return Format(options);
 		}
-
 	}
 }

@@ -85,5 +85,9 @@ namespace ForgedSoftware.MeasurementTests
 
 		#endregion
 
+		#region Simplify
+
+		#endregion
+
 	}
 }
