@@ -49,6 +49,7 @@
     <Compile Include="IFormatter.cs" />
     <Compile Include="ISerializable.cs" />
     <Compile Include="MeasurementFactory.cs" />
+    <Compile Include="Prefix.cs" />
     <Compile Include="Quantity.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MeasurementSystem.cs" />
