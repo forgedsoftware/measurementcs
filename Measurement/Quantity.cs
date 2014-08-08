@@ -31,11 +31,9 @@ namespace ForgedSoftware.Measurement {
 		/// Dimensionless constructor with prefix
 		/// </summary>
 		/// <param name="value">The value of the quantity</param>
-		/// <param name="prefix">The prefix of the quantity</param>
-		public Quantity(double value, Prefix prefix = null)
+		public Quantity(double value)
 			: this() {
 			Value = value;
-			Prefix = prefix;
 		}
 
 		/// <summary>
@@ -43,9 +41,8 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <param name="value">The value of the quantity</param>
 		/// <param name="unitName">The common name of the unit of the dimension</param>
-		/// <param name="prefix">The prefix of the quantity</param>
-		public Quantity(double value, string unitName, Prefix prefix = null)
-			: this(value, prefix) {
+		public Quantity(double value, string unitName)
+			: this(value) {
 			Dimensions.Add(new Dimension(unitName));
 		}
 
@@ -54,9 +51,8 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <param name="value">The value of the quantity</param>
 		/// <param name="unitNames">A set of unit names to turn into dimensions</param>
-		/// <param name="prefix">The prefix of the quantity</param>
-		public Quantity(double value, IEnumerable<string> unitNames, Prefix prefix = null)
-			: this(value, prefix) {
+		public Quantity(double value, IEnumerable<string> unitNames)
+			: this(value) {
 			foreach (string unitName in unitNames) {
 				Dimensions.Add(new Dimension(unitName));
 			}
@@ -67,9 +63,8 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <param name="value">The value of the quantity</param>
 		/// <param name="dimension">Pre-existing dimension to use with this quantity</param>
-		/// <param name="prefix">The prefix of the quantity</param>
-		public Quantity(double value, Dimension dimension, Prefix prefix = null)
-			: this(value, prefix) {
+		public Quantity(double value, Dimension dimension)
+			: this(value) {
 			Dimensions.Add(dimension);
 		}
 
@@ -78,9 +73,8 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <param name="value">The value of the quantity</param>
 		/// <param name="dimensions">Pre-existing dimensions to use with this quantity</param>
-		/// <param name="prefix">The prefix of the quantity</param>
-		public Quantity(double value, IEnumerable<Dimension> dimensions, Prefix prefix = null)
-			: this(value, prefix) {
+		public Quantity(double value, IEnumerable<Dimension> dimensions)
+			: this(value) {
 			Dimensions.AddRange(dimensions);
 		}
 
@@ -96,12 +90,6 @@ namespace ForgedSoftware.Measurement {
 		//						   <-- Tensor ??
 		[DataMember(Name = "value")]
 		public double Value { get; private set; }
-
-		/// <summary>
-		/// Some quantities have an associated prefix, most commonly those in the
-		/// Metric system. If it does not have prefix, this should be null.
-		/// </summary>
-		public Prefix Prefix { get; private set; }
 
 		/// <summary>
 		/// The Dimensions of a Quantity are the combination of units of measurement

@@ -15,24 +15,32 @@ namespace ForgedSoftware.Measurement {
 			Power = 1;
 		}
 
-		public Dimension(Unit unit, int power): this() {
-			Power = power;
+		public Dimension(Unit unit, int power, Prefix prefix = null)
+			: this() {
 			Unit = unit;
+			Power = power;
+			Prefix = prefix;
 		}
 
-		public Dimension(string unitName) : this() {
+		public Dimension(string unitName, Prefix prefix = null)
+			: this() {
 			Unit = MeasurementFactory.FindUnit(unitName);
+			Prefix = prefix;
 		}
 
-		public Dimension(string unitName, string systemName): this() {
+		public Dimension(string unitName, string systemName, Prefix prefix = null)
+			: this() {
 			Unit = MeasurementFactory.FindUnit(unitName, systemName);
+			Prefix = prefix;
 		}
 
-		public Dimension(string unitName, int power): this(unitName) {
+		public Dimension(string unitName, int power, Prefix prefix = null)
+			: this(unitName, prefix) {
 			Power = power;
 		}
 
-		public Dimension(string unitName, string systemName, int power): this(unitName, systemName) {
+		public Dimension(string unitName, string systemName, int power, Prefix prefix = null)
+			: this(unitName, systemName, prefix) {
 			Power = power;
 		}
 
@@ -40,6 +48,7 @@ namespace ForgedSoftware.Measurement {
 		protected Dimension(Dimension dim) {
 			Unit = dim.Unit;
 			Power = dim.Power;
+			Prefix = dim.Prefix;
 		}
 
 		#endregion
@@ -48,6 +57,8 @@ namespace ForgedSoftware.Measurement {
 		public int Power { get; set; }
 		
 		public Unit Unit { get; set; }
+
+		public Prefix Prefix { get; private set; }
 
 		[DataMember(Name = "unitName")]
 		public string UnitName {
@@ -58,6 +69,12 @@ namespace ForgedSoftware.Measurement {
 		[DataMember(Name = "systemName")]
 		public string SystemName {
 			get { return Unit.System.Name; }
+			private set { }
+		}
+
+		[DataMember(Name = "prefix", IsRequired = false, EmitDefaultValue = false)]
+		public string PrefixName {
+			get { return (Prefix != null) ? Prefix.Name : null; }
 			private set { }
 		}
 
