@@ -111,7 +111,7 @@ namespace ForgedSoftware.Measurement {
 			// Do conversion if necessary
 			int aggregatePower;
 			if (Unit.Name != dimension.Unit.Name) {
-				KeyValuePair<Dimension, double> dimValuePair = Convert(computedValue, Unit);
+				KeyValuePair<Dimension, double> dimValuePair = Convert(computedValue, dimension.Unit);
 				computedValue = dimValuePair.Value;
 				aggregatePower = Power + dimValuePair.Key.Power;
 			} else {

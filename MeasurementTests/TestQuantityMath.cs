@@ -25,21 +25,21 @@ namespace ForgedSoftware.MeasurementTests {
 		public void TestAddBasic() {
 			Quantity result = new Quantity(15).Add(2.4);
 			Assert.AreEqual(17.4, result.Value);
-			Assert.IsTrue(result.IsDimensionless);
+			Assert.IsTrue(result.IsDimensionless());
 		}
 
 		[TestMethod]
 		public void TestAddDimensionless() {
 			Quantity result = new Quantity(15, new[] { "minute" }).Add(2.4);
 			Assert.AreEqual(17.4, result.Value);
-			Assert.IsFalse(result.IsDimensionless);
+			Assert.IsFalse(result.IsDimensionless());
 		}
 
 		[TestMethod]
 		public void TestAddQuantity() {
 			Quantity result = new Quantity(2.1, new[] { "minute" }).Add(new Quantity(3.4, new[] { "minute" }));
 			Assert.AreEqual(5.5, result.Value);
-			Assert.IsFalse(result.IsDimensionless);
+			Assert.IsFalse(result.IsDimensionless());
 			Assert.AreEqual(1, result.Dimensions.Count);
 		}
 
@@ -47,7 +47,7 @@ namespace ForgedSoftware.MeasurementTests {
 		public void TestAddDimensionlessQuantities() {
 			Quantity result = new Quantity(12.3).Add(new Quantity(13.23));
 			Assert.AreEqual(25.53, result.Value);
-			Assert.IsTrue(result.IsDimensionless);
+			Assert.IsTrue(result.IsDimensionless());
 		}
 
 		[TestMethod]
@@ -86,21 +86,21 @@ namespace ForgedSoftware.MeasurementTests {
 		public void TestSubtractBasic() {
 			Quantity result = new Quantity(5.4).Subtract(2.2);
 			Assert.AreEqual(3.2, result.Value);
-			Assert.IsTrue(result.IsDimensionless);
+			Assert.IsTrue(result.IsDimensionless());
 		}
 
 		[TestMethod]
 		public void TestSubtractDimensionless() {
 			Quantity result = new Quantity(7.82, new[] { "minute" }).Subtract(4.22);
 			Assert.AreEqual(3.6, result.Value, 0.00001);
-			Assert.IsFalse(result.IsDimensionless);
+			Assert.IsFalse(result.IsDimensionless());
 		}
 
 		[TestMethod]
 		public void TestSubtractQuantity() {
 			Quantity result = new Quantity(4.1, new[] { "minute" }).Subtract(new Quantity(1.2, new[] { "minute" }));
 			Assert.AreEqual(2.9, result.Value, 0.00001);
-			Assert.IsFalse(result.IsDimensionless);
+			Assert.IsFalse(result.IsDimensionless());
 			Assert.AreEqual(1, result.Dimensions.Count);
 		}
 
@@ -108,7 +108,7 @@ namespace ForgedSoftware.MeasurementTests {
 		public void TestSubtractDimensionlessQuantities() {
 			Quantity result = new Quantity(17.33).Subtract(new Quantity(13.23));
 			Assert.AreEqual(4.1, result.Value, 0.00001);
-			Assert.IsTrue(result.IsDimensionless);
+			Assert.IsTrue(result.IsDimensionless());
 		}
 
 		[TestMethod]

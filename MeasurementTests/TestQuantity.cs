@@ -87,6 +87,16 @@ namespace ForgedSoftware.MeasurementTests
 
 		#region Simplify
 
+		[TestMethod]
+		public void TestSimplify() {
+			//m^2.in.ft^-1.s^-1
+			var q = new Quantity(5, new List<Dimension> {
+				new Dimension("metre", 2), new Dimension("inch"),
+				new Dimension("foot", -1), new Dimension("second")}).Simplify();
+			Assert.AreEqual(2, q.Dimensions.Count);
+			Assert.AreEqual(897930.494, q.Value, 0.001);
+		}
+
 		#endregion
 
 	}

@@ -85,10 +85,6 @@ namespace ForgedSoftware.Measurement {
 		[DataMember(Name = "dimensions")]
 		public List<Dimension> Dimensions { get; private set; }
 
-		public bool IsDimensionless {
-			get { return Dimensions.Count == 0; }
-		}
-
 		#region Conversion
 
 		public Quantity Convert(string unitName) {
@@ -139,8 +135,17 @@ namespace ForgedSoftware.Measurement {
 
 		#endregion
 
-		#region Simplification
+		#region General Operations
 
+		/// <summary>
+		/// Simplifies a quantity to the most simple set of dimensions possible.
+		/// Dimension order is preserved during the simplification in order to choose
+		/// the appropriate units.
+		/// </summary>
+		/// <example>
+		/// 5 m^2.in.ft^-1.s^-1 => 897930.494 m^2.s^-1
+		/// </example>
+		/// <returns>The simplified quantity</returns>
 		public Quantity Simplify() {
 			var newDimensions = new List<Dimension>();
 			var processedDimensions = new List<int>();
@@ -166,10 +171,31 @@ namespace ForgedSoftware.Measurement {
 			return new Quantity(computedValue, newDimensions);
 		}
 
+		/// <summary>
+		/// Checks if the quantity is dimensionless.
+		/// </summary>
+		/// <example>
+		/// A quantity of 5 is dimensionless, a quantity of 5 metres is not
+		/// </example>
+		/// <returns>True if quantity has no dimensions, else false</returns>
+		public bool IsDimensionless() {
+			return Dimensions.Count == 0;
+		}
+
+		/// <summary>
+		/// Checks if the quantity is commensurable with another quantity.
+		/// Two commensurable quantities share dimensions with equivalent powers
+		/// and systems when simplified.
+		/// </summary>
+		/// <example>
+		/// 5 m^3 is commensurable with 2 km^2.ft or 9000 L but not 5 m^2.s or 3.452 m^3.ft^-1
+		/// </example>
+		/// <param name="quantity">The quantity to compare with</param>
+		/// <returns>True if they are commensurable, else false</returns>
 		public bool IsCommensurable(Quantity quantity) {
 
 			// Dimensionless
-			if (IsDimensionless && quantity.IsDimensionless) {
+			if (IsDimensionless() && quantity.IsDimensionless()) {
 				return true;
 			}
 
@@ -393,7 +419,7 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="y">The dimensionless quantity</param>
 		/// <returns>The base raised to the provided power</returns>
 		public Quantity Pow(Quantity y) {
-			if (!y.IsDimensionless) {
+			if (!y.IsDimensionless()) {
 				throw new Exception("The power must be dimensionless");
 			}
 			return Pow(y.Value);
