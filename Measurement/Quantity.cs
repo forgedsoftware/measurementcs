@@ -6,23 +6,51 @@ using System.Runtime.Serialization;
 
 namespace ForgedSoftware.Measurement {
 
+	/// <summary>
+	/// A Quantity represents a specific measured Value and its associated Dimensions.
+	/// This object will allow Quantities to be created, converted to other dimensions,
+	/// have mathematical operations performed on them, be simplified, and be formatted.
+	/// </summary>
+	/// <example>
+	/// A simple measured value of five metres is a Quantity. It has a Value of 5
+	/// and a single Dimension with a power of 1 which is a distance with a Unit of metres.
+	/// </example>
 	[DataContract]
 	public class Quantity : ISerializable, IFormatter, IFormattable {
 
+		#region Constructors
+
+		/// <summary>
+		/// Default basic constructor
+		/// </summary>
 		private Quantity() {
 			Dimensions = new List<Dimension>();
 		}
 
+		/// <summary>
+		/// Dimensionless constructor
+		/// </summary>
+		/// <param name="value">The value of the quantity</param>
 		public Quantity(double value)
 			: this() {
 			Value = value;
 		}
 
+		/// <summary>
+		/// Helper constructor for quantity with a single dimension
+		/// </summary>
+		/// <param name="value">The value of the quantity</param>
+		/// <param name="unitName">The common name of the unit of the dimension</param>
 		public Quantity(double value, string unitName)
 			: this(value) {
 			Dimensions.Add(new Dimension(unitName));
 		}
 
+		/// <summary>
+		/// Helper constructor for quantity with multiple simple dimensions
+		/// </summary>
+		/// <param name="value">The value of the quantity</param>
+		/// <param name="unitNames">A set of unit names to turn into dimensions</param>
 		public Quantity(double value, IEnumerable<string> unitNames)
 			: this(value) {
 			foreach (string unitName in unitNames) {
@@ -30,10 +58,27 @@ namespace ForgedSoftware.Measurement {
 			}
 		}
 
+		/// <summary>
+		/// Helper constructor for quantity with single complex dimension
+		/// </summary>
+		/// <param name="value">The value of the quantity</param>
+		/// <param name="dimension">Pre-existing dimension to use with this quantity</param>
+		public Quantity(double value, Dimension dimension)
+			: this(value) {
+			Dimensions.Add(dimension);
+		}
+
+		/// <summary>
+		/// A full constructor for multiple, complex dimensions
+		/// </summary>
+		/// <param name="value">The value of the quantity</param>
+		/// <param name="dimensions">Pre-existing dimensions to use with this quantity</param>
 		public Quantity(double value, IEnumerable<Dimension> dimensions)
 			: this(value) {
 			Dimensions.AddRange(dimensions);
 		}
+
+		#endregion
 
 		[DataMember(Name = "value")]
 		public double Value { get; private set; }
@@ -366,12 +411,25 @@ namespace ForgedSoftware.Measurement {
 			return Max(y.Convert(this).Value);
 		}
 
+		/// <summary>
+		/// A varargs function for calculating the max value of a set of values including this.
+		/// All values are assumed to have the same dimensions as the initial quantity.
+		/// </summary>
+		/// <param name="values">The varargs of values to test</param>
+		/// <returns>The largest value as a quantity</returns>
 		public Quantity Max(params double[] values) {
 			List<double> vals = values.ToList();
 			vals.Add(Value);
 			return new Quantity(vals.Max(), Dimensions.CopyList());
 		}
 
+		/// <summary>
+		/// A varargs function for calculating the largest quantity of a set of quantities including this.
+		/// All quantities must be commensurable. The dimensions of the first quantity are preserved.
+		/// </summary>
+		/// <exception cref="System.Exception">Thrown when one or more quantities are not commensurable</exception>
+		/// <param name="values">The varargs of quantities to test</param>
+		/// <returns>The largest value as a quantity</returns>
 		public Quantity Max(params Quantity[] values) {
 			// TODO option controlled whether to keep base units or use new units
 			return Max(values.ToList().Select(q => q.Convert(this).Value).ToArray());
