@@ -563,7 +563,7 @@ namespace ForgedSoftware.Measurement {
 			}
 			var separatorPos = numLength - options.GroupSize;
 			valueStr = valueStr.Replace(".", options.DecimalSeparator);
-			if (options.GroupSeparator.Length > 0) {
+			if (options.GroupSeparator.Length > 0 && !double.IsInfinity(Value) && !double.IsNaN(Value)) {
 				while (separatorPos > 0) {
 					valueStr = valueStr.Insert(separatorPos, options.GroupSeparator);
 					separatorPos -= options.GroupSize;

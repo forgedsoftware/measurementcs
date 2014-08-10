@@ -83,6 +83,18 @@ namespace ForgedSoftware.MeasurementTests
 			Assert.AreEqual("2..31..22..34..23*23 h", result);
 		}
 
+		[TestMethod]
+		public void TestFormattingInfinity() {
+			string result = MeasurementFactory.CreateQuantity(double.NegativeInfinity, "hour").Format(new FormatOptions());
+			Assert.AreEqual("-Infinity h", result);
+		}
+
+		[TestMethod]
+		public void TestFormattingNaN() {
+			string result = MeasurementFactory.CreateQuantity(double.NaN, "hour").Format(new FormatOptions());
+			Assert.AreEqual("NaN h", result);
+		}
+
 		#endregion
 
 		#region Simplify
