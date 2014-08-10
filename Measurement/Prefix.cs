@@ -11,14 +11,17 @@ namespace ForgedSoftware.Measurement {
 	public class Prefix {
 		public string Name { get; set; }
 		public string Symbol { get; set; }
-		public double Multiplier { get; set; }
 		public PrefixType Type { get; set; }
+		public bool IsRare { get; set; }
+		public double Multiplier { get; set; }
+		public double Power { get; set; }
+		public double Base { get; set; }
 	}
 
 	/// <summary>
 	/// A PrefixType is an enum that represents the type of a particular Prefix.
 	/// </summary>
 	public enum PrefixType {
-		MetricPrefix, BinaryMetricPrefix, UnofficialMetricPrefix
+		Si, SiBinary, SiUnofficial
 	}
 }
