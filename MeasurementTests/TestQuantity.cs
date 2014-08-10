@@ -94,7 +94,7 @@ namespace ForgedSoftware.MeasurementTests
 				new Dimension("metre", 2), new Dimension("inch"),
 				new Dimension("foot", -1), new Dimension("second")}).Simplify();
 			Assert.AreEqual(2, q.Dimensions.Count);
-			Assert.AreEqual(897930.494, q.Value, 0.001);
+			Assert.AreEqual(0.41666, q.Value, 0.001);
 		}
 
 		#endregion

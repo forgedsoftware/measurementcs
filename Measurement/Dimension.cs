@@ -53,7 +53,7 @@ namespace ForgedSoftware.Measurement {
 
 		#endregion
 
-		[DataMember(Name = "power")]
+		[DataMember(Name = "power")] // TODO - Only emit if != 1
 		public int Power { get; set; }
 		
 		public Unit Unit { get; set; }
@@ -128,7 +128,7 @@ namespace ForgedSoftware.Measurement {
 			// Do conversion if necessary
 			int aggregatePower;
 			if (Unit.Name != dimension.Unit.Name) {
-				KeyValuePair<Dimension, double> dimValuePair = Convert(computedValue, dimension.Unit);
+				KeyValuePair<Dimension, double> dimValuePair = dimension.Convert(computedValue, Unit);
 				computedValue = dimValuePair.Value;
 				aggregatePower = Power + dimValuePair.Key.Power;
 			} else {

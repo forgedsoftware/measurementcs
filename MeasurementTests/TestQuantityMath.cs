@@ -8,14 +8,136 @@ namespace ForgedSoftware.MeasurementTests {
 	public class TestQuantityMath {
 
 		#region Basic Math - Multiply
+		
+		[TestMethod]
+		public void TestMultiplyBasic() {
+			Quantity result = new Quantity(8).Multiply(2.5);
+			Assert.AreEqual(20, result.Value);
+			Assert.IsTrue(result.IsDimensionless());
+		}
 
-		// TODO
+		[TestMethod]
+		public void TestMultiplyDimensionless() {
+			Quantity result = new Quantity(15, new[] { "second" }).Multiply(3);
+			Assert.AreEqual(45, result.Value);
+			Assert.IsFalse(result.IsDimensionless());
+		}
+
+		[TestMethod]
+		public void TestMultiplyQuantity() {
+			Quantity result = new Quantity(2, new[] { "minute" }).Multiply(new Quantity(3.4, new[] { "minute" }));
+			Assert.AreEqual(6.8, result.Value);
+			Assert.AreEqual(1, result.Dimensions.Count);
+			Assert.AreEqual(2, result.Dimensions[0].Power);
+		}
+
+		[TestMethod]
+		public void TestMultiplyDimensionlessQuantities() {
+			Quantity result = new Quantity(12.3).Multiply(new Quantity(13.23));
+			Assert.AreEqual(162.729, result.Value);
+			Assert.IsTrue(result.IsDimensionless());
+		}
+
+		[TestMethod]
+		public void TestMultiplyDimensionlessNoCommensurableQuantity() {
+			Quantity result = new Quantity(15, new[] { "minute" }).Multiply(new Quantity(2.4));
+			Assert.AreEqual(36, result.Value);
+			Assert.AreEqual(1, result.Dimensions.Count);
+			Assert.AreEqual(1, result.Dimensions[0].Power);
+		}
+
+		[TestMethod]
+		public void TestMultiplyNoCommensurableQuantity() {
+			Quantity result = new Quantity(10, new[] { "minute" }).Multiply(new Quantity(2.4, new[] { "metre" }));
+			Assert.AreEqual(24, result.Value);
+			Assert.AreEqual(2, result.Dimensions.Count);
+			Assert.AreEqual(1, result.Dimensions[0].Power);
+			Assert.AreEqual(1, result.Dimensions[1].Power);
+		}
+
+		[TestMethod]
+		public void TestMultiplyCommensurableQuantities() {
+			Quantity result = new Quantity(3.2, new[] { "minute" }).Multiply(new Quantity(30, new[] { "second" }));
+			Assert.AreEqual(1.6, result.Value);
+			Assert.AreEqual(1, result.Dimensions.Count);
+			Assert.AreEqual("minute", result.Dimensions[0].Unit.Name);
+			Assert.AreEqual(2, result.Dimensions[0].Power);
+		}
+
+		[TestMethod]
+		public void TestMultiplyComplexCommensurableQuantities() {
+			Quantity result = new Quantity(3.2, new[] { "minute", "metre", "coulomb" })
+				.Multiply(new Quantity(3, new[] { "second", "mile", "coulomb" }));
+			Assert.AreEqual(257.49504, result.Value, 0.0001);
+			Assert.AreEqual(3, result.Dimensions.Count);
+			foreach (Dimension dim in result.Dimensions) {
+				Assert.AreEqual(2, dim.Power);
+			}
+		}
 
 		#endregion
 
 		#region Basic Math - Divide
 
-		// TODO
+		[TestMethod]
+		public void TestDivideBasic() {
+			Quantity result = new Quantity(20).Divide(8);
+			Assert.AreEqual(2.5, result.Value);
+			Assert.IsTrue(result.IsDimensionless());
+		}
+
+		[TestMethod]
+		public void TestDivideDimensionless() {
+			Quantity result = new Quantity(15, new[] { "second" }).Divide(3);
+			Assert.AreEqual(5, result.Value);
+			Assert.IsFalse(result.IsDimensionless());
+		}
+
+		[TestMethod]
+		public void TestDivideQuantity() {
+			Quantity result = new Quantity(56, new[] { "minute" }).Divide(new Quantity(8, new[] { "minute" }));
+			Assert.AreEqual(7, result.Value);
+			Assert.IsTrue(result.IsDimensionless());
+		}
+
+		[TestMethod]
+		public void TestDivideDimensionlessQuantities() {
+			Quantity result = new Quantity(226.32).Divide(new Quantity(12.3));
+			Assert.AreEqual(18.4, result.Value);
+			Assert.IsTrue(result.IsDimensionless());
+		}
+
+		[TestMethod]
+		public void TestDivideDimensionlessNoCommensurableQuantity() {
+			Quantity result = new Quantity(36, new[] { "minute" }).Divide(new Quantity(2.4));
+			Assert.AreEqual(15, result.Value);
+			Assert.AreEqual(1, result.Dimensions.Count);
+			Assert.AreEqual(1, result.Dimensions[0].Power);
+		}
+
+		[TestMethod]
+		public void TestDivideNoCommensurableQuantity() {
+			Quantity result = new Quantity(24, new[] { "minute" }).Divide(new Quantity(2.4, new[] { "metre" }));
+			Assert.AreEqual(10, result.Value);
+			Assert.AreEqual(2, result.Dimensions.Count);
+			Assert.AreEqual(1, result.Dimensions[0].Power);
+			Assert.AreEqual(-1, result.Dimensions[1].Power);
+		}
+
+		[TestMethod]
+		public void TestDivideCommensurableQuantities() {
+			Quantity result = new Quantity(3.2, new[] { "minute" }).Divide(new Quantity(30, new[] { "second" }));
+			Assert.AreEqual(6.4, result.Value);
+			Assert.IsTrue(result.IsDimensionless());
+		}
+
+		[TestMethod]
+		public void TestDivideComplexCommensurableQuantities() {
+			Quantity result = new Quantity(3.2, new[] { "minute", "metre", "coulomb" })
+				.Divide(new Quantity(3, new[] { "second", "mile", "coulomb" }));
+			Assert.AreEqual(0.039768, result.Value, 0.0001);
+			Assert.IsTrue(result.IsDimensionless());
+		}
 
 		#endregion
 
