@@ -41,26 +41,39 @@ namespace ForgedSoftware.Measurement {
 				var systemJson = (Dictionary<string, object>) systemKeyValuePair.Value;
 				var system = new MeasurementSystem {
 					Name = systemKeyValuePair.Key,
-					Symbol = Parse<string>(systemJson, "symbol")
-					// TODO - add more properties here
+					Symbol = Parse<string>(systemJson, "symbol"),
+					Derived = Parse<string>(systemJson, "derived")
 				};
-				string baseUnitName = Parse<string>(systemJson, "baseUnit");
-				foreach (KeyValuePair<string, object> unitKeyValuePair in (Dictionary<string, object>) systemJson["units"]) {
-					var unitJson = (Dictionary<string, object>) unitKeyValuePair.Value;
-					var unit = new Unit {
-						Name = unitKeyValuePair.Key,
-						System = system,
-						Symbol = Parse<string>(unitJson, "symbol"),
-						Multiplier = Parse<double>(unitJson, "multiplier"),
-						Offset = Parse<double>(unitJson, "offset")
-						// TODO - add more properties here
-					};
-					system.Units.Add(unit);
-					if (baseUnitName == unit.Name) {
-						system.BaseUnit = unit;
-					}
-				}
+				system.OtherNames.AddRange(ParseArray<string>(systemJson, "otherNames"));
+
+				ParseUnits(systemJson, system);
 				Systems.Add(system);
+			}
+		}
+
+		private static void ParseUnits(Dictionary<string, object> systemJson, MeasurementSystem system) {
+			string baseUnitName = Parse<string>(systemJson, "baseUnit");
+			foreach (KeyValuePair<string, object> unitKeyValuePair in (Dictionary<string, object>) systemJson["units"]) {
+				var unitJson = (Dictionary<string, object>) unitKeyValuePair.Value;
+				var unit = new Unit {
+					Name = unitKeyValuePair.Key,
+					System = system,
+					Type = Parse<UnitType>(unitJson, "type"),
+					Symbol = Parse<string>(unitJson, "symbol"),
+					Multiplier = Parse<double>(unitJson, "multiplier"),
+					Offset = Parse<double>(unitJson, "offset"),
+					IsRare = Parse<bool>(unitJson, "rare"),
+					IsEstimation = Parse<bool>(unitJson, "estimation"),
+					PrefixName = Parse<string>(unitJson, "prefixName"),
+					PrefixFreeName = Parse<string>(unitJson, "prefixFreeName")
+				};
+				unit.UnitSystems.AddRange(ParseArray<string>(unitJson, "systems"));
+				unit.OtherNames.AddRange(ParseArray<string>(unitJson, "otherNames"));
+				unit.OtherSymbols.AddRange(ParseArray<string>(unitJson, "otherSymbols"));
+				system.Units.Add(unit);
+				if (baseUnitName == unit.Name) {
+					system.BaseUnit = unit;
+				}
 			}
 		}
 
@@ -92,6 +105,18 @@ namespace ForgedSoftware.Measurement {
 				return (T) val;
 			}
 			return default(T);
+		}
+
+		private static IEnumerable<T> ParseArray<T>(Dictionary<string, object> values, string name) {
+			var result = new List<T>();
+			object val;
+			if (values.TryGetValue(name, out val)) {
+				var arrayValues = (object[]) val;
+				if (arrayValues != null) {
+					result.AddRange(arrayValues.Select(value => (T) value));
+				}
+			}
+			return result;
 		}
 
 		#endregion

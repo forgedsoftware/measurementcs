@@ -8,11 +8,14 @@ namespace ForgedSoftware.Measurement {
 	/// </summary>
 	public class MeasurementOptions {
 
+		/// <summary>
+		/// Parameterless constructor that sets up all the default values of the options
+		/// </summary>
 		public MeasurementOptions() {
 			// Defaults - Systems & Units
 			AllowedUnitSystems = new List<string> { "imperial", "usCustomary", "metric" };
 			// TODO - Need to tidy this up!!
-			// Others: nautical, cgi, traditional Chinese, historical, [no system], oldImperial, astronomicalUnits, avoirdupois, jewellery, cgs
+			// Others: nautical, cgi, traditional Chinese, historical, [no system], oldImperial, astronomicalUnits, avoirdupois, jewellery, cgs, si
 			IgnoredMeasurementSystems = new List<MeasurementSystem>();
 			UseEstimatedUnits = false;
 			UseRareUnits = false;
@@ -34,18 +37,23 @@ namespace ForgedSoftware.Measurement {
 
 		#region Systems & Units
 
+		// TODO - Documentation
 		// TODO - Use it!
 		public List<string> AllowedUnitSystems { get; private set; }
 
+		// TODO - Documentation
 		// TODO - Use it!
 		public List<MeasurementSystem> IgnoredMeasurementSystems { get; private set; }
 
+		// TODO - Documentation
 		// TODO - Use it!
 		public bool UseEstimatedUnits { get; set; }
 
+		// TODO - Documentation
 		// TODO - Use it!
 		public bool UseRareUnits { get; set; }
 
+		// TODO - Documentation
 		// TODO - Use it!
 		public bool UseHistoricalUnits { get; set; } // TODO - Should historical be its own field on a unit?
 
@@ -53,15 +61,19 @@ namespace ForgedSoftware.Measurement {
 
 		#region Prefixes
 
+		// TODO - Documentation
 		// TODO - Use it!
 		public bool UseAutomaticPrefixManagement { get; set; }
 
+		// TODO - Documentation
 		// TODO - Use it!
 		public bool UseRarePrefixes { get; set; }
 
+		// TODO - Documentation
 		// TODO - Use it!
 		public bool UseUnofficalPrefixes { get; set; }
 
+		// TODO - Documentation
 		// TODO - Use it!
 		public List<KeyValuePair<Unit, Prefix>> AllowedRarePrefixCombinations { get; private set; }
 
