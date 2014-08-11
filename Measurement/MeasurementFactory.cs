@@ -6,11 +6,18 @@ using System.Linq;
 
 namespace ForgedSoftware.Measurement {
 	public static class MeasurementFactory {
-		public static List<MeasurementSystem> Systems = new List<MeasurementSystem>();
-		public static List<Prefix> Prefixes = new List<Prefix>();
+
+		public static List<MeasurementSystem> Systems { get; private set; }
+		public static List<Prefix> Prefixes { get; private set; }
+		public static MeasurementOptions Options { get; private set; }
+
+		#region Setup
 
 		static MeasurementFactory() {
+			Systems = new List<MeasurementSystem>();
+			Prefixes = new List<Prefix>();
 			LoadSystemsAndPrefixes();
+			Options = new MeasurementOptions();
 		}
 
 		private static void LoadSystemsAndPrefixes() {
@@ -87,6 +94,10 @@ namespace ForgedSoftware.Measurement {
 			return default(T);
 		}
 
+		#endregion
+
+		#region Quantity Factory Methods
+
 		public static Quantity CreateQuantity(double val) {
 			return new Quantity(val);
 		}
@@ -103,6 +114,10 @@ namespace ForgedSoftware.Measurement {
 			return new Quantity(val, dimensions);
 		}
 
+		#endregion
+
+		#region Find
+
 		public static Unit FindUnit(string unitName) {
 			return Systems.SelectMany(s => s.Units).First(u => u.Name == unitName);
 		}
@@ -110,5 +125,12 @@ namespace ForgedSoftware.Measurement {
 		public static Unit FindUnit(string unitName, string systemName) {
 			return Systems.First(s => s.Name == systemName).Units.First(u => u.Name == unitName);
 		}
+
+		public static Prefix FindPrefix(string prefixName) {
+			return Prefixes.First(p => p.Name == prefixName);
+		}
+
+		#endregion
+
 	}
 }
