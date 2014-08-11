@@ -144,15 +144,15 @@ namespace ForgedSoftware.Measurement {
 		#region Find
 
 		public static Unit FindUnit(string unitName) {
-			return Systems.SelectMany(s => s.Units).First(u => u.Name == unitName);
+			return Systems.SelectMany(s => s.Units).FirstOrDefault(u => u.Name == unitName);
 		}
 
 		public static Unit FindUnit(string unitName, string systemName) {
-			return Systems.First(s => s.Name == systemName).Units.First(u => u.Name == unitName);
+			return Systems.First(s => s.Name == systemName).Units.FirstOrDefault(u => u.Name == unitName);
 		}
 
 		public static Prefix FindPrefix(string prefixName) {
-			return Prefixes.First(p => p.Name == prefixName);
+			return Prefixes.FirstOrDefault(p => p.Name == prefixName);
 		}
 
 		#endregion

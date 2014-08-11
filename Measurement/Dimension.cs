@@ -22,24 +22,24 @@ namespace ForgedSoftware.Measurement {
 			Prefix = prefix;
 		}
 
-		public Dimension(string unitName, Prefix prefix = null)
+		public Dimension(string unitName, string prefix = null)
 			: this() {
 			Unit = MeasurementFactory.FindUnit(unitName);
-			Prefix = prefix;
+			Prefix = MeasurementFactory.FindPrefix(prefix);
 		}
 
-		public Dimension(string unitName, string systemName, Prefix prefix = null)
+		public Dimension(string unitName, string systemName, string prefix = null)
 			: this() {
 			Unit = MeasurementFactory.FindUnit(unitName, systemName);
-			Prefix = prefix;
+			Prefix = MeasurementFactory.FindPrefix(prefix);
 		}
 
-		public Dimension(string unitName, int power, Prefix prefix = null)
+		public Dimension(string unitName, int power, string prefix = null)
 			: this(unitName, prefix) {
 			Power = power;
 		}
 
-		public Dimension(string unitName, string systemName, int power, Prefix prefix = null)
+		public Dimension(string unitName, string systemName, int power, string prefix = null)
 			: this(unitName, systemName, prefix) {
 			Power = power;
 		}
@@ -78,13 +78,13 @@ namespace ForgedSoftware.Measurement {
 			private set { }
 		}
 
-		public KeyValuePair<Dimension, double> Convert(double value, Unit unit) {
+		public KeyValuePair<Dimension, double> Convert(double value, Unit unit, Prefix prefix) {
 			KeyValuePair<Dimension, double> baseDimension = ConvertToBase(value);
-			return baseDimension.Key.ConvertFromBase(baseDimension.Value, unit);
+			return baseDimension.Key.ConvertFromBase(baseDimension.Value, unit, prefix);
 		}
 
 		public KeyValuePair<Dimension, double> ConvertToBase(double value) {
-			if (Unit.IsBaseUnit()) {
+			if (Unit.IsBaseUnit() && Prefix == null) {
 				return new KeyValuePair<Dimension, double>(Copy(), value);
 			}
 
@@ -92,20 +92,26 @@ namespace ForgedSoftware.Measurement {
 			if (baseUnit == null) {
 				throw new Exception("Base unit could not be found!");
 			}
-			return new KeyValuePair<Dimension, double>(new Dimension(baseUnit, Power), DoConvert(value, Unit, true));
+			return new KeyValuePair<Dimension, double>(new Dimension(baseUnit, Power), DoConvert(value, Unit, Prefix, true));
 		}
 
-		public KeyValuePair<Dimension, double> ConvertFromBase(double value, Unit unit) {
+		public KeyValuePair<Dimension, double> ConvertFromBase(double value, Unit unit, Prefix prefix = null) {
 			if (!Unit.IsBaseUnit()) {
 				throw new Exception("Existing unit is not base unit");
 			}
-			double convertedValue = unit.IsBaseUnit() ? value : DoConvert(value, unit, false);
-			return new KeyValuePair<Dimension, double>(new Dimension(unit, Power), convertedValue);
+			if (Prefix != null) {
+				throw new Exception("A dimension as a base may not have a prefix");
+			}
+			double convertedValue = unit.IsBaseUnit() ? value : DoConvert(value, unit, prefix, false);
+			return new KeyValuePair<Dimension, double>(new Dimension(unit, Power, prefix), convertedValue);
 		}
 
-		private double DoConvert(double value, Unit unit, bool toBase) {
+		private double DoConvert(double value, Unit unit, Prefix prefix, bool toBase) {
 			double calculatedValue = value;
 			for (int pow = 0; pow < Math.Abs(Power); pow++) {
+				if (prefix != null) {
+					calculatedValue = toBase ? prefix.Remove(calculatedValue) : Prefix.Apply(calculatedValue);
+				}
 				if (toBase ? (Power > 0) : (Power < 0)) {
 					calculatedValue = (calculatedValue * unit.Multiplier) + unit.Offset; // TODO dimensionality with offsets may not work with compound dimensions.
 				} else {
@@ -128,7 +134,7 @@ namespace ForgedSoftware.Measurement {
 			// Do conversion if necessary
 			int aggregatePower;
 			if (Unit.Name != dimension.Unit.Name) {
-				KeyValuePair<Dimension, double> dimValuePair = dimension.Convert(computedValue, Unit);
+				KeyValuePair<Dimension, double> dimValuePair = dimension.Convert(computedValue, Unit, Prefix);
 				computedValue = dimValuePair.Value;
 				aggregatePower = Power + dimValuePair.Key.Power;
 			} else {
@@ -159,14 +165,18 @@ namespace ForgedSoftware.Measurement {
 		}
 
 		public string Format(FormatOptions options) {
-			string dimensionString;
+			string dimensionString = "";
 
 			if (options.FullName) {
 				var dimParts = new List<string>();
 				if (Power < 0) {
 					dimParts.Add("per");
 				}
-				dimParts.Add(Unit.Name); // TODO - plurals??
+				string name = Unit.Name;
+				if (Prefix != null) {
+					name = Prefix.Name + name;
+				}
+				dimParts.Add(name); // TODO - plurals??
 				int absPower = Math.Abs(Power);
 				if (absPower == 2) {
 					dimParts.Add("squared");
@@ -177,7 +187,10 @@ namespace ForgedSoftware.Measurement {
 				}
 				dimensionString = dimParts.Aggregate((current, next) => current + " " + next);
 			} else {
-				dimensionString = Unit.Symbol;
+				if (Prefix != null) {
+					dimensionString += Prefix.Symbol;
+				}
+				dimensionString += Unit.Symbol;
 				if (options.ShowAllPowers || Power != 1) {
 					string powerStr = (options.Ascii) ? "^" + Power : Power.ToSuperScript();
 					dimensionString += powerStr;

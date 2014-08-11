@@ -74,6 +74,22 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreEqual("min^5", result);
 		}
 
+		[TestMethod]
+		public void TestFormattingWithPrefix() {
+			var dim = new Dimension("second", "mega");
+			string result = dim.Format(new FormatOptions());
+			Assert.AreEqual("Ms", result);
+		}
+
+		[TestMethod]
+		public void TestFormattingWithPrefixFullName() {
+			var dim = new Dimension("metre", "pico");
+			string result = dim.Format(new FormatOptions {
+				FullName = true
+			});
+			Assert.AreEqual("picometre", result);
+		}
+
 		#endregion
 	}
 }

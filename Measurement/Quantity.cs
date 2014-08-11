@@ -135,13 +135,13 @@ namespace ForgedSoftware.Measurement {
 		}
 
 		// TODO - Documentation
-		protected Quantity ConvertFromBase(Unit unit) {
+		protected Quantity ConvertFromBase(Unit unit, Prefix prefix = null) {
 			double convertedValue = Value;
 			var newDimensions = new List<Dimension>();
 
 			foreach (var dimension in Dimensions) {
 				if (dimension.Unit.System.Units.Contains(unit)) {
-					KeyValuePair<Dimension, double> result = dimension.ConvertFromBase(convertedValue, unit);
+					KeyValuePair<Dimension, double> result = dimension.ConvertFromBase(convertedValue, unit, prefix);
 					convertedValue = result.Value;
 					newDimensions.Add(result.Key);
 				} else {
@@ -186,7 +186,17 @@ namespace ForgedSoftware.Measurement {
 					processedDimensions.Add(index);
 				}
 			}
-			return new Quantity(computedValue, newDimensions);
+
+			var resultingQuantity = new Quantity(computedValue, newDimensions);
+			if (MeasurementFactory.Options.UseAutomaticPrefixManagement) {
+				resultingQuantity = resultingQuantity.TidyPrefixes();
+			}
+			return resultingQuantity;
+		}
+
+		public Quantity TidyPrefixes() {
+			// TODO
+			return this;
 		}
 
 		/// <summary>
