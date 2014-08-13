@@ -12,6 +12,9 @@ namespace ForgedSoftware.Measurement {
 		/// Parameterless constructor that sets up all the default values of the options
 		/// </summary>
 		public MeasurementOptions() {
+			// Defaults - General
+			CanReorderDimensions = true;
+
 			// Defaults - Systems & Units
 			AllowedUnitSystems = new List<string> { "imperial", "usCustomary", "metric" };
 			// TODO - Need to tidy this up!!
@@ -30,10 +33,19 @@ namespace ForgedSoftware.Measurement {
 					MeasurementFactory.FindUnit("metre"), MeasurementFactory.FindPrefix("centi"))
 			};
 			PreferBinaryPrefixes = true;
+			UpperPrefixValue = 1000;
+			LowerPrefixValue = 1;
+			HavingPrefixScoreOffset = 1;
 
 			// Defaults - Formatting
 			DefaultFormatOptions = new FormatOptions(CultureInfo.CurrentCulture);
 		}
+
+		#region General
+
+		public bool CanReorderDimensions { get; set; }
+
+		#endregion
 
 		#region Systems & Units
 
@@ -83,6 +95,15 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		// TODO - Use it!
 		public bool PreferBinaryPrefixes { get; set; }
+
+		// TODO - Documentation
+		public double UpperPrefixValue { get; set; }
+
+		// TODO - Documentation
+		public double LowerPrefixValue { get; set; }
+
+		// TODO - Documentation
+		public double HavingPrefixScoreOffset { get; set; }
 
 		#endregion
 

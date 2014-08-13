@@ -16,7 +16,7 @@ namespace ForgedSoftware.Measurement {
 	/// and a single Dimension with a power of 1 which is a distance with a Unit of metres.
 	/// </example>
 	[DataContract]
-	public class Quantity : ISerializable, IFormatter, IFormattable {
+	public class Quantity : ISerializable, IFormatter, IFormattable, ICopyable<Quantity> {
 
 		#region Constructors
 
@@ -76,6 +76,15 @@ namespace ForgedSoftware.Measurement {
 		public Quantity(double value, IEnumerable<Dimension> dimensions)
 			: this(value) {
 			Dimensions.AddRange(dimensions);
+		}
+
+		/// <summary>
+		/// Copy constructor
+		/// </summary>
+		/// <param name="quantity">The quantity to copy</param>
+		private Quantity(Quantity quantity) {
+			Value = quantity.Value;
+			Dimensions = quantity.Dimensions.CopyList();
 		}
 
 		#endregion
@@ -194,9 +203,59 @@ namespace ForgedSoftware.Measurement {
 			return resultingQuantity;
 		}
 
+		// TODO - Documentation
 		public Quantity TidyPrefixes() {
-			// TODO
-			return this;
+			Quantity quantity = Copy();
+			if (IsDimensionless()) {
+				return quantity;
+			}
+			int numberOfPrefixes = quantity.Dimensions.Count(d => d.Prefix != null);
+
+			// Try add a prefix to prefixless dimensions
+			if (numberOfPrefixes == 0) {
+				for (int i = 0; i < quantity.Dimensions.Count; i++) {
+					Dimension dimension = quantity.Dimensions[i];
+					if (dimension.CanApplyPrefix()) {
+						KeyValuePair<Dimension, double> prefixAppliedKeyValue = dimension.ApplyPrefix(quantity.Value);
+						quantity.Dimensions[i] = prefixAppliedKeyValue.Key;
+						quantity.Value = prefixAppliedKeyValue.Value;
+						if (quantity.Dimensions.First().Prefix != null) {
+							numberOfPrefixes++;
+						}
+						break;
+					}
+				}
+			}
+			
+			// Remove all but first prefix
+			if (numberOfPrefixes > 1) {
+				bool seenPrefix = false;
+				for (int j = 0; j < quantity.Dimensions.Count; j++) {
+					Dimension dimension = quantity.Dimensions[j];
+					if (dimension.Prefix != null) {
+						if (seenPrefix) {
+							// Remove prefix
+							KeyValuePair<Dimension, double> updatedDimensionKeyValue = dimension.RemovePrefix(quantity.Value);
+							quantity.Dimensions[j] = updatedDimensionKeyValue.Key;
+							quantity.Value = updatedDimensionKeyValue.Value;
+						} else {
+							seenPrefix = true;
+						}
+					}
+				}
+			}
+
+			// Move prefixed dimension to start
+			// Assumption: There is a max of one dimension with a prefix
+			if (MeasurementFactory.Options.CanReorderDimensions) {
+				int index = quantity.Dimensions.FindIndex(d => d.Prefix != null);
+				if (index > 0) {
+					Dimension prefixedDimension = quantity.Dimensions[index];
+					quantity.Dimensions.RemoveAt(index);
+					quantity.Dimensions.Insert(0, prefixedDimension);
+				}
+			}
+			return quantity;
 		}
 
 		/// <summary>
@@ -537,6 +596,11 @@ namespace ForgedSoftware.Measurement {
 
 		#endregion
 
+		// TODO - Documentation
+		public Quantity Copy() {
+			return new Quantity(this);
+		}
+
 		#region Serialization
 
 		// TODO - Documentation
@@ -619,7 +683,6 @@ namespace ForgedSoftware.Measurement {
 
 		#region ToString
 
-		// TODO - Documentation
 		public override string ToString() {
 			return ToString("G", CultureInfo.CurrentCulture);
 		}

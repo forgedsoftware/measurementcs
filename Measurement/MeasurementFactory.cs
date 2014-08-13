@@ -83,7 +83,7 @@ namespace ForgedSoftware.Measurement {
 				var prefix = new Prefix {
 					Name = prefixKeyValuePair.Key,
 					Symbol = Parse<string>(prefixJson, "symbol"),
-					Type = Parse<PrefixType>(prefixJson, "system"),
+					Type = Parse<PrefixType>(prefixJson, "type"),
 					IsRare = Parse<bool>(prefixJson, "isRare"),
 					Multiplier = Parse<double>(prefixJson, "multiplier"),
 					Power = Parse<double>(prefixJson, "power"),

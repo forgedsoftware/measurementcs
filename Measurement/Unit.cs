@@ -29,6 +29,29 @@ namespace ForgedSoftware.Measurement {
 		public bool IsBaseUnit() {
 			return System.BaseUnit.Equals(this);
 		}
+
+		public bool IsCompatible(Prefix prefix) {
+			if (MeasurementFactory.Options.AllowedRarePrefixCombinations.Contains(new KeyValuePair<Unit, Prefix>(this, prefix))) {
+				return true;
+			}
+			if (prefix.IsRare && !MeasurementFactory.Options.UseRarePrefixes) {
+				return false;
+			}
+			switch (prefix.Type) {
+				case PrefixType.Si: {
+					return Type == UnitType.Si || (Type == UnitType.Binary && !MeasurementFactory.Options.PreferBinaryPrefixes);
+				}
+				case PrefixType.SiBinary: {
+					return Type == UnitType.Binary && MeasurementFactory.Options.PreferBinaryPrefixes;
+				}
+				case PrefixType.SiUnofficial: {
+					return Type == UnitType.Si && MeasurementFactory.Options.UseUnofficalPrefixes;
+				}
+				default: {
+					return false;
+				}
+			}
+		}
 	}
 
 	public enum UnitType {

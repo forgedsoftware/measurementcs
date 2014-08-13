@@ -102,11 +102,11 @@ namespace ForgedSoftware.MeasurementTests
 		[TestMethod]
 		public void TestSimplify() {
 			//m^2.in.ft^-1.s^-1
-			var q = new Quantity(5, new List<Dimension> {
+			var q = new Quantity(30, new List<Dimension> {
 				new Dimension("metre", 2), new Dimension("inch"),
 				new Dimension("foot", -1), new Dimension("second")}).Simplify();
 			Assert.AreEqual(2, q.Dimensions.Count);
-			Assert.AreEqual(0.41666, q.Value, 0.001);
+			Assert.AreEqual(2.5, q.Value, 0.001);
 		}
 
 		#endregion

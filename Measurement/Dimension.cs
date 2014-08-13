@@ -144,6 +144,80 @@ namespace ForgedSoftware.Measurement {
 			return new KeyValuePair<Dimension, double>(new Dimension(Unit, aggregatePower), computedValue);
 		}
 
+		#region Prefixes
+
+		internal bool CanApplyPrefix() {
+			return Unit.Type == UnitType.Binary || Unit.Type == UnitType.Si;
+		}
+
+		public KeyValuePair<Dimension, double> ApplyPrefix(double value) {
+			Dimension d = Copy();
+			if (d.Prefix != null) {
+				KeyValuePair<Dimension, double> removedPrefixKeyValue = RemovePrefix(value);
+				d = removedPrefixKeyValue.Key;
+				value = removedPrefixKeyValue.Value;
+			}
+			Prefix p = d.FindPrefix(value);
+			if (p != null) {
+				d.Prefix = p;
+				value = p.Apply(value);
+			}
+			return new KeyValuePair<Dimension, double>(d, value);
+		}
+
+		private Prefix FindPrefix(double value) {
+			IEnumerable<Prefix> possiblePrefixes = MeasurementFactory.Prefixes.Where(p => Unit.IsCompatible(p));
+			KeyValuePair<Prefix, double> bestPrefixKv = possiblePrefixes
+				.Select(p => new KeyValuePair<Prefix, double>(p, GetPrefixRating(p.Apply(value), p)))
+				.OrderBy(kv => kv.Value)
+				.First();
+			return (bestPrefixKv.Value < GetPrefixRating(value)) ? bestPrefixKv.Key : null;
+		}
+
+		/// <summary>
+		/// This function produces a score for a given prefix or no prefix for a particular value.
+		/// It aims to produce a sensible score for human consumption of a value and prefix combination.
+		/// The score mainly trys to calculate a score between an upper and lower bound,
+		/// as well as preferring no prefix and dealing with edge cases like the kilogramme.
+		/// A lower rating is 'better'.
+		/// TODO - This function may need tweaking...
+		/// </summary>
+		/// <example>
+		/// 750, 'giga' => 1750; 0.750, 'tera' => 2000; therefore 'giga' should be preferred for this value.
+		/// </example>
+		/// <param name="value">The value after the prefix has been applied</param>
+		/// <param name="prefix">The prefix that has been applied, or null if no prefix</param>
+		/// <returns>A rating of the 'fitness' of the prefix for the value, lower is better</returns>
+		private double GetPrefixRating(double value, Prefix prefix = null) {
+			double upper = MeasurementFactory.Options.UpperPrefixValue;
+			double lower = MeasurementFactory.Options.LowerPrefixValue;
+			if (upper <= lower) {
+				throw new Exception("The UpperPrefixValue must be greater than the LowerPrefixValue");
+			}
+			double score = (value > upper || value < lower) ? upper : value;
+			// Prefer no prefix
+			if (prefix != null) {
+				score += MeasurementFactory.Options.HavingPrefixScoreOffset;
+			}
+			// If a unit has a prefix applied by default, we should apply that prefix if possible.
+			// This deals with the edge case of preferring kilogramme over gramme.
+			if (prefix != null && prefix.Name == Unit.PrefixName) {
+				score = 0;
+			}
+			return score;
+		}
+
+		public KeyValuePair<Dimension, double> RemovePrefix(double value) {
+			Dimension d = Copy();
+			if (d.Prefix != null) {
+				value = d.Prefix.Remove(value);
+				d.Prefix = null;
+			}
+			return new KeyValuePair<Dimension, double>(d, value);
+		}
+
+		#endregion
+
 		public Dimension Copy() {
 			return new Dimension(this);
 		}
@@ -201,6 +275,8 @@ namespace ForgedSoftware.Measurement {
 
 		#endregion
 
+		#region ToString
+
 		public override string ToString() {
 			return ToString("G", CultureInfo.CurrentCulture);
 		}
@@ -235,5 +311,8 @@ namespace ForgedSoftware.Measurement {
 
 			return Format(options);
 		}
+
+		#endregion
+
 	}
 }
