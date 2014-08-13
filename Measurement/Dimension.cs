@@ -78,6 +78,8 @@ namespace ForgedSoftware.Measurement {
 			private set { }
 		}
 
+		#region Convert
+
 		public KeyValuePair<Dimension, double> Convert(double value, Unit unit, Prefix prefix) {
 			KeyValuePair<Dimension, double> baseDimension = ConvertToBase(value);
 			return baseDimension.Key.ConvertFromBase(baseDimension.Value, unit, prefix);
@@ -120,6 +122,8 @@ namespace ForgedSoftware.Measurement {
 			}
 			return calculatedValue;
 		}
+
+		#endregion
 
 		public bool IsCommensurableMatch(Dimension dimension) {
 			return Unit.System.Name == dimension.Unit.System.Name && Power == dimension.Power;
