@@ -21,9 +21,7 @@ namespace ForgedSoftware.Measurement {
 		}
 
 		private static void LoadSystemsAndPrefixes() {
-			string path = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName, "./common/systems.json");
-
-			using (var r = new StreamReader(path)) {
+			using (var r = new StreamReader(GetPath())) {
 				var serializer = new JavaScriptSerializer();
 				string json = r.ReadToEnd();
 
@@ -34,6 +32,14 @@ namespace ForgedSoftware.Measurement {
 				var prefixesJson = (Dictionary<string, object>)items["prefixes"];
 				ParsePrefixes(prefixesJson);
 			}
+		}
+
+		private static string GetPath() {
+			var directoryInfo = Directory.GetParent(Directory.GetCurrentDirectory()).Parent;
+			if (directoryInfo == null || directoryInfo.Parent == null) {
+				throw new Exception("Directory containing json does not exist");
+			}
+			return Path.Combine(directoryInfo.Parent.FullName, "./common/systems.json");
 		}
 
 		private static void ParseSystems(Dictionary<string, object> systemsJson) {

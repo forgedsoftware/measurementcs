@@ -211,6 +211,7 @@ namespace ForgedSoftware.Measurement {
 		/// - Tries to settle on a prefix for only one dimension
 		/// - Moves the dimension with the prefix to the start
 		/// TODO - Prefer positive powers to negative powers of dimensions when applying prefixes
+		/// TODO - Too long! Split into smaller methods
 		/// </summary>
 		/// <returns>A quantity with tidied prefixes</returns>
 		public Quantity TidyPrefixes() {
