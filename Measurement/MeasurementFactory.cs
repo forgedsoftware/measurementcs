@@ -42,13 +42,14 @@ namespace ForgedSoftware.Measurement {
 				var system = new MeasurementSystem {
 					Name = systemKeyValuePair.Key,
 					Symbol = Parse<string>(systemJson, "symbol"),
-					Derived = Parse<string>(systemJson, "derived")
+					DerivedString = Parse<string>(systemJson, "derived")
 				};
 				system.OtherNames.AddRange(ParseArray<string>(systemJson, "otherNames"));
 
 				ParseUnits(systemJson, system);
 				Systems.Add(system);
 			}
+			Systems.ForEach(s => s.UpdateDerived());
 		}
 
 		private static void ParseUnits(Dictionary<string, object> systemJson, MeasurementSystem system) {
@@ -142,6 +143,11 @@ namespace ForgedSoftware.Measurement {
 		#endregion
 
 		#region Find
+
+		public static Unit FindBaseUnit(string systemName) {
+			MeasurementSystem system = Systems.FirstOrDefault(s => s.Name == systemName);
+			return (system != null) ? system.BaseUnit : null;
+		}
 
 		public static Unit FindUnit(string unitName) {
 			return Systems.SelectMany(s => s.Units).FirstOrDefault(u => u.Name == unitName);

@@ -195,29 +195,10 @@ namespace ForgedSoftware.Measurement {
 		/// </example>
 		/// <returns>The simplified quantity</returns>
 		public Quantity Simplify() {
-			var newDimensions = new List<Dimension>();
-			var processedDimensions = new List<int>();
 			double computedValue = Value;
+			List<Dimension> simplifiedDimensions = Dimensions.Simplify(ref computedValue);
+			var resultingQuantity = new Quantity(computedValue, simplifiedDimensions);
 
-			for (int index = 0; index < Dimensions.Count; index++) {
-				Dimension dimension = Dimensions[index];
-				if (dimension.Power != 0 && !processedDimensions.Contains(index)) {
-					for (int i = index  + 1; i < Dimensions.Count; i++) {
-						if (dimension.Unit.System.Name == Dimensions[i].Unit.System.Name) {
-							KeyValuePair<Dimension, double> dimValuePair = dimension.Combine(computedValue, Dimensions[i]);
-							dimension = dimValuePair.Key;
-							computedValue = dimValuePair.Value;
-							processedDimensions.Add(i);
-						}
-					}
-					if (dimension.Power != 0) {
-						newDimensions.Add(dimension);
-					}
-					processedDimensions.Add(index);
-				}
-			}
-
-			var resultingQuantity = new Quantity(computedValue, newDimensions);
 			if (MeasurementFactory.Options.UseAutomaticPrefixManagement) {
 				resultingQuantity = resultingQuantity.TidyPrefixes();
 			}

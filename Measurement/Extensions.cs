@@ -5,8 +5,41 @@ using System.Runtime.Serialization.Json;
 
 namespace ForgedSoftware.Measurement {
 	public static class Extensions {
+
 		public static List<T> CopyList<T>(this List<T> list) where T : ICopyable<T> {
 			return list.Select(item => item.Copy()).ToList();
+		}
+
+		public static List<Dimension> Simplify(this List<Dimension> list, ref double value) {
+			var newDimensions = new List<Dimension>();
+			var processedDimensions = new List<int>();
+			double computedValue = value;
+
+			for (int index = 0; index < list.Count; index++)
+			{
+				Dimension dimension = list[index];
+				if (dimension.Power != 0 && !processedDimensions.Contains(index))
+				{
+					for (int i = index + 1; i < list.Count; i++)
+					{
+						if (dimension.Unit.System.Name == list[i].Unit.System.Name)
+						{
+							KeyValuePair<Dimension, double> dimValuePair = dimension.Combine(computedValue, list[i]);
+							dimension = dimValuePair.Key;
+							computedValue = dimValuePair.Value;
+							processedDimensions.Add(i);
+						}
+					}
+					if (dimension.Power != 0)
+					{
+						newDimensions.Add(dimension);
+					}
+					processedDimensions.Add(index);
+				}
+			}
+
+			value = computedValue;
+			return newDimensions;
 		}
 
 		public static string ToJson(this ISerializable obj) {
