@@ -6,6 +6,15 @@ using System.Runtime.Serialization;
 
 namespace ForgedSoftware.Measurement {
 
+	/// <summary>
+	/// A dimension is an representation of the application of a unit of measurement
+	/// to the measurement itself. It includes the unit, a prefix asssociated with that unit,
+	/// and the power to which that unit is applied.
+	/// </summary>
+	/// <example>
+	/// An example of a dimension could be: kilometres squared (km^2)
+	/// Such a dimension has the unit "metre", the prefix "kilo", and a power of 2.
+	/// </example>
 	[DataContract]
 	public class Dimension : ISerializable, IFormatter, IFormattable, ICopyable<Dimension> {
 

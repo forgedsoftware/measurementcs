@@ -4,6 +4,13 @@ using System.Text.RegularExpressions;
 
 namespace ForgedSoftware.Measurement {
 
+	/// <summary>
+	/// A measurement system is a particular type of measurement
+	/// that can be obtained via direct observation of the world.
+	/// </summary>
+	/// <example>
+	/// Examples of measurement systems are: length, mass, acceleration, time
+	/// </example>
 	public class MeasurementSystem {
 
 		public MeasurementSystem() {

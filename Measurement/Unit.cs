@@ -2,6 +2,13 @@
 
 namespace ForgedSoftware.Measurement {
 
+	/// <summary>
+	/// A unit represents a unit of measurement within a specific
+	/// measurement system.
+	/// </summary>
+	/// <example>
+	/// Examples of a unit are: metre, second, Newton, inch, foot
+	/// </example>
 	public class Unit {
 
 		public Unit() {

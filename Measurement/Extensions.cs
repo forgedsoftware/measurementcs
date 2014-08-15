@@ -4,6 +4,10 @@ using System.Linq;
 using System.Runtime.Serialization.Json;
 
 namespace ForgedSoftware.Measurement {
+
+	/// <summary>
+	/// Extension methods for various parts of the Measurement library.
+	/// </summary>
 	public static class Extensions {
 
 		public static List<T> CopyList<T>(this List<T> list) where T : ICopyable<T> {
