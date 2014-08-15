@@ -365,10 +365,11 @@ namespace ForgedSoftware.Measurement {
 		#region Basic Math - Quantity Based
 
 		/// <summary>
-		/// TODO - Documentation
+		/// Multiplies this quantity with another and combines the existing dimensions.
+		/// Simplifies the result afterwards.
 		/// </summary>
-		/// <param name="q"></param>
-		/// <returns></returns>
+		/// <param name="q">The quantity being multiplied by</param>
+		/// <returns>A resulting quantity that is the product of the two quantities</returns>
 		public Quantity Multiply(Quantity q) {
 			List<Dimension> clonedDimensions = Dimensions.CopyList();
 			clonedDimensions.AddRange(q.Dimensions.CopyList());
@@ -376,7 +377,13 @@ namespace ForgedSoftware.Measurement {
 			return newQuantity.Simplify();
 		}
 
-		// TODO - Documentation
+		/// <summary>
+		/// Divides this quantity with another, returning a quantity with dimensions
+		/// that are the difference of the dividend and the divisor.
+		/// Simplifies the result afterwards.
+		/// </summary>
+		/// <param name="q">The quantity that is the divisor</param>
+		/// <returns>A resulting quantity that is the quotient of the two quantities</returns>
 		public Quantity Divide(Quantity q) {
 			List<Dimension> clonedDimensions = Dimensions.CopyList();
 			clonedDimensions.AddRange(q.Dimensions.CopyList().Select(d => d.Invert()));
@@ -384,14 +391,24 @@ namespace ForgedSoftware.Measurement {
 			return newQuantity.Simplify();
 		}
 
-		// TODO - Documentation
+		/// <summary>
+		/// Adds this quantity with another that has commensurable dimensions.
+		/// Takes care of converting the parameter quantity into the same units.
+		/// </summary>
+		/// <param name="q">The quantity being added</param>
+		/// <returns>A resulting quantity that is the sum of the two quantities</returns>
 		public Quantity Add(Quantity q) {
 			// Convert value into same units
 			Quantity convertedQuantity = q.Convert(this);
 			return new Quantity(Value + convertedQuantity.Value, Dimensions.CopyList());
 		}
 
-		// TODO - Documentation
+		/// <summary>
+		/// Subtracts this quantity from another that has commensurable dimensions.
+		/// Takes care of converting the parameter quantity into the same units.
+		/// </summary>
+		/// <param name="q">The quantity being subtracted</param>
+		/// <returns>A resulting quantity that is the difference of the two quantities</returns>
 		public Quantity Subtract(Quantity q) {
 			// Convert value into same units
 			Quantity convertedQuantity = q.Convert(this);
@@ -620,7 +637,10 @@ namespace ForgedSoftware.Measurement {
 
 		#region Copyable
 
-		// TODO - Documentation
+		/// <summary>
+		/// Helper method that utilises the copy constructor to copy the existing quantity.
+		/// </summary>
+		/// <returns>A copy of this quantity</returns>
 		public Quantity Copy() {
 			return new Quantity(this);
 		}
@@ -629,7 +649,10 @@ namespace ForgedSoftware.Measurement {
 
 		#region Serialization
 
-		// TODO - Documentation
+		/// <summary>
+		/// Serializes the quantity as a json string.
+		/// </summary>
+		/// <returns>The serialized quantity</returns>
 		string ISerializable.ToJson() {
 			return this.ToJson();
 		}
@@ -638,12 +661,23 @@ namespace ForgedSoftware.Measurement {
 
 		#region Formatting
 
-		// TODO - Documentation
+		/// <summary>
+		/// A simple format function that formats the quantity
+		/// with the default options and the current culture.
+		/// </summary>
+		/// <returns>The formatted string</returns>
 		public string Format() {
 			return Format(new FormatOptions(CultureInfo.CurrentCulture));
 		}
 
-		// TODO - Documentation
+		/// <summary>
+		/// Formats the quantity based on a series of options to provide
+		/// various human readable alternatives.
+		/// TODO - Too Long!! Separate into smaller methods
+		/// </summary>
+		/// <seealso cref="ForgedSoftware.Measurement.FormatOptions"/>
+		/// <param name="options">An object detailing the different format options</param>
+		/// <returns>The formatted string.</returns>
 		public string Format(FormatOptions options) {
 			string valueStr = "";
 
@@ -709,18 +743,30 @@ namespace ForgedSoftware.Measurement {
 
 		#region ToString
 
-		// TODO - Documentation
+		/// <summary>
+		/// Basic to string override that provides a simple formatted
+		/// version of the string using default options and the current culture.
+		/// </summary>
+		/// <returns>The formatted string</returns>
 		public override string ToString() {
 			return ToString("G", CultureInfo.CurrentCulture);
 		}
 
-		// TODO - Documentation
-		public string ToString(string format) {
-			return ToString(format, CultureInfo.CurrentCulture);
-		}
-
-		// TODO - Documentation
-		public string ToString(string format, IFormatProvider provider) {
+		/// <summary>
+		/// Provides a ToString method with various standard format options.
+		/// A specific IFormatProvider can be specified, else the current culture is used.
+		/// 
+		/// The avaliable format strings are:
+		/// - "G": General format, uses the default format options
+		/// - "S": Scientific format is equivalent to the General format
+		/// - "R": Raw format is an rough, ascii only format
+		/// - "N": Number format just provides the formatted value of the quantity
+		/// - "U": Unit format just provides the formatted units of the quantity as specified by the dimensions
+		/// </summary>
+		/// <param name="format">The format letter</param>
+		/// <param name="provider">A format provider</param>
+		/// <returns>The formatted string</returns>
+		public string ToString(string format, IFormatProvider provider = null) {
 			if (String.IsNullOrEmpty(format)) {
 				format = "G";
 			}

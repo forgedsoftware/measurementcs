@@ -5,6 +5,11 @@ using System.Web.Script.Serialization;
 using System.Linq;
 
 namespace ForgedSoftware.Measurement {
+
+	/// <summary>
+	/// A factory that provides accessors to the measurement systems and prefixes.
+	/// Additionally it also preloads those systems and prefixes from a json file.
+	/// </summary>
 	public static class MeasurementFactory {
 
 		public static List<MeasurementSystem> Systems { get; private set; }
