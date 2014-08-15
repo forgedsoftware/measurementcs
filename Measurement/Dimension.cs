@@ -18,51 +18,70 @@ namespace ForgedSoftware.Measurement {
 	[DataContract]
 	public class Dimension : ISerializable, IFormatter, IFormattable, ICopyable<Dimension> {
 
+		private readonly const int DEFAULT_POWER = 1;
+
 		#region Constructors
 
 		/// <summary>
 		/// Default private constructor
 		/// </summary>
 		private Dimension() {
-			Power = 1;
+			Power = DEFAULT_POWER;
 		}
 
-		// TODO - Documentation
+		/// <summary>
+		/// Full constructor for exactly specifying unit, power, and prefix.
+		/// </summary>
+		/// <param name="unit">The unit to use for this dimension</param>
+		/// <param name="power">The power of the dimension</param>
+		/// <param name="prefix">The optional prefix of the dimension</param>
 		public Dimension(Unit unit, int power, Prefix prefix = null)
 			: this() {
+			if (unit == null) {
+				throw new ArgumentException("A Dimension may not have a Unit that is null");
+			}
 			Unit = unit;
 			Power = power;
 			Prefix = prefix;
 		}
 
-		// TODO - Documentation
-		public Dimension(string unitName, string prefix = null)
-			: this() {
-			Unit = MeasurementFactory.FindUnit(unitName);
-			Prefix = MeasurementFactory.FindPrefix(prefix);
+		/// <summary>
+		/// A helper constructor with a unit name, power, and optional prefix name.
+		/// </summary>
+		/// <param name="unitName">The name of the unit</param>
+		/// <param name="power">The power of the dimension</param>
+		/// <param name="prefixName">The optional name of the prefix</param>
+		public Dimension(string unitName, int power, string prefixName = null)
+			: this(MeasurementFactory.FindUnit(unitName), power,
+				MeasurementFactory.FindPrefix(prefixName)) {
 		}
 
-		// TODO - Documentation
-		public Dimension(string unitName, string systemName, string prefix = null)
-			: this() {
-			Unit = MeasurementFactory.FindUnit(unitName, systemName);
-			Prefix = MeasurementFactory.FindPrefix(prefix);
+		/// <summary>
+		/// Helper constructor with a unit name and optional prefix name.
+		/// </summary>
+		/// <param name="unitName">The name of the unit</param>
+		/// <param name="prefixName">The optional name of the prefix</param>
+		public Dimension(string unitName, string prefixName = null)
+			: this(unitName, DEFAULT_POWER, prefixName) {
 		}
 
-		// TODO - Documentation
-		public Dimension(string unitName, int power, string prefix = null)
-			: this(unitName, prefix) {
-			Power = power;
+		/// <summary>
+		/// Helper constructor with unit name, system name, power, and prefix name so
+		/// the unit can be fully specified.
+		/// </summary>
+		/// <param name="unitName">The unit name</param>
+		/// <param name="systemName">The name of the system the unit is in</param>
+		/// <param name="power">The power of the dimension</param>
+		/// <param name="prefixName">The optional name of the prefix</param>
+		public Dimension(string unitName, string systemName, int power, string prefixName = null)
+			: this(MeasurementFactory.FindUnit(unitName, systemName), power,
+				MeasurementFactory.FindPrefix(prefixName)) {
 		}
 
-		// TODO - Documentation
-		public Dimension(string unitName, string systemName, int power, string prefix = null)
-			: this(unitName, systemName, prefix) {
-			Power = power;
-		}
-
-		// TODO - Documentation
-		// Copy Constructor
+		/// <summary>
+		/// Copy constructor
+		/// </summary>
+		/// <param name="dim">Existing dimension to copy</param>
 		protected Dimension(Dimension dim) {
 			Unit = dim.Unit;
 			Power = dim.Power;
