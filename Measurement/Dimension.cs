@@ -20,10 +20,14 @@ namespace ForgedSoftware.Measurement {
 
 		#region Constructors
 
+		/// <summary>
+		/// Default private constructor
+		/// </summary>
 		private Dimension() {
 			Power = 1;
 		}
 
+		// TODO - Documentation
 		public Dimension(Unit unit, int power, Prefix prefix = null)
 			: this() {
 			Unit = unit;
@@ -31,28 +35,33 @@ namespace ForgedSoftware.Measurement {
 			Prefix = prefix;
 		}
 
+		// TODO - Documentation
 		public Dimension(string unitName, string prefix = null)
 			: this() {
 			Unit = MeasurementFactory.FindUnit(unitName);
 			Prefix = MeasurementFactory.FindPrefix(prefix);
 		}
 
+		// TODO - Documentation
 		public Dimension(string unitName, string systemName, string prefix = null)
 			: this() {
 			Unit = MeasurementFactory.FindUnit(unitName, systemName);
 			Prefix = MeasurementFactory.FindPrefix(prefix);
 		}
 
+		// TODO - Documentation
 		public Dimension(string unitName, int power, string prefix = null)
 			: this(unitName, prefix) {
 			Power = power;
 		}
 
+		// TODO - Documentation
 		public Dimension(string unitName, string systemName, int power, string prefix = null)
 			: this(unitName, systemName, prefix) {
 			Power = power;
 		}
 
+		// TODO - Documentation
 		// Copy Constructor
 		protected Dimension(Dimension dim) {
 			Unit = dim.Unit;
@@ -62,38 +71,24 @@ namespace ForgedSoftware.Measurement {
 
 		#endregion
 
-		[DataMember(Name = "power")] // TODO - Only emit if != 1
+		// TODO - Documentation
 		public int Power { get; set; }
-		
+
+		// TODO - Documentation
 		public Unit Unit { get; set; }
 
+		// TODO - Documentation
 		public Prefix Prefix { get; private set; }
 
-		[DataMember(Name = "unitName")]
-		public string UnitName {
-			get { return Unit.Name; }
-			private set { }
-		}
+		#region Conversion
 
-		[DataMember(Name = "systemName")]
-		public string SystemName {
-			get { return Unit.System.Name; }
-			private set { }
-		}
-
-		[DataMember(Name = "prefix", IsRequired = false, EmitDefaultValue = false)]
-		public string PrefixName {
-			get { return (Prefix != null) ? Prefix.Name : null; }
-			private set { }
-		}
-
-		#region Convert
-
+		// TODO - Documentation
 		public KeyValuePair<Dimension, double> Convert(double value, Unit unit, Prefix prefix) {
 			KeyValuePair<Dimension, double> baseDimension = ConvertToBase(value);
 			return baseDimension.Key.ConvertFromBase(baseDimension.Value, unit, prefix);
 		}
 
+		// TODO - Documentation
 		public KeyValuePair<Dimension, double> ConvertToBase(double value) {
 			if (Unit.IsBaseUnit() && Prefix == null) {
 				return new KeyValuePair<Dimension, double>(Copy(), value);
@@ -106,6 +101,7 @@ namespace ForgedSoftware.Measurement {
 			return new KeyValuePair<Dimension, double>(new Dimension(baseUnit, Power), DoConvert(value, Unit, Prefix, true));
 		}
 
+		// TODO - Documentation
 		public KeyValuePair<Dimension, double> ConvertFromBase(double value, Unit unit, Prefix prefix = null) {
 			if (!Unit.IsBaseUnit()) {
 				throw new Exception("Existing unit is not base unit");
@@ -117,6 +113,7 @@ namespace ForgedSoftware.Measurement {
 			return new KeyValuePair<Dimension, double>(new Dimension(unit, Power, prefix), convertedValue);
 		}
 
+		// TODO - Documentation
 		private double DoConvert(double value, Unit unit, Prefix prefix, bool toBase) {
 			double calculatedValue = value;
 			for (int pow = 0; pow < Math.Abs(Power); pow++) {
@@ -134,10 +131,14 @@ namespace ForgedSoftware.Measurement {
 
 		#endregion
 
+		#region General Operations
+
+		// TODO - Documentation
 		public bool IsCommensurableMatch(Dimension dimension) {
 			return Unit.System.Name == dimension.Unit.System.Name && Power == dimension.Power;
 		}
 
+		// TODO - Documentation
 		public KeyValuePair<Dimension, double> Combine(double computedValue, Dimension dimension) {
 			// Some validation
 			if (Unit.System.Name != dimension.Unit.System.Name) {
@@ -157,12 +158,20 @@ namespace ForgedSoftware.Measurement {
 			return new KeyValuePair<Dimension, double>(new Dimension(Unit, aggregatePower), computedValue);
 		}
 
+		#endregion
+
 		#region Prefixes
 
+		/// <summary>
+		/// Determines if this dimension has a unit that a prefix can be applied to.
+		/// Only certain types of units can have prefixes applied - Si, Binary
+		/// </summary>
+		/// <returns>True if a prefix can be applied, else false</returns>
 		internal bool CanApplyPrefix() {
 			return Unit.Type == UnitType.Binary || Unit.Type == UnitType.Si;
 		}
 
+		// TODO - Documentation
 		public KeyValuePair<Dimension, double> ApplyPrefix(double value) {
 			Dimension d = Copy();
 			if (d.Prefix != null) {
@@ -178,6 +187,7 @@ namespace ForgedSoftware.Measurement {
 			return new KeyValuePair<Dimension, double>(d, value);
 		}
 
+		// TODO - Documentation
 		private Prefix FindPrefix(double value) {
 			IEnumerable<Prefix> possiblePrefixes = MeasurementFactory.Prefixes.Where(p => Unit.IsCompatible(p));
 			KeyValuePair<Prefix, double> bestPrefixKv = possiblePrefixes
@@ -220,6 +230,7 @@ namespace ForgedSoftware.Measurement {
 			return score;
 		}
 
+		// TODO - Documentation
 		public KeyValuePair<Dimension, double> RemovePrefix(double value) {
 			Dimension d = Copy();
 			if (d.Prefix != null) {
@@ -231,26 +242,86 @@ namespace ForgedSoftware.Measurement {
 
 		#endregion
 
+		#region Copyable
+
+		/// <summary>
+		/// A helper method that provides a copy of the dimension
+		/// </summary>
+		/// <returns>The copy of the dimension</returns>
 		public Dimension Copy() {
 			return new Dimension(this);
 		}
 
+		/// <summary>
+		/// Inverts the dimension's power
+		/// </summary>
+		/// <returns>An inverted copy of the dimension</returns>
 		public Dimension Invert() {
 			Dimension d = Copy();
 			d.Power = -d.Power;
 			return d;
 		}
 
+		#endregion
+
+		#region Serialization
+
+		/// <summary>
+		/// Provides a serialized version of the dimension
+		/// </summary>
+		/// <returns>A string of the serialized json</returns>
 		string ISerializable.ToJson() {
 			return this.ToJson();
 		}
 
+		#region Readonly Properties for Serializing
+
+		[DataMember(Name = "unitName")]
+		public string UnitName {
+			get { return Unit.Name; }
+			private set { }
+		}
+
+		[DataMember(Name = "systemName")]
+		public string SystemName {
+			get { return Unit.System.Name; }
+			private set { }
+		}
+
+		[DataMember(Name = "power", IsRequired = false, EmitDefaultValue = false)]
+		public string PowerName {
+			get { return (Power != 1) ? Power.ToString(CultureInfo.InvariantCulture) : null; }
+			private set { }
+		}
+
+		[DataMember(Name = "prefix", IsRequired = false, EmitDefaultValue = false)]
+		public string PrefixName {
+			get { return (Prefix != null) ? Prefix.Name : null; }
+			private set { }
+		}
+
+		#endregion
+
+		#endregion
+
 		#region Formatting
 
+		/// <summary>
+		/// A simple format method that formats the dimension with the
+		/// default format options and the current culture.
+		/// </summary>
+		/// <returns>The formatted string</returns>
 		public string Format() {
 			return Format(new FormatOptions(CultureInfo.CurrentCulture));
 		}
 
+		/// <summary>
+		/// Provides a formatted version of the dimension given a provided
+		/// set of format options.
+		/// </summary>
+		/// <seealso cref="ForgedSoftware.Measurement.FormatOptions"/>
+		/// <param name="options">The format options</param>
+		/// <returns>The formatted string</returns>
 		public string Format(FormatOptions options) {
 			string dimensionString = "";
 
@@ -290,15 +361,28 @@ namespace ForgedSoftware.Measurement {
 
 		#region ToString
 
+		/// <summary>
+		/// Overrides ToString to provide a formatted representation
+		/// of the dimension with the default options and the current culture.
+		/// </summary>
+		/// <returns>The formatted string</returns>
 		public override string ToString() {
 			return ToString("G", CultureInfo.CurrentCulture);
 		}
 
-		public string ToString(string format) {
-			return ToString(format, CultureInfo.CurrentCulture);
-		}
-
-		public string ToString(string format, IFormatProvider provider) {
+		/// <summary>
+		/// Provides a ToString method with a couple of format options.
+		/// A specific IFormatProvider can be specified, else the current culture is used.
+		/// 
+		/// The avaliable format strings are:
+		/// - "G": General format, uses the default format options
+		/// - "S": Scientific format is equivalent to the General format
+		/// - "R": Raw format is an rough, ascii only format
+		/// </summary>
+		/// <param name="format">The format letter</param>
+		/// <param name="provider">An optional format provider</param>
+		/// <returns>The formatted string</returns>
+		public string ToString(string format, IFormatProvider provider = null) {
 			if (String.IsNullOrEmpty(format)) {
 				format = "G";
 			}

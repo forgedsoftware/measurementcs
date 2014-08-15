@@ -20,7 +20,7 @@ namespace ForgedSoftware.MeasurementTests
 		[TestMethod]
 		public void TestSerialization() {
 			string json = MeasurementFactory.CreateQuantity(2, "hour").ToJson();
-			Assert.AreEqual("{\"dimensions\":[{\"power\":1,\"systemName\":\"time\",\"unitName\":\"hour\"}],\"value\":2}", json);
+			Assert.AreEqual("{\"dimensions\":[{\"systemName\":\"time\",\"unitName\":\"hour\"}],\"value\":2}", json);
 		}
 
 		#region Formatting

@@ -21,7 +21,7 @@ namespace ForgedSoftware.Measurement {
 		#region Constructors
 
 		/// <summary>
-		/// Default basic constructor
+		/// Default private constructor
 		/// </summary>
 		private Quantity() {
 			Dimensions = new List<Dimension>();
@@ -764,7 +764,7 @@ namespace ForgedSoftware.Measurement {
 		/// - "U": Unit format just provides the formatted units of the quantity as specified by the dimensions
 		/// </summary>
 		/// <param name="format">The format letter</param>
-		/// <param name="provider">A format provider</param>
+		/// <param name="provider">An optional format provider</param>
 		/// <returns>The formatted string</returns>
 		public string ToString(string format, IFormatProvider provider = null) {
 			if (String.IsNullOrEmpty(format)) {
