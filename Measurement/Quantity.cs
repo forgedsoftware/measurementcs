@@ -226,9 +226,9 @@ namespace ForgedSoftware.Measurement {
 				for (int i = 0; i < quantity.Dimensions.Count; i++) {
 					Dimension dimension = quantity.Dimensions[i];
 					if (dimension.CanApplyPrefix()) {
-						KeyValuePair<Dimension, double> prefixAppliedKeyValue = dimension.ApplyPrefix(quantity.Value);
-						quantity.Dimensions[i] = prefixAppliedKeyValue.Key;
-						quantity.Value = prefixAppliedKeyValue.Value;
+						double computedValue = quantity.Value;
+						quantity.Dimensions[i] = dimension.ApplyPrefix(ref computedValue);
+						quantity.Value = computedValue;
 						if (quantity.Dimensions.First().Prefix != null) {
 							numberOfPrefixes++;
 						}
@@ -245,9 +245,9 @@ namespace ForgedSoftware.Measurement {
 					if (dimension.Prefix != null) {
 						if (seenPrefix) {
 							// Remove prefix
-							KeyValuePair<Dimension, double> updatedDimensionKeyValue = dimension.RemovePrefix(quantity.Value);
-							quantity.Dimensions[j] = updatedDimensionKeyValue.Key;
-							quantity.Value = updatedDimensionKeyValue.Value;
+							double computedValue = quantity.Value;
+							quantity.Dimensions[j] = dimension.RemovePrefix(ref computedValue);
+							quantity.Value = computedValue;
 						} else {
 							seenPrefix = true;
 						}

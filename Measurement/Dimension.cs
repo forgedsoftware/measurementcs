@@ -171,23 +171,29 @@ namespace ForgedSoftware.Measurement {
 			return Unit.Type == UnitType.Binary || Unit.Type == UnitType.Si;
 		}
 
-		// TODO - Documentation
-		public KeyValuePair<Dimension, double> ApplyPrefix(double value) {
+		/// <summary>
+		/// Finds and applies a prefix to the dimension
+		/// </summary>
+		/// <param name="value">The value that the addition of the prefix should be applied to</param>
+		/// <returns>A copy of the dimension with the found prefix applied, if a useful prefix could be found</returns>
+		public Dimension ApplyPrefix(ref double value) {
 			Dimension d = Copy();
 			if (d.Prefix != null) {
-				KeyValuePair<Dimension, double> removedPrefixKeyValue = RemovePrefix(value);
-				d = removedPrefixKeyValue.Key;
-				value = removedPrefixKeyValue.Value;
+				d = RemovePrefix(ref value);
 			}
 			Prefix p = d.FindPrefix(value);
 			if (p != null) {
 				d.Prefix = p;
 				value = p.Apply(value);
 			}
-			return new KeyValuePair<Dimension, double>(d, value);
+			return d;
 		}
 
-		// TODO - Documentation
+		/// <summary>
+		/// Finds the best usable prefix 
+		/// </summary>
+		/// <param name="value">The value that the prefix will be applied to</param>
+		/// <returns>If no usable prefix that is better than no prefix, returns null, else the prefix</returns>
 		private Prefix FindPrefix(double value) {
 			IEnumerable<Prefix> possiblePrefixes = MeasurementFactory.Prefixes.Where(p => Unit.IsCompatible(p));
 			KeyValuePair<Prefix, double> bestPrefixKv = possiblePrefixes
@@ -230,14 +236,18 @@ namespace ForgedSoftware.Measurement {
 			return score;
 		}
 
-		// TODO - Documentation
-		public KeyValuePair<Dimension, double> RemovePrefix(double value) {
+		/// <summary>
+		/// Removes an applied prefix to a dimension
+		/// </summary>
+		/// <param name="value">The value that the removal of the prefix should be applied to</param>
+		/// <returns>A copy of the dimension with the prefix removed</returns>
+		public Dimension RemovePrefix(ref double value) {
 			Dimension d = Copy();
 			if (d.Prefix != null) {
 				value = d.Prefix.Remove(value);
 				d.Prefix = null;
 			}
-			return new KeyValuePair<Dimension, double>(d, value);
+			return d;
 		}
 
 		#endregion
