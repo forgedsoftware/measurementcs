@@ -703,7 +703,7 @@ namespace ForgedSoftware.Measurement {
 				if (eIndex >= 0) {
 					double exponent = Math.Floor(Math.Log(Value) / Math.Log(10));
 					valueStr = valueStr.Substring(0, eIndex);
-					string exponentStr = (options.Ascii) ? "^" + exponent : exponent.ToSuperScript();
+					string exponentStr = (options.Ascii) ? "^" + exponent : ((int)exponent).ToSuperScript();
 					valueStr += " x 10" + exponentStr;
 				}
 			}
