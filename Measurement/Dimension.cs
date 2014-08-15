@@ -110,13 +110,24 @@ namespace ForgedSoftware.Measurement {
 
 		#region Conversion
 
-		// TODO - Documentation
-		public Dimension Convert(ref double value, Unit unit, Prefix prefix) {
+		/// <summary>
+		/// A basic convert function for the dimension.
+		/// Converts value into a base unit, then 
+		/// </summary>
+		/// <param name="value">The value to be converted</param>
+		/// <param name="unit">The unit to be converted into</param>
+		/// <param name="prefix">The prefix to be converted into</param>
+		/// <returns>A converted copy of the dimension</returns>
+		public Dimension Convert(ref double value, Unit unit, Prefix prefix = null) {
 			Dimension baseDimension = ConvertToBase(ref value);
 			return baseDimension.ConvertFromBase(ref value, unit, prefix);
 		}
 
-		// TODO - Documentation
+		/// <summary>
+		/// Converts a value and the dimension to the base unit.
+		/// </summary>
+		/// <param name="value">The value to be converted</param>
+		/// <returns>The dimension with the base unit and no prefix</returns>
 		public Dimension ConvertToBase(ref double value) {
 			if (Unit.IsBaseUnit() && Prefix == null) {
 				return Copy();
@@ -130,7 +141,14 @@ namespace ForgedSoftware.Measurement {
 			return new Dimension(baseUnit, Power);
 		}
 
-		// TODO - Documentation
+		/// <summary>
+		/// Converts a dimension with a base unit into a specified unit and prefix.
+		/// Existing dimension must have a base unit and no prefix.
+		/// </summary>
+		/// <param name="value">The value to be converted</param>
+		/// <param name="unit">The unit to convert into</param>
+		/// <param name="prefix">The optional prefix to convert into</param>
+		/// <returns>The converted dimension with unit and prefix</returns>
 		public Dimension ConvertFromBase(ref double value, Unit unit, Prefix prefix = null) {
 			if (!Unit.IsBaseUnit()) {
 				throw new Exception("Existing unit is not base unit");
@@ -142,7 +160,9 @@ namespace ForgedSoftware.Measurement {
 			return new Dimension(unit, Power, prefix);
 		}
 
-		// TODO - Documentation
+		/// <summary>
+		/// Underlying convert method
+		/// </summary>
 		private double DoConvert(double value, Unit unit, Prefix prefix, bool toBase) {
 			double calculatedValue = value;
 			for (int pow = 0; pow < Math.Abs(Power); pow++) {
@@ -162,13 +182,23 @@ namespace ForgedSoftware.Measurement {
 
 		#region General Operations
 
-		// TODO - Documentation
+		/// <summary>
+		/// Checks if both dimensions are commensurable. Dimensions are commensurable
+		/// if the system that their units belong to is equivalent and they have the same power.
+		/// </summary>
+		/// <param name="dimension">The dimension to check against</param>
+		/// <returns>True if they are commensurable, else false</returns>
 		public bool IsCommensurableMatch(Dimension dimension) {
 			return Unit.System.Name == dimension.Unit.System.Name && Power == dimension.Power;
 		}
 
-		// TODO - Documentation
-		public Dimension Combine(ref double computedValue, Dimension dimension) {
+		/// <summary>
+		/// Combine two dimensions. These dimensions must have the same measurement system.
+		/// </summary>
+		/// <param name="value">The value to be converted while combining</param>
+		/// <param name="dimension">The dimension to combine</param>
+		/// <returns>The combined dimension</returns>
+		public Dimension Combine(ref double value, Dimension dimension) {
 			// Some validation
 			if (Unit.System.Name != dimension.Unit.System.Name) {
 				throw new Exception("Dimensions must have the same system to combine");
@@ -177,7 +207,7 @@ namespace ForgedSoftware.Measurement {
 			// Do conversion if necessary
 			int aggregatePower;
 			if (Unit.Name != dimension.Unit.Name) {
-				Dimension dim = dimension.Convert(ref computedValue, Unit, Prefix);
+				Dimension dim = dimension.Convert(ref value, Unit, Prefix);
 				aggregatePower = Power + dim.Power;
 			} else {
 				aggregatePower = Power + dimension.Power;
