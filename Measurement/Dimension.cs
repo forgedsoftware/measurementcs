@@ -83,34 +83,35 @@ namespace ForgedSoftware.Measurement {
 		#region Conversion
 
 		// TODO - Documentation
-		public KeyValuePair<Dimension, double> Convert(double value, Unit unit, Prefix prefix) {
-			KeyValuePair<Dimension, double> baseDimension = ConvertToBase(value);
-			return baseDimension.Key.ConvertFromBase(baseDimension.Value, unit, prefix);
+		public Dimension Convert(ref double value, Unit unit, Prefix prefix) {
+			Dimension baseDimension = ConvertToBase(ref value);
+			return baseDimension.ConvertFromBase(ref value, unit, prefix);
 		}
 
 		// TODO - Documentation
-		public KeyValuePair<Dimension, double> ConvertToBase(double value) {
+		public Dimension ConvertToBase(ref double value) {
 			if (Unit.IsBaseUnit() && Prefix == null) {
-				return new KeyValuePair<Dimension, double>(Copy(), value);
+				return Copy();
 			}
 
 			Unit baseUnit = Unit.System.BaseUnit;
 			if (baseUnit == null) {
 				throw new Exception("Base unit could not be found!");
 			}
-			return new KeyValuePair<Dimension, double>(new Dimension(baseUnit, Power), DoConvert(value, Unit, Prefix, true));
+			value = DoConvert(value, Unit, Prefix, true);
+			return new Dimension(baseUnit, Power);
 		}
 
 		// TODO - Documentation
-		public KeyValuePair<Dimension, double> ConvertFromBase(double value, Unit unit, Prefix prefix = null) {
+		public Dimension ConvertFromBase(ref double value, Unit unit, Prefix prefix = null) {
 			if (!Unit.IsBaseUnit()) {
 				throw new Exception("Existing unit is not base unit");
 			}
 			if (Prefix != null) {
 				throw new Exception("A dimension as a base may not have a prefix");
 			}
-			double convertedValue = unit.IsBaseUnit() ? value : DoConvert(value, unit, prefix, false);
-			return new KeyValuePair<Dimension, double>(new Dimension(unit, Power, prefix), convertedValue);
+			value = unit.IsBaseUnit() ? value : DoConvert(value, unit, prefix, false);
+			return new Dimension(unit, Power, prefix);
 		}
 
 		// TODO - Documentation
@@ -139,7 +140,7 @@ namespace ForgedSoftware.Measurement {
 		}
 
 		// TODO - Documentation
-		public KeyValuePair<Dimension, double> Combine(double computedValue, Dimension dimension) {
+		public Dimension Combine(ref double computedValue, Dimension dimension) {
 			// Some validation
 			if (Unit.System.Name != dimension.Unit.System.Name) {
 				throw new Exception("Dimensions must have the same system to combine");
@@ -148,14 +149,13 @@ namespace ForgedSoftware.Measurement {
 			// Do conversion if necessary
 			int aggregatePower;
 			if (Unit.Name != dimension.Unit.Name) {
-				KeyValuePair<Dimension, double> dimValuePair = dimension.Convert(computedValue, Unit, Prefix);
-				computedValue = dimValuePair.Value;
-				aggregatePower = Power + dimValuePair.Key.Power;
+				Dimension dim = dimension.Convert(ref computedValue, Unit, Prefix);
+				aggregatePower = Power + dim.Power;
 			} else {
 				aggregatePower = Power + dimension.Power;
 			}
 
-			return new KeyValuePair<Dimension, double>(new Dimension(Unit, aggregatePower), computedValue);
+			return new Dimension(Unit, aggregatePower);
 		}
 
 		#endregion

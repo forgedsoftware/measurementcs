@@ -148,13 +148,8 @@ namespace ForgedSoftware.Measurement {
 		/// <returns>The converted quantity</returns>
 		public Quantity ConvertToBase() {
 			double convertedValue = Value;
-			var newDimensions = new List<Dimension>();
-
-			foreach (var dimension in Dimensions) {
-				KeyValuePair<Dimension, double> result = dimension.ConvertToBase(convertedValue);
-				convertedValue = result.Value;
-				newDimensions.Add(result.Key);
-			}
+			List<Dimension> newDimensions = Dimensions
+				.Select(dimension => dimension.ConvertToBase(ref convertedValue)).ToList();
 			return new Quantity(convertedValue, newDimensions);
 		}
 
@@ -171,9 +166,7 @@ namespace ForgedSoftware.Measurement {
 
 			foreach (var dimension in Dimensions) {
 				if (dimension.Unit.System.Units.Contains(unit)) {
-					KeyValuePair<Dimension, double> result = dimension.ConvertFromBase(convertedValue, unit, prefix);
-					convertedValue = result.Value;
-					newDimensions.Add(result.Key);
+					newDimensions.Add(dimension.ConvertFromBase(ref convertedValue, unit, prefix));
 				} else {
 					newDimensions.Add(dimension.Copy());
 				}

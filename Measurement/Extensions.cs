@@ -19,23 +19,16 @@ namespace ForgedSoftware.Measurement {
 			var processedDimensions = new List<int>();
 			double computedValue = value;
 
-			for (int index = 0; index < list.Count; index++)
-			{
+			for (int index = 0; index < list.Count; index++) {
 				Dimension dimension = list[index];
-				if (dimension.Power != 0 && !processedDimensions.Contains(index))
-				{
-					for (int i = index + 1; i < list.Count; i++)
-					{
-						if (dimension.Unit.System.Name == list[i].Unit.System.Name)
-						{
-							KeyValuePair<Dimension, double> dimValuePair = dimension.Combine(computedValue, list[i]);
-							dimension = dimValuePair.Key;
-							computedValue = dimValuePair.Value;
+				if (dimension.Power != 0 && !processedDimensions.Contains(index)) {
+					for (int i = index + 1; i < list.Count; i++) {
+						if (dimension.Unit.System.Name == list[i].Unit.System.Name) {
+							dimension = dimension.Combine(ref computedValue, list[i]);
 							processedDimensions.Add(i);
 						}
 					}
-					if (dimension.Power != 0)
-					{
+					if (dimension.Power != 0) {
 						newDimensions.Add(dimension);
 					}
 					processedDimensions.Add(index);
