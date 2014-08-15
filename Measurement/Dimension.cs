@@ -18,7 +18,7 @@ namespace ForgedSoftware.Measurement {
 	[DataContract]
 	public class Dimension : ISerializable, IFormatter, IFormattable, ICopyable<Dimension> {
 
-		private readonly const int DEFAULT_POWER = 1;
+		private const int DEFAULT_POWER = 1;
 
 		#region Constructors
 
@@ -90,13 +90,22 @@ namespace ForgedSoftware.Measurement {
 
 		#endregion
 
-		// TODO - Documentation
-		public int Power { get; set; }
+		/// <summary>
+		/// The power of the dimension.
+		/// It has a private setter as it should not be necessary to change the power outside of this class.
+		/// </summary>
+		public int Power { get; private set; }
 
-		// TODO - Documentation
-		public Unit Unit { get; set; }
+		/// <summary>
+		/// The unit of the dimension.
+		/// It has a private setter as it should not be necessary to change the unit outside of this class.
+		/// </summary>
+		public Unit Unit { get; private set; }
 
-		// TODO - Documentation
+		/// <summary>
+		/// The prefix of the dimension.
+		/// It has a private setter as it should not be necessary to change the prefix outside of this class.
+		/// </summary>
 		public Prefix Prefix { get; private set; }
 
 		#region Conversion
@@ -319,7 +328,7 @@ namespace ForgedSoftware.Measurement {
 
 		[DataMember(Name = "power", IsRequired = false, EmitDefaultValue = false)]
 		public string PowerName {
-			get { return (Power != 1) ? Power.ToString(CultureInfo.InvariantCulture) : null; }
+			get { return (Power != DEFAULT_POWER) ? Power.ToString(CultureInfo.InvariantCulture) : null; }
 			private set { }
 		}
 
@@ -378,7 +387,7 @@ namespace ForgedSoftware.Measurement {
 					dimensionString += Prefix.Symbol;
 				}
 				dimensionString += Unit.Symbol;
-				if (options.ShowAllPowers || Power != 1) {
+				if (options.ShowAllPowers || Power != DEFAULT_POWER) {
 					string powerStr = (options.Ascii) ? "^" + Power : Power.ToSuperScript();
 					dimensionString += powerStr;
 				}
