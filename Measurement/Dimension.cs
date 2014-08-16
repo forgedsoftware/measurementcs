@@ -16,7 +16,7 @@ namespace ForgedSoftware.Measurement {
 	/// Such a dimension has the unit "metre", the prefix "kilo", and a power of 2.
 	/// </example>
 	[DataContract]
-	public class Dimension : ISerializable, IFormatter, IFormattable, ICopyable<Dimension> {
+	public class Dimension : ISerializable, IFormatter, IFormattable, ICopyable<Dimension>, IObjectReference {
 
 		private const int DEFAULT_POWER = 1;
 
@@ -342,30 +342,52 @@ namespace ForgedSoftware.Measurement {
 			return this.ToJson();
 		}
 
+		/// <summary>
+		/// Static method to deserialize a json string into a dimension.
+		/// </summary>
+		/// <param name="json">The json serialization of a dimension</param>
+		/// <returns>The deserialized dimension</returns>
+		public static Dimension FromJson(string json) {
+			return json.FromJson<Dimension>();
+		}
+
+		/// <summary>
+		/// Explicit implementation of IObjectReference to make sure dimension
+		/// is instantiated properly during deserialization.
+		/// </summary>
+		object IObjectReference.GetRealObject(StreamingContext context) {
+			return new Dimension(_unitName, _systemName, _power ?? DEFAULT_POWER, _prefixName);
+		}
+
 		#region Readonly Properties for Serializing
+
+		private string _unitName;
+		private string _systemName;
+		private int? _power;
+		private string _prefixName;
 
 		[DataMember(Name = "unitName")]
 		public string UnitName {
 			get { return Unit.Name; }
-			private set { }
+			private set { _unitName = value; }
 		}
 
 		[DataMember(Name = "systemName")]
 		public string SystemName {
 			get { return Unit.System.Name; }
-			private set { }
+			private set { _systemName = value; }
 		}
 
 		[DataMember(Name = "power", IsRequired = false, EmitDefaultValue = false)]
-		public string PowerName {
-			get { return (Power != DEFAULT_POWER) ? Power.ToString(CultureInfo.InvariantCulture) : null; }
-			private set { }
+		public int? PowerValue {
+			get { return (Power != DEFAULT_POWER) ? (int?)Power : null; }
+			private set { _power = value; }
 		}
 
 		[DataMember(Name = "prefix", IsRequired = false, EmitDefaultValue = false)]
 		public string PrefixName {
 			get { return (Prefix != null) ? Prefix.Name : null; }
-			private set { }
+			private set { _prefixName = value; }
 		}
 
 		#endregion

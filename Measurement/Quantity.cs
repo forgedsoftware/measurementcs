@@ -16,7 +16,7 @@ namespace ForgedSoftware.Measurement {
 	/// and a single Dimension with a power of 1 which is a distance with a Unit of metres.
 	/// </example>
 	[DataContract]
-	public class Quantity : ISerializable, IFormatter, IFormattable, ICopyable<Quantity> {
+	public class Quantity : ISerializable, IFormatter, IFormattable, ICopyable<Quantity>, IObjectReference {
 
 		#region Constructors
 
@@ -648,6 +648,23 @@ namespace ForgedSoftware.Measurement {
 		/// <returns>The serialized quantity</returns>
 		string ISerializable.ToJson() {
 			return this.ToJson();
+		}
+
+		/// <summary>
+		/// Static method to deserialize a json string into a quantity.
+		/// </summary>
+		/// <param name="json">The json serialization of a quantity</param>
+		/// <returns>The deserialized quantity</returns>
+		public static Quantity FromJson(string json) {
+			return json.FromJson<Quantity>();
+		}
+
+		/// <summary>
+		/// Explicit implementation of IObjectReference to make sure quantity
+		/// is instantiated properly during deserialization.
+		/// </summary>
+		object IObjectReference.GetRealObject(StreamingContext context) {
+			return new Quantity(Value, Dimensions ?? new List<Dimension>());
 		}
 
 		#endregion

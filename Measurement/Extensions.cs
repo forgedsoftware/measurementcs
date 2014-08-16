@@ -2,7 +2,9 @@
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
+using System.Text;
 
 namespace ForgedSoftware.Measurement {
 
@@ -68,6 +70,19 @@ namespace ForgedSoftware.Measurement {
 				using (var reader = new StreamReader(stream)) {
 					return reader.ReadToEnd();
 				}
+			}
+		}
+
+		/// <summary>
+		/// Deserializes a json string into an object.
+		/// </summary>
+		/// <typeparam name="T">The type of the object</typeparam>
+		/// <param name="json">The json string representing the object</param>
+		/// <returns>The deserialized object</returns>
+		public static T FromJson<T>(this string json) where T : ISerializable {
+			using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(json))) {
+				var dataContract = new DataContractJsonSerializer(typeof (T));
+				return (T)dataContract.ReadObject(stream);
 			}
 		}
 
