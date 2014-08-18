@@ -38,6 +38,17 @@ namespace ForgedSoftware.Measurement {
 			return value;
 		}
 
+		// TODO - Documentation
+		public T Apply<T>(T value) where T : INumber<T> {
+			if (!Power.Equals(default(double)) && !Base.Equals(default(double))) {
+				return value.Divide(Math.Pow(Base, Power));
+			}
+			if (!Multiplier.Equals(default(double))) {
+				return value.Divide(Multiplier);
+			}
+			return value;
+		}
+
 		/// <summary>
 		/// Removes a prefix from a value
 		/// </summary>
@@ -52,6 +63,17 @@ namespace ForgedSoftware.Measurement {
 			}
 			if (!Multiplier.Equals(default(double))) {
 				return value * Multiplier;
+			}
+			return value;
+		}
+
+		// TODO - Documentation
+		public T Remove<T>(T value) where T : INumber<T> {
+			if (!Power.Equals(default(double)) && !Base.Equals(default(double))) {
+				return value.Multiply(Math.Pow(Base, Power));
+			}
+			if (!Multiplier.Equals(default(double))) {
+				return value.Multiply(Multiplier);
 			}
 			return value;
 		}

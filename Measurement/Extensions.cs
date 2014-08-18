@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Text;
 
@@ -32,13 +31,14 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="list">The list of dimensions to simplify</param>
 		/// <param name="value">The value to be converted as the dimensions are simplified</param>
 		/// <returns>A new list of simplified dimensions</returns>
-		public static List<Dimension> Simplify(this List<Dimension> list, ref double value) {
-			var newDimensions = new List<Dimension>();
+		public static List<TDimension> Simplify<TDimension, TNumber>(this List<TDimension> list, ref TNumber value)
+				where TDimension : BaseDimension<TNumber, TDimension>, new() {
+			var newDimensions = new List<TDimension>();
 			var processedDimensions = new List<int>();
-			double computedValue = value;
+			TNumber computedValue = value;
 
 			for (int index = 0; index < list.Count; index++) {
-				Dimension dimension = list[index];
+				TDimension dimension = list[index];
 				if (dimension.Power != 0 && !processedDimensions.Contains(index)) {
 					for (int i = index + 1; i < list.Count; i++) {
 						if (dimension.Unit.System.Name == list[i].Unit.System.Name) {

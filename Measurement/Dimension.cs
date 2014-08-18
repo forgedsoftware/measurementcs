@@ -16,7 +16,8 @@ namespace ForgedSoftware.Measurement {
 	/// Such a dimension has the unit "metre", the prefix "kilo", and a power of 2.
 	/// </example>
 	[DataContract]
-	public class Dimension : ISerializable, IFormatter, IFormattable, ICopyable<Dimension>, IObjectReference {
+	public abstract class BaseDimension<TNumber, TDimension> : ISerializable, IFormatter, IFormattable, ICopyable<TDimension>, IObjectReference
+		where TDimension : BaseDimension<TNumber, TDimension>, new() {
 
 		private const int DEFAULT_POWER = 1;
 
@@ -25,7 +26,7 @@ namespace ForgedSoftware.Measurement {
 		/// <summary>
 		/// Default private constructor
 		/// </summary>
-		private Dimension() {
+		protected BaseDimension() {
 			Power = DEFAULT_POWER;
 		}
 
@@ -35,7 +36,7 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="unit">The unit to use for this dimension</param>
 		/// <param name="power">The power of the dimension</param>
 		/// <param name="prefix">The optional prefix of the dimension</param>
-		public Dimension(Unit unit, int power, Prefix prefix = null)
+		protected BaseDimension(Unit unit, int power, Prefix prefix = null)
 			: this() {
 			if (unit == null) {
 				throw new ArgumentException("A Dimension may not have a Unit that is null");
@@ -51,7 +52,7 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="unitName">The name of the unit</param>
 		/// <param name="power">The power of the dimension</param>
 		/// <param name="prefixName">The optional name of the prefix</param>
-		public Dimension(string unitName, int power, string prefixName = null)
+		protected BaseDimension(string unitName, int power, string prefixName = null)
 			: this(MeasurementFactory.FindUnit(unitName), power,
 				MeasurementFactory.FindPrefix(prefixName)) {
 		}
@@ -61,7 +62,7 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <param name="unitName">The name of the unit</param>
 		/// <param name="prefixName">The optional name of the prefix</param>
-		public Dimension(string unitName, string prefixName = null)
+		protected BaseDimension(string unitName, string prefixName = null)
 			: this(unitName, DEFAULT_POWER, prefixName) {
 		}
 
@@ -73,7 +74,7 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="systemName">The name of the system the unit is in</param>
 		/// <param name="power">The power of the dimension</param>
 		/// <param name="prefixName">The optional name of the prefix</param>
-		public Dimension(string unitName, string systemName, int power, string prefixName = null)
+		protected BaseDimension(string unitName, string systemName, int power, string prefixName = null)
 			: this(MeasurementFactory.FindUnit(unitName, systemName), power,
 				MeasurementFactory.FindPrefix(prefixName)) {
 		}
@@ -82,7 +83,7 @@ namespace ForgedSoftware.Measurement {
 		/// Copy constructor
 		/// </summary>
 		/// <param name="dim">Existing dimension to copy</param>
-		protected Dimension(Dimension dim) {
+		protected BaseDimension(TDimension dim) {
 			Unit = dim.Unit;
 			Power = dim.Power;
 			Prefix = dim.Prefix;
@@ -92,21 +93,21 @@ namespace ForgedSoftware.Measurement {
 
 		/// <summary>
 		/// The power of the dimension.
-		/// It has a private setter as it should not be necessary to change the power outside of this class.
+		/// It has a protected setter as it should not be necessary to change the power outside of this class.
 		/// </summary>
-		public int Power { get; private set; }
+		public int Power { get; protected set; }
 
 		/// <summary>
 		/// The unit of the dimension.
-		/// It has a private setter as it should not be necessary to change the unit outside of this class.
+		/// It has a protected setter as it should not be necessary to change the unit outside of this class.
 		/// </summary>
-		public Unit Unit { get; private set; }
+		public Unit Unit { get; protected set; }
 
 		/// <summary>
 		/// The prefix of the dimension.
-		/// It has a private setter as it should not be necessary to change the prefix outside of this class.
+		/// It has a protected setter as it should not be necessary to change the prefix outside of this class.
 		/// </summary>
-		public Prefix Prefix { get; private set; }
+		public Prefix Prefix { get; protected set; }
 
 		#region Conversion
 
@@ -118,8 +119,8 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="unit">The unit to be converted into</param>
 		/// <param name="prefix">The prefix to be converted into</param>
 		/// <returns>A converted copy of the dimension</returns>
-		public Dimension Convert(ref double value, Unit unit, Prefix prefix = null) {
-			Dimension baseDimension = ConvertToBase(ref value);
+		public TDimension Convert(ref TNumber value, Unit unit, Prefix prefix = null) {
+			TDimension baseDimension = ConvertToBase(ref value);
 			return baseDimension.ConvertFromBase(ref value, unit, prefix);
 		}
 
@@ -128,18 +129,7 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <param name="value">The value to be converted</param>
 		/// <returns>The dimension with the base unit and no prefix</returns>
-		public Dimension ConvertToBase(ref double value) {
-			if (Unit.IsBaseUnit() && Prefix == null) {
-				return Copy();
-			}
-
-			Unit baseUnit = Unit.System.BaseUnit;
-			if (baseUnit == null) {
-				throw new Exception("Base unit could not be found!");
-			}
-			value = DoConvert(value, Unit, Prefix, true);
-			return new Dimension(baseUnit, Power);
-		}
+		public abstract TDimension ConvertToBase(ref TNumber value);
 
 		/// <summary>
 		/// Converts a dimension with a base unit into a specified unit and prefix.
@@ -149,34 +139,7 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="unit">The unit to convert into</param>
 		/// <param name="prefix">The optional prefix to convert into</param>
 		/// <returns>The converted dimension with unit and prefix</returns>
-		public Dimension ConvertFromBase(ref double value, Unit unit, Prefix prefix = null) {
-			if (!Unit.IsBaseUnit()) {
-				throw new Exception("Existing unit is not base unit");
-			}
-			if (Prefix != null) {
-				throw new Exception("A dimension as a base may not have a prefix");
-			}
-			value = unit.IsBaseUnit() ? value : DoConvert(value, unit, prefix, false);
-			return new Dimension(unit, Power, prefix);
-		}
-
-		/// <summary>
-		/// Underlying convert method
-		/// </summary>
-		private double DoConvert(double value, Unit unit, Prefix prefix, bool toBase) {
-			double calculatedValue = value;
-			for (int pow = 0; pow < Math.Abs(Power); pow++) {
-				if (prefix != null) {
-					calculatedValue = toBase ? prefix.Remove(calculatedValue) : Prefix.Apply(calculatedValue);
-				}
-				if (toBase ? (Power > 0) : (Power < 0)) {
-					calculatedValue = (calculatedValue * unit.Multiplier) + unit.Offset; // TODO dimensionality with offsets may not work with compound dimensions.
-				} else {
-					calculatedValue = (calculatedValue - unit.Offset) / unit.Multiplier; // TODO dimensionality with offsets may not work with compound dimensions.
-				}
-			}
-			return calculatedValue;
-		}
+		public abstract TDimension ConvertFromBase(ref TNumber value, Unit unit, Prefix prefix = null);
 
 		#endregion
 
@@ -188,33 +151,11 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <param name="dimension">The dimension to check against</param>
 		/// <returns>True if they are commensurable, else false</returns>
-		public bool IsCommensurableMatch(Dimension dimension) {
+		public bool IsCommensurableMatch(TDimension dimension) {
 			return Unit.System.Name == dimension.Unit.System.Name && Power == dimension.Power;
 		}
 
-		/// <summary>
-		/// Combine two dimensions. These dimensions must have the same measurement system.
-		/// </summary>
-		/// <param name="value">The value to be converted while combining</param>
-		/// <param name="dimension">The dimension to combine</param>
-		/// <returns>The combined dimension</returns>
-		public Dimension Combine(ref double value, Dimension dimension) {
-			// Some validation
-			if (Unit.System.Name != dimension.Unit.System.Name) {
-				throw new Exception("Dimensions must have the same system to combine");
-			}
-
-			// Do conversion if necessary
-			int aggregatePower;
-			if (Unit.Name != dimension.Unit.Name) {
-				Dimension dim = dimension.Convert(ref value, Unit, Prefix);
-				aggregatePower = Power + dim.Power;
-			} else {
-				aggregatePower = Power + dimension.Power;
-			}
-
-			return new Dimension(Unit, aggregatePower);
-		}
+		public abstract TDimension Combine(ref TNumber value, TDimension dimension);
 
 		#endregion
 
@@ -234,79 +175,14 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <param name="value">The value that the addition of the prefix should be applied to</param>
 		/// <returns>A copy of the dimension with the found prefix applied, if a useful prefix could be found</returns>
-		public Dimension ApplyPrefix(ref double value) {
-			Dimension d = Copy();
-			if (d.Prefix != null) {
-				d = RemovePrefix(ref value);
-			}
-			Prefix p = d.FindPrefix(value);
-			if (p != null) {
-				d.Prefix = p;
-				value = p.Apply(value);
-			}
-			return d;
-		}
-
-		/// <summary>
-		/// Finds the best usable prefix 
-		/// </summary>
-		/// <param name="value">The value that the prefix will be applied to</param>
-		/// <returns>If no usable prefix that is better than no prefix, returns null, else the prefix</returns>
-		private Prefix FindPrefix(double value) {
-			IEnumerable<Prefix> possiblePrefixes = MeasurementFactory.Prefixes.Where(p => Unit.IsCompatible(p));
-			KeyValuePair<Prefix, double> bestPrefixKv = possiblePrefixes
-				.Select(p => new KeyValuePair<Prefix, double>(p, GetPrefixRating(p.Apply(value), p)))
-				.OrderBy(kv => kv.Value)
-				.First();
-			return (bestPrefixKv.Value < GetPrefixRating(value)) ? bestPrefixKv.Key : null;
-		}
-
-		/// <summary>
-		/// This function produces a score for a given prefix or no prefix for a particular value.
-		/// It aims to produce a sensible score for human consumption of a value and prefix combination.
-		/// The score mainly trys to calculate a score between an upper and lower bound,
-		/// as well as preferring no prefix and dealing with edge cases like the kilogramme.
-		/// A lower rating is 'better'.
-		/// TODO - This function may need tweaking...
-		/// </summary>
-		/// <example>
-		/// 750, 'giga' => 1750; 0.750, 'tera' => 2000; therefore 'giga' should be preferred for this value.
-		/// </example>
-		/// <param name="value">The value after the prefix has been applied</param>
-		/// <param name="prefix">The prefix that has been applied, or null if no prefix</param>
-		/// <returns>A rating of the 'fitness' of the prefix for the value, lower is better</returns>
-		private double GetPrefixRating(double value, Prefix prefix = null) {
-			double upper = MeasurementFactory.Options.UpperPrefixValue;
-			double lower = MeasurementFactory.Options.LowerPrefixValue;
-			if (upper <= lower) {
-				throw new Exception("The UpperPrefixValue must be greater than the LowerPrefixValue");
-			}
-			double score = (value > upper || value < lower) ? upper : value;
-			// Prefer no prefix
-			if (prefix != null) {
-				score += MeasurementFactory.Options.HavingPrefixScoreOffset;
-			}
-			// If a unit has a prefix applied by default, we should apply that prefix if possible.
-			// This deals with the edge case of preferring kilogramme over gramme.
-			if (prefix != null && prefix.Name == Unit.PrefixName) {
-				score = 0;
-			}
-			return score;
-		}
+		public abstract TDimension ApplyPrefix(ref TNumber value);
 
 		/// <summary>
 		/// Removes an applied prefix to a dimension
 		/// </summary>
 		/// <param name="value">The value that the removal of the prefix should be applied to</param>
 		/// <returns>A copy of the dimension with the prefix removed</returns>
-		public Dimension RemovePrefix(ref double value) {
-			Dimension d = Copy();
-			if (d.Prefix != null) {
-				value = d.Prefix.Remove(value);
-				d.Prefix = null;
-			}
-			return d;
-		}
+		public abstract TDimension RemovePrefix(ref TNumber value);
 
 		#endregion
 
@@ -316,16 +192,14 @@ namespace ForgedSoftware.Measurement {
 		/// A helper method that provides a copy of the dimension
 		/// </summary>
 		/// <returns>The copy of the dimension</returns>
-		public Dimension Copy() {
-			return new Dimension(this);
-		}
+		public abstract TDimension Copy();
 
 		/// <summary>
 		/// Inverts the dimension's power
 		/// </summary>
 		/// <returns>An inverted copy of the dimension</returns>
-		public Dimension Invert() {
-			Dimension d = Copy();
+		public TDimension Invert() {
+			TDimension d = Copy();
 			d.Power = -d.Power;
 			return d;
 		}
@@ -347,8 +221,8 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <param name="json">The json serialization of a dimension</param>
 		/// <returns>The deserialized dimension</returns>
-		public static Dimension FromJson(string json) {
-			return json.FromJson<Dimension>();
+		public static TDimension FromJson(string json) {
+			return json.FromJson<TDimension>();
 		}
 
 		/// <summary>
@@ -356,7 +230,11 @@ namespace ForgedSoftware.Measurement {
 		/// is instantiated properly during deserialization.
 		/// </summary>
 		object IObjectReference.GetRealObject(StreamingContext context) {
-			return new Dimension(_unitName, _systemName, _power ?? DEFAULT_POWER, _prefixName);
+			return new TDimension {
+				Unit = MeasurementFactory.FindUnit(_unitName, _systemName),
+				Power = _power ?? DEFAULT_POWER,
+				Prefix = MeasurementFactory.FindPrefix(_prefixName)
+			};
 		}
 
 		#region Readonly Properties for Serializing
@@ -501,5 +379,245 @@ namespace ForgedSoftware.Measurement {
 
 		#endregion
 
+	}
+
+	public class Dimension : BaseDimension<double, Dimension> {
+
+		#region Constructors
+
+		public Dimension() {
+		}
+
+		public Dimension(Unit unit, int power, Prefix prefix = null)
+			: base(unit, power, prefix) {
+		}
+
+		public Dimension(string unitName, int power, string prefixName = null)
+			: base(unitName, power, prefixName) {
+		}
+
+		public Dimension(string unitName, string prefixName = null)
+			: base(unitName, prefixName) {
+		}
+
+		public Dimension(string unitName, string systemName, int power, string prefixName = null)
+			: base(unitName, systemName, power, prefixName) {
+		}
+
+		protected Dimension(Dimension dim)
+			: base(dim) {
+		}
+
+		#endregion
+
+		#region Conversion
+
+		/// <summary>
+		/// Converts a value and the dimension to the base unit.
+		/// </summary>
+		/// <param name="value">The value to be converted</param>
+		/// <returns>The dimension with the base unit and no prefix</returns>
+		public override Dimension ConvertToBase(ref double value) {
+			if (Unit.IsBaseUnit() && Prefix == null) {
+				return Copy();
+			}
+
+			Unit baseUnit = Unit.System.BaseUnit;
+			if (baseUnit == null) {
+				throw new Exception("Base unit could not be found!");
+			}
+			value = DoConvert(value, Unit, Prefix, true);
+			return new Dimension(baseUnit, Power);
+		}
+
+		/// <summary>
+		/// Converts a dimension with a base unit into a specified unit and prefix.
+		/// Existing dimension must have a base unit and no prefix.
+		/// </summary>
+		/// <param name="value">The value to be converted</param>
+		/// <param name="unit">The unit to convert into</param>
+		/// <param name="prefix">The optional prefix to convert into</param>
+		/// <returns>The converted dimension with unit and prefix</returns>
+		public override Dimension ConvertFromBase(ref double value, Unit unit, Prefix prefix = null) {
+			if (!Unit.IsBaseUnit()) {
+				throw new Exception("Existing unit is not base unit");
+			}
+			if (Prefix != null) {
+				throw new Exception("A dimension as a base may not have a prefix");
+			}
+			value = unit.IsBaseUnit() ? value : DoConvert(value, unit, prefix, false);
+			return new Dimension(unit, Power, prefix);
+		}
+
+		/// <summary>
+		/// Underlying convert method
+		/// </summary>
+		private double DoConvert(double value, Unit unit, Prefix prefix, bool toBase) {
+			double calculatedValue = value;
+			for (int pow = 0; pow < Math.Abs(Power); pow++) {
+				if (prefix != null) {
+					calculatedValue = toBase ? prefix.Remove(calculatedValue) : Prefix.Apply(calculatedValue);
+				}
+				if (toBase ? (Power > 0) : (Power < 0)) {
+					calculatedValue = (calculatedValue * unit.Multiplier) + unit.Offset; // TODO dimensionality with offsets may not work with compound dimensions.
+				} else {
+					calculatedValue = (calculatedValue - unit.Offset) / unit.Multiplier; // TODO dimensionality with offsets may not work with compound dimensions.
+				}
+			}
+			return calculatedValue;
+		}
+
+		#endregion
+
+		#region General Operations
+
+		/// <summary>
+		/// Combine two dimensions. These dimensions must have the same measurement system.
+		/// </summary>
+		/// <param name="value">The value to be converted while combining</param>
+		/// <param name="dimension">The dimension to combine</param>
+		/// <returns>The combined dimension</returns>
+		public override Dimension Combine(ref double value, Dimension dimension) {
+			// Some validation
+			if (Unit.System.Name != dimension.Unit.System.Name) {
+				throw new Exception("Dimensions must have the same system to combine");
+			}
+
+			// Do conversion if necessary
+			int aggregatePower;
+			if (Unit.Name != dimension.Unit.Name) {
+				Dimension dim = dimension.Convert(ref value, Unit, Prefix);
+				aggregatePower = Power + dim.Power;
+			} else {
+				aggregatePower = Power + dimension.Power;
+			}
+
+			return new Dimension(Unit, aggregatePower);
+		}
+
+		#endregion
+
+		#region Prefixes
+
+		/// <summary>
+		/// Finds and applies a prefix to the dimension
+		/// </summary>
+		/// <param name="value">The value that the addition of the prefix should be applied to</param>
+		/// <returns>A copy of the dimension with the found prefix applied, if a useful prefix could be found</returns>
+		public override Dimension ApplyPrefix(ref double value) {
+			Dimension d = Copy();
+			if (d.Prefix != null) {
+				d = RemovePrefix(ref value);
+			}
+			Prefix p = d.FindPrefix(value);
+			if (p != null) {
+				d.Prefix = p;
+				value = p.Apply(value);
+			}
+			return d;
+		}
+
+		/// <summary>
+		/// Finds the best usable prefix 
+		/// </summary>
+		/// <param name="value">The value that the prefix will be applied to</param>
+		/// <returns>If no usable prefix that is better than no prefix, returns null, else the prefix</returns>
+		private Prefix FindPrefix(double value) {
+			IEnumerable<Prefix> possiblePrefixes = MeasurementFactory.Prefixes.Where(p => Unit.IsCompatible(p));
+			KeyValuePair<Prefix, double> bestPrefixKv = possiblePrefixes
+				.Select(p => new KeyValuePair<Prefix, double>(p, GetPrefixRating(p.Apply(value), p)))
+				.OrderBy(kv => kv.Value)
+				.First();
+			return (bestPrefixKv.Value < GetPrefixRating(value)) ? bestPrefixKv.Key : null;
+		}
+
+		/// <summary>
+		/// This function produces a score for a given prefix or no prefix for a particular value.
+		/// It aims to produce a sensible score for human consumption of a value and prefix combination.
+		/// The score mainly trys to calculate a score between an upper and lower bound,
+		/// as well as preferring no prefix and dealing with edge cases like the kilogramme.
+		/// A lower rating is 'better'.
+		/// TODO - This function may need tweaking...
+		/// </summary>
+		/// <example>
+		/// 750, 'giga' => 1750; 0.750, 'tera' => 2000; therefore 'giga' should be preferred for this value.
+		/// </example>
+		/// <param name="value">The value after the prefix has been applied</param>
+		/// <param name="prefix">The prefix that has been applied, or null if no prefix</param>
+		/// <returns>A rating of the 'fitness' of the prefix for the value, lower is better</returns>
+		private double GetPrefixRating(double value, Prefix prefix = null) {
+			double upper = MeasurementFactory.Options.UpperPrefixValue;
+			double lower = MeasurementFactory.Options.LowerPrefixValue;
+			if (upper <= lower) {
+				throw new Exception("The UpperPrefixValue must be greater than the LowerPrefixValue");
+			}
+			double score = (value > upper || value < lower) ? upper : value;
+			// Prefer no prefix
+			if (prefix != null) {
+				score += MeasurementFactory.Options.HavingPrefixScoreOffset;
+			}
+			// If a unit has a prefix applied by default, we should apply that prefix if possible.
+			// This deals with the edge case of preferring kilogramme over gramme.
+			if (prefix != null && prefix.Name == Unit.PrefixName) {
+				score = 0;
+			}
+			return score;
+		}
+
+		/// <summary>
+		/// Removes an applied prefix to a dimension
+		/// </summary>
+		/// <param name="value">The value that the removal of the prefix should be applied to</param>
+		/// <returns>A copy of the dimension with the prefix removed</returns>
+		public override Dimension RemovePrefix(ref double value) {
+			Dimension d = Copy();
+			if (d.Prefix != null) {
+				value = d.Prefix.Remove(value);
+				d.Prefix = null;
+			}
+			return d;
+		}
+
+		#endregion
+
+		#region Copyable
+
+		public override Dimension Copy() {
+			return new Dimension(this);
+		}
+
+		#endregion
+
+	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <typeparam name="T"></typeparam>
+	public class Dimension<T> : BaseDimension<T, Dimension<T>> where T : INumber<T> {
+
+		public override Dimension<T> ConvertToBase(ref T value) {
+			throw new NotImplementedException();
+		}
+
+		public override Dimension<T> ConvertFromBase(ref T value, Unit unit, Prefix prefix = null) {
+			throw new NotImplementedException();
+		}
+
+		public override Dimension<T> Combine(ref T value, Dimension<T> dimension) {
+			throw new NotImplementedException();
+		}
+
+		public override Dimension<T> ApplyPrefix(ref T value) {
+			throw new NotImplementedException();
+		}
+
+		public override Dimension<T> RemovePrefix(ref T value) {
+			throw new NotImplementedException();
+		}
+
+		public override Dimension<T> Copy() {
+			throw new NotImplementedException();
+		}
 	}
 }
