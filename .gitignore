@@ -6,3 +6,4 @@
 /MeasurementTests/bin/*
 /MeasurementTests/obj/*
 /TestResults/*
+*.user
