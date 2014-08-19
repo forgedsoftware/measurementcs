@@ -1007,20 +1007,6 @@ namespace ForgedSoftware.Measurement {
 		}
 	}
 
-	public interface INumber<T> where T : INumber<T> {
-		T Add(T add);
-		T Subtract(T subtract);
-		T Multiply(T multiply);
-		T Divide(T divide);
-
-		T Add(double add);
-		T Subtract(double subtract);
-		T Multiply(double multiply);
-		T Divide(double divide);
-
-		T Negate();
-	}
-
 	public interface IMathFunctions<TNumber> {
 		TNumber Pow(double power);
 		TNumber Sqrt();
@@ -1071,14 +1057,6 @@ namespace ForgedSoftware.Measurement {
 		}
 
 		public UncertaintyDouble Negate() {
-			throw new NotImplementedException();
-		}
-
-		public string Format() {
-			throw new NotImplementedException();
-		}
-
-		public string Format(FormatOptions options) {
 			throw new NotImplementedException();
 		}
 	}
