@@ -89,6 +89,12 @@ namespace ForgedSoftware.MeasurementTests {
 		}
 
 		[TestMethod]
+		public void TestVectorDistance() {
+			Assert.AreEqual(Math.Sqrt(2), Vector.XAxis.Distance(Vector.YAxis));
+			Assert.AreEqual(1, Vector.XAxis.Distance(Vector.Origin));
+		}
+
+		[TestMethod]
 		public void TestVectorIsPerpendicular() {
 			Assert.IsTrue(Vector.XAxis.IsPerpendicular(Vector.YAxis));
 			Assert.IsTrue(Vector.Origin.IsPerpendicular(new Vector(233, 23, 2)));
