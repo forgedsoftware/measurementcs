@@ -48,6 +48,7 @@
     <Compile Include="FormatOptions.cs" />
     <Compile Include="ICopyable.cs" />
     <Compile Include="IFormatter.cs" />
+    <Compile Include="INumberMath.cs" />
     <Compile Include="INumber.cs" />
     <Compile Include="ISerializable.cs" />
     <Compile Include="MeasurementFactory.cs" />

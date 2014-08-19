@@ -7,8 +7,8 @@ namespace ForgedSoftware.Measurement {
 	/// A class describing a standard three dimensional vector and associate math, providing a set of
 	/// vector specific functionality including dot product, cross product, angle, magnitude.
 	/// </summary>
-	public class Vector : INumber<Vector>, IMathFunctions<Vector>, IFormattable,
-			IEquatable<Vector>, IComparable, IComparable<Vector>, ICopyable<Vector> {
+	public class Vector : INumberMath<Vector>, IFormattable, IEquatable<Vector>,
+		IComparable, IComparable<Vector>, ICopyable<Vector> {
 
 		/// <summary>
 		/// This is a reasonable epsilon for vector comparisons and equitability.

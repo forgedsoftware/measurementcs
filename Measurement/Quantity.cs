@@ -1007,11 +1007,6 @@ namespace ForgedSoftware.Measurement {
 		}
 	}
 
-	public interface IMathFunctions<TNumber> {
-		TNumber Pow(double power);
-		TNumber Sqrt();
-	}
-
 	public class UncertaintyDouble : INumber<UncertaintyDouble> {
 
 		public UncertaintyDouble(double value, double lowerUncertainty, double upperUncertainty) {
