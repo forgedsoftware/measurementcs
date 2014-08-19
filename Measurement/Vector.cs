@@ -3,7 +3,9 @@ using System.Globalization;
 
 namespace ForgedSoftware.Measurement {
 	
-	public class Vector : INumber<Vector>, IMathFunctions<Vector>, IEquatable<Vector>, IComparable, IComparable<Vector> {
+	public class Vector : INumber<Vector>, IMathFunctions<Vector>, IEquatable<Vector>, IComparable, IComparable<Vector>, ICopyable<Vector> {
+
+		public static readonly double EquatableEpsilon = 1E-15;
 
 		#region Standard Vectors
 
@@ -98,7 +100,7 @@ namespace ForgedSoftware.Measurement {
 		}
 
 		public bool IsUnitVector() {
-			return (Math.Abs(Magnitude - 1) < double.Epsilon);
+			return (Math.Abs(Magnitude - 1) < EquatableEpsilon);
 		}
 
 		public double Angle(Vector vector) {
@@ -107,7 +109,7 @@ namespace ForgedSoftware.Measurement {
 
 		public Vector Normalize {
 			get {
-				if (Math.Abs(Magnitude - 0) < double.Epsilon) {
+				if (Math.Abs(Magnitude) < EquatableEpsilon) {
 					throw new DivideByZeroException("A vector must have a magnitude of greater than 0 to normalize");
 				}
 				double inverse = 1 / Magnitude;
@@ -123,7 +125,7 @@ namespace ForgedSoftware.Measurement {
 		}
 
 		public bool IsPerpendicular(Vector vector) {
-			return Math.Abs(DotProduct(vector) - 0) < double.Epsilon;
+			return Math.Abs(DotProduct(vector)) < EquatableEpsilon;
 		}
 
 		#endregion
@@ -247,10 +249,13 @@ namespace ForgedSoftware.Measurement {
 		}
 
 		public static bool operator==(Vector vector1, Vector vector2) {
-			return ((vector2 != null) && (vector1 != null) && 
-				(Math.Abs(vector1.XValue - vector2.XValue) <= double.Epsilon) &&
-				(Math.Abs(vector1.YValue - vector2.YValue) <= double.Epsilon) &&
-				(Math.Abs(vector1.ZValue - vector2.ZValue) <= double.Epsilon));
+			if (((object) vector1 == null) && ((object) vector2 == null)) {
+				return true;
+			}
+			return (((object) vector1 != null) && ((object) vector2 != null) &&
+				(Math.Abs(vector1.XValue - vector2.XValue) <= EquatableEpsilon) &&
+				(Math.Abs(vector1.YValue - vector2.YValue) <= EquatableEpsilon) &&
+				(Math.Abs(vector1.ZValue - vector2.ZValue) <= EquatableEpsilon));
 		}
 
 		public static bool operator!=(Vector vector1, Vector vector2) {
@@ -299,6 +304,14 @@ namespace ForgedSoftware.Measurement {
 				return 1;
 			}
 			return 0;
+		}
+
+		#endregion
+
+		#region Copyable
+
+		public Vector Copy() {
+			return new Vector(this);
 		}
 
 		#endregion
