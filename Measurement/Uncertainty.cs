@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 
 namespace ForgedSoftware.Measurement {
 
@@ -172,6 +173,18 @@ namespace ForgedSoftware.Measurement {
 			return (Math.Abs(Value - u.Value) <= Math.Abs((TotalUncertainty + u.TotalUncertainty)/2));
 		}
 
+		/// <summary>
+		/// Determines if the upper uncertainty is equivalent to the lower uncertainty.
+		/// If relative, uses percentages, else uses absolute values.
+		/// </summary>
+		/// <returns>True if symmetric, else false</returns>
+		public bool IsSymmetric() {
+			if (IsRelative) {
+				return (Math.Abs(LowerPercentage - UpperPercentage) <= EquatableEpsilon);
+			}
+			return (Math.Abs(LowerUncertainty - UpperUncertainty) <= EquatableEpsilon);
+		}
+
 		#endregion
 
 		#region IMathFunction
@@ -320,11 +333,46 @@ namespace ForgedSoftware.Measurement {
 		}
 
 		/// <summary>
+		/// Overrides the + (addition) operator with an adding of an uncertainty
+		/// with a constant value.
+		/// </summary>
+		/// <seealso cref="Add(double)"/>
+		public static Uncertainty operator +(Uncertainty u1, double d2) {
+			return u1.Add(d2);
+		}
+
+		/// <summary>
+		/// Overrides the + (addition) operator with an adding of a constant value
+		/// with an uncertainty.
+		/// </summary>
+		/// <seealso cref="Add(double)"/>
+		public static Uncertainty operator +(double d1, Uncertainty u2) {
+			return u2.Add(d1);
+		}
+
+		/// <summary>
 		/// Overrides the - (subtraction) operator with a subtraction of uncertainties.
 		/// </summary>
 		/// <seealso cref="Subtract(Uncertainty)"/>
 		public static Uncertainty operator -(Uncertainty u1, Uncertainty u2) {
 			return u1.Subtract(u2);
+		}
+
+		/// <summary>
+		/// Overrides the - (subtraction) operator with an subtraction of an uncertainty
+		/// by a constant value.
+		/// </summary>
+		/// <seealso cref="Subtract(double)"/>
+		public static Uncertainty operator -(Uncertainty u1, double d2) {
+			return u1.Subtract(d2);
+		}
+
+		/// <summary>
+		/// Overrides the - (subtraction) operator with an subtraction of an uncertainty
+		/// from a constant value.
+		/// </summary>
+		public static Uncertainty operator -(double d1, Uncertainty u2) {
+			return new Uncertainty(d1 - u2.Value, u2.LowerUncertainty, u2.UpperUncertainty);
 		}
 
 		/// <summary>
@@ -369,6 +417,15 @@ namespace ForgedSoftware.Measurement {
 		/// <seealso cref="Multiply(Uncertainty)"/>
 		public static Uncertainty operator *(Uncertainty u1, Uncertainty u2) {
 			return u1.Multiply(u2);
+		}
+
+		/// <summary>
+		/// Overrides the / (division) operator as a division between
+		/// two uncertanties.
+		/// </summary>
+		/// <seealso cref="Divide(Uncertainty)"/>
+		public static Uncertainty operator /(Uncertainty u1, Uncertainty u2) {
+			return u1.Divide(u2);
 		}
 
 		/// <summary>
@@ -530,12 +587,82 @@ namespace ForgedSoftware.Measurement {
 
 		#region ToString
 
+		/// <summary>
+		/// Returns a default formatted string of the uncertainty, using the
+		/// current culture.
+		/// </summary>
+		/// <returns>The formatted string</returns>
 		public override string ToString() {
-			throw new NotImplementedException();
+			return ToString("G", CultureInfo.CurrentCulture);
 		}
 
+		/// <summary>
+		/// Provides a formattable ToString implementation. A format string and a format
+		/// provider can be defined. Format strings can be any of the following, optionally
+		/// appended by a number format string to be used:
+		/// <list type="bullet">
+		/// <item><term>G</term><description>A General format string, e.g. "24.2 (± 1.1%)" or "0.45 (+0.21,-0.32)"</description></item>
+		/// <item><term>B</term><description>A Bracketted format string, e.g. "(51.4 (± 0.2))"</description></item>
+		/// <item><term>N</term><description>A No Bracket format string, e.g. "3.4 ± 0.1"</description></item>
+		/// <item><term>F</term><description>A Formattable format string for applying units, e.g. "5.6 {0} (± 3.1%)"</description></item>
+		/// <item><term>A</term><description>A force Absolute uncertainty format string, e.g. "5.6 (± 0.4)"</description></item>
+		/// <item><term>R</term><description>A force Relative uncertainty format string, e.g. "0.45 (+2.1%,-3.2%)"</description></item>
+		/// <item><term>V</term><description>A Value only format string, e.g. "3.45"</description></item>
+		/// <item><term>T</term><description>A ascii Text only format string, e.g. "11.1 (+- 3.2)"</description></item>
+		/// </list>
+		/// </summary>
+		/// <param name="format">The format string to use, defaults to "G"</param>
+		/// <param name="formatProvider">The format provider, defaults to current culture if null</param>
+		/// <returns>The formatted string</returns>
 		public string ToString(string format, IFormatProvider formatProvider) {
-			throw new NotImplementedException();
+			if (formatProvider == null) {
+				formatProvider = CultureInfo.CurrentCulture;
+			}
+			if (string.IsNullOrEmpty(format)) {
+				format = "G";
+			}
+			var formatVal = "G";
+			if (format.Length > 1) {
+				formatVal = format.Substring(1);
+				format = format.Substring(0, 1);
+			}
+			string formatStr = IsSymmetric() ? "{0} (±{1}{3})" : "{0} (+{1}{3}, -{2}{3})"; // "24.2 (± 1.1%)" or "0.45 (+0.21,-0.32)"
+			switch (format) {
+				case "B":
+					return Format("(" + formatStr + ")", formatVal, formatProvider, IsRelative);
+				case "N": {
+					formatStr = IsSymmetric() ? "{0} ±{1}{3}" : "{0} +{1}{3}, -{2}{3}";
+					return Format(formatStr, formatVal, formatProvider, IsRelative);
+				}
+				case "F": {
+					if (IsRelative) {
+						formatStr = IsSymmetric() ? "{0} {{0}} (±{1}{3})" : "{0} {{0}} (+{1}{3}, -{2}{3})";
+					} else {
+						formatStr += " {{0}}";
+					}
+					return Format(formatStr, formatVal, formatProvider, IsRelative);
+				}
+				case "A":
+					return Format(formatStr, formatVal, formatProvider, isRelative: false);
+				case "R":
+					return Format(formatStr, formatVal, formatProvider, isRelative: true);
+				case "V":
+					return Value.ToString(formatVal, formatProvider);
+				case "T": {
+					formatStr = IsSymmetric() ? "{0} (+-{1}{3})" : "{0} (+{1}{3}, -{2}{3})";
+					return Format(formatStr, formatVal, formatProvider, IsRelative);
+				}
+				default: // "G"
+					return Format(formatStr, formatVal, formatProvider, IsRelative);
+			}
+		}
+
+		private string Format(string formatStr, string format, IFormatProvider provider, bool isRelative) {
+			return string.Format(formatStr,
+				Value.ToString(format, provider),
+				(isRelative ? LowerPercentage * 100 : LowerUncertainty).ToString(format, provider),
+				(isRelative ? UpperPercentage * 100 : UpperUncertainty).ToString(format, provider),
+				(isRelative ? "%" : ""));
 		}
 
 		#endregion

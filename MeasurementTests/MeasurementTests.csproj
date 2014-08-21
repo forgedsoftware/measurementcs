@@ -52,6 +52,7 @@
     <Compile Include="TestPrefixes.cs" />
     <Compile Include="TestQuantity.cs" />
     <Compile Include="TestQuantityMath.cs" />
+    <Compile Include="TestUncertainty.cs" />
     <Compile Include="TestVector.cs" />
   </ItemGroup>
   <ItemGroup>

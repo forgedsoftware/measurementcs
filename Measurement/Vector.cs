@@ -6,6 +6,7 @@ namespace ForgedSoftware.Measurement {
 	/// <summary>
 	/// A class describing a standard three dimensional vector and associate math, providing a set of
 	/// vector specific functionality including dot product, cross product, angle, magnitude.
+	/// TODO - Maybe create 2D and 4D form...
 	/// </summary>
 	public struct Vector : INumberMath<Vector>, IFormattable, IEquatable<Vector>,
 		IComparable, IComparable<Vector>, ICopyable<Vector> {
@@ -579,7 +580,7 @@ namespace ForgedSoftware.Measurement {
 
 		/// <summary>
 		/// Provides a formattable ToString implementation. A format string and a format
-		/// provide can be defined. Format strings can be any of the following, optionally
+		/// provider can be defined. Format strings can be any of the following, optionally
 		/// appended by a number format string to be used:
 		/// <list type="bullet">
 		/// <item><term>G</term><description>A General format string, e.g. (1.2, 3.4, 5.6)</description></item>
