@@ -7,7 +7,7 @@ namespace ForgedSoftware.Measurement {
 	/// A class describing a standard three dimensional vector and associate math, providing a set of
 	/// vector specific functionality including dot product, cross product, angle, magnitude.
 	/// </summary>
-	public class Vector : INumberMath<Vector>, IFormattable, IEquatable<Vector>,
+	public struct Vector : INumberMath<Vector>, IFormattable, IEquatable<Vector>,
 		IComparable, IComparable<Vector>, ICopyable<Vector> {
 
 		/// <summary>
@@ -65,7 +65,8 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="x">The x axis value</param>
 		/// <param name="y">The y axis value</param>
 		/// <param name="z">The z axis value</param>
-		public Vector(double x, double y, double z) {
+		public Vector(double x, double y, double z)
+				: this() {
 			XValue = x;
 			YValue = y;
 			ZValue = z;
@@ -75,14 +76,16 @@ namespace ForgedSoftware.Measurement {
 		/// Array constructor
 		/// </summary>
 		/// <param name="values">The vector as an array of values</param>
-		public Vector(double[] values) {
+		public Vector(double[] values)
+				: this() {
 			Array = values;
 		}
 
 		/// <summary>
 		/// Copy constructor
 		/// </summary>
-		public Vector(Vector vector) {
+		public Vector(Vector vector)
+				: this() {
 			XValue = vector.XValue;
 			YValue = vector.YValue;
 			ZValue = vector.ZValue;
@@ -93,24 +96,24 @@ namespace ForgedSoftware.Measurement {
 		/// <summary>
 		/// A value representing the magnitude of the vector with respect to the x-axis.
 		/// </summary>
-		public double XValue { get; set; }
+		public double XValue { get; private set; }
 
 		/// <summary>
 		/// A value representing the magnitude of the vector with respect to the y-axis.
 		/// </summary>
-		public double YValue { get; set; }
+		public double YValue { get; private set; }
 
 		/// <summary>
 		/// A value representing the magnitude of the vector with respect to the z-axis.
 		/// </summary>
-		public double ZValue { get; set; }
+		public double ZValue { get; private set; }
 
 		/// <summary>
 		/// A array representation of the three axis of the vector.
 		/// </summary>
 		public double[] Array {
 			get { return new[] { XValue, YValue, ZValue }; }
-			set {
+			private set {
 				if (value.Length != 3) {
 					throw new ArgumentException("An array needs to contain 3 values to be a valid vector");
 				}
@@ -500,9 +503,8 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <seealso cref="operator ==(Vector, Vector)"/>
 		public override bool Equals(object obj) {
-			Vector vector = obj as Vector;
-			if (vector != null) {
-				return this == vector;
+			if (obj is Vector) {
+				return this == (Vector)obj;
 			}
 			return false;
 		}
@@ -537,9 +539,8 @@ namespace ForgedSoftware.Measurement {
 		/// <returns>Returns -1 if this is smaller than the other vector, 0 if they
 		/// are the same, and 1 if this vector is larger in terms of magnitude.</returns>
 		public int CompareTo(object obj) {
-			Vector vector = obj as Vector;
-			if (vector != null) {
-				return CompareTo(vector);
+			if (obj is Vector) {
+				return CompareTo((Vector)obj);
 			}
 			throw new ArgumentException("Cannot compare a Vector with a " + obj.GetType());
 		}

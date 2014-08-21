@@ -57,6 +57,7 @@
     <Compile Include="Quantity.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MeasurementSystem.cs" />
+    <Compile Include="Uncertainty.cs" />
     <Compile Include="Unit.cs" />
     <Compile Include="Vector.cs" />
   </ItemGroup>
