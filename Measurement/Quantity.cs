@@ -6,8 +6,18 @@ using System.Runtime.Serialization;
 
 namespace ForgedSoftware.Measurement {
 
+	/// <summary>
+	/// A Quantity represents a specific measured Value and its associated Dimensions.
+	/// This object will allow Quantities to be created, converted to other dimensions,
+	/// have mathematical operations performed on them, be simplified, and be formatted.
+	/// </summary>
+	/// <example>
+	/// A simple measured value of five metres is a Quantity. It has a Value of 5
+	/// and a single Dimension with a power of 1 which is a distance with a Unit of metres.
+	/// </example>
 	[DataContract]
-	public abstract class BaseQuantity<TNumber, TQuantity, TDimension> : ISerializable, IFormatter, IFormattable, ICopyable<TQuantity>, IObjectReference
+	public abstract class BaseQuantity<TNumber, TQuantity, TDimension> : IValue<TQuantity, TNumber>,
+		ISerializable, IFormatter, IFormattable, ICopyable<TQuantity>, IObjectReference
 			where TQuantity : BaseQuantity<TNumber, TQuantity, TDimension>, new()
 			where TDimension : BaseDimension<TNumber, TDimension>, new() {
 
@@ -40,6 +50,8 @@ namespace ForgedSoftware.Measurement {
 
 		#endregion
 
+		#region Properties
+
 		/// <summary>
 		/// The Value of a Quantity is an unqualified, dimensionless measurement.
 		/// In this case it is a scalar.
@@ -53,6 +65,8 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		[DataMember(Name = "dimensions")]
 		public List<TDimension> Dimensions { get; protected set; }
+
+		#endregion
 
 		#region Conversion
 
@@ -89,10 +103,19 @@ namespace ForgedSoftware.Measurement {
 			return quantityAsBase;
 		}
 
-		// TODO - Documentation
+		/// <summary>
+		/// Converts the dimensions in a quantity to use base units.
+		/// </summary>
+		/// <returns>The converted quantity</returns>
 		public abstract TQuantity ConvertToBase();
 
-		// TODO - Documentation
+		/// <summary>
+		/// Converts the dimensions already in base units that match the system of the
+		/// provided unit into that unit and the provided prefix.
+		/// </summary>
+		/// <param name="unit">The unit to convert relevant dimensions into</param>
+		/// <param name="prefix">A prefix to use of a dimension that is converted</param>
+		/// <returns>The converted quantity</returns>
 		protected abstract TQuantity ConvertFromBase(Unit unit, Prefix prefix = null);
 
 		#endregion
@@ -232,7 +255,7 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <param name="value">The value that is the multiplier</param>
 		/// <returns>A new quantity that is the product of the two original values</returns>
-		public abstract Quantity Multiply(TNumber value);
+		public abstract TQuantity Multiply(TNumber value);
 
 		/// <summary>
 		/// Divides the quantity as a dividend by a dimensionless value.
@@ -293,6 +316,12 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="q">The quantity being subtracted</param>
 		/// <returns>A resulting quantity that is the difference of the two quantities</returns>
 		public abstract TQuantity Subtract(TQuantity q);
+
+		/// <summary>
+		/// Negates this quantity.
+		/// </summary>
+		/// <returns>A resulting quantity that is the negation of the original</returns>
+		public abstract TQuantity Negate();
 
 		#endregion
 
@@ -385,6 +414,11 @@ namespace ForgedSoftware.Measurement {
 			return valueStr + dimStr;
 		}
 
+		/// <summary>
+		/// Formats the value into a valid string.
+		/// </summary>
+		/// <param name="options">The format options to use</param>
+		/// <returns>A string of the formatted value</returns>
 		public abstract string FormatValue(FormatOptions options);
 
 		#endregion
@@ -449,20 +483,18 @@ namespace ForgedSoftware.Measurement {
 
 		#endregion
 	}
-
+	
 	/// <summary>
-	/// A Quantity represents a specific measured Value and its associated Dimensions.
-	/// This object will allow Quantities to be created, converted to other dimensions,
-	/// have mathematical operations performed on them, be simplified, and be formatted.
+	/// A basic quantity type, based around a double, provides basic quantity
+	/// functionality and ease-of-use.
 	/// </summary>
-	/// <example>
-	/// A simple measured value of five metres is a Quantity. It has a Value of 5
-	/// and a single Dimension with a power of 1 which is a distance with a Unit of metres.
-	/// </example>
 	public class Quantity : BaseQuantity<double, Quantity, Dimension> {
 
 		#region Constructors
 
+		/// <summary>
+		/// Default constructor
+		/// </summary>
 		public Quantity() {
 		}
 
@@ -564,6 +596,15 @@ namespace ForgedSoftware.Measurement {
 
 		#region General Operations
 
+		/// <summary>
+		/// Simplifies a quantity to the most simple set of dimensions possible.
+		/// Dimension order is preserved during the simplification in order to choose
+		/// the appropriate units.
+		/// </summary>
+		/// <example>
+		/// 5 m^2.in.ft^-1.s^-1 => 897930.494 m^2.s^-1
+		/// </example>
+		/// <returns>The simplified quantity</returns>
 		public override Quantity Simplify() {
 			double computedValue = Value;
 			List<Dimension> simplifiedDimensions = Dimensions.Simplify(ref computedValue);
@@ -671,6 +712,15 @@ namespace ForgedSoftware.Measurement {
 			// Convert value into same units
 			Quantity convertedQuantity = q.Convert(this);
 			return new Quantity(Value - convertedQuantity.Value, Dimensions.CopyList());
+		}
+
+		/// <summary>
+		/// Negates this quantity by making the value negative and inverting the powers
+		/// on the dimensions.
+		/// </summary>
+		/// <returns>A resulting quantity that is the negation of the original one</returns>
+		public override Quantity Negate() {
+			return new Quantity(-Value, Dimensions.CopyList().Select(d => d.Invert()));
 		}
 
 		#endregion
@@ -897,6 +947,10 @@ namespace ForgedSoftware.Measurement {
 
 		#region Copyable
 
+		/// <summary>
+		/// Utilizes the copy constructor to make a copy of this quantity.
+		/// </summary>
+		/// <returns>A copy of this quantity</returns>
 		public override Quantity Copy() {
 			return new Quantity(this);
 		}
@@ -905,6 +959,12 @@ namespace ForgedSoftware.Measurement {
 
 		#region Formatting
 
+		/// <summary>
+		/// Provides a formatted version of this quantities value.
+		/// TODO - This method is quite long, maybe it should be split up?
+		/// </summary>
+		/// <param name="options">The options that describe the format transformations</param>
+		/// <returns>The formatted value</returns>
 		public override string FormatValue(FormatOptions options) {
 			string valueStr = "";
 
@@ -950,10 +1010,20 @@ namespace ForgedSoftware.Measurement {
 	}
 
 	/// <summary>
-	/// 
+	/// A generics based approach to quantity that allows any type of number to be used
+	/// providing a very broad range of functionality for manipulating quantities.
 	/// </summary>
-	/// <typeparam name="T"></typeparam>
+	/// <typeparam name="T">The number type that this quantity manipulates</typeparam>
 	public class Quantity<T> : BaseQuantity<T, Quantity<T>, Dimension<T>> where T : INumber<T> {
+
+		#region Constructors
+
+		// TODO
+
+		#endregion
+
+		#region Conversion
+
 		public override Quantity<T> ConvertToBase() {
 			throw new NotImplementedException();
 		}
@@ -962,11 +1032,19 @@ namespace ForgedSoftware.Measurement {
 			throw new NotImplementedException();
 		}
 
+		#endregion
+
+		#region General Operations
+
 		public override Quantity<T> Simplify() {
 			throw new NotImplementedException();
 		}
 
-		public override Quantity Multiply(T value) {
+		#endregion
+
+		#region Basic Math - Dimensionless
+
+		public override Quantity<T> Multiply(T value) {
 			throw new NotImplementedException();
 		}
 
@@ -981,6 +1059,10 @@ namespace ForgedSoftware.Measurement {
 		public override Quantity<T> Subtract(T value) {
 			throw new NotImplementedException();
 		}
+
+		#endregion
+
+		#region Basic Math - Quantity Based
 
 		public override Quantity<T> Multiply(Quantity<T> q) {
 			throw new NotImplementedException();
@@ -998,12 +1080,27 @@ namespace ForgedSoftware.Measurement {
 			throw new NotImplementedException();
 		}
 
+		public override Quantity<T> Negate() {
+			throw new NotImplementedException();
+		}
+
+		#endregion
+
+		#region Copyable
+
 		public override Quantity<T> Copy() {
 			throw new NotImplementedException();
 		}
 
+		#endregion
+
+		#region Formatting
+
 		public override string FormatValue(FormatOptions options) {
-			return Value.ToString();
+			throw new NotImplementedException();
 		}
+
+		#endregion
+
 	}
 }
