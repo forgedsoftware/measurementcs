@@ -44,14 +44,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Dimension.cs" />
+    <Compile Include="DoubleWrapper.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="FormatOptions.cs" />
     <Compile Include="ICopyable.cs" />
     <Compile Include="IFormatter.cs" />
-    <Compile Include="INumberMath.cs" />
+    <Compile Include="IValueExtended.cs" />
     <Compile Include="INumber.cs" />
+    <Compile Include="IQuantity.cs" />
     <Compile Include="ISerializable.cs" />
     <Compile Include="IValue.cs" />
+    <Compile Include="IVector.cs" />
     <Compile Include="MeasurementFactory.cs" />
     <Compile Include="MeasurementOptions.cs" />
     <Compile Include="Prefix.cs" />
@@ -60,7 +63,9 @@
     <Compile Include="MeasurementSystem.cs" />
     <Compile Include="Uncertainty.cs" />
     <Compile Include="Unit.cs" />
-    <Compile Include="Vector.cs" />
+    <Compile Include="Vector2.cs" />
+    <Compile Include="Vector3.cs" />
+    <Compile Include="Vector4.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

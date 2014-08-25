@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -31,14 +32,14 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="list">The list of dimensions to simplify</param>
 		/// <param name="value">The value to be converted as the dimensions are simplified</param>
 		/// <returns>A new list of simplified dimensions</returns>
-		public static List<TDimension> Simplify<TDimension, TNumber>(this List<TDimension> list, ref TNumber value)
-				where TDimension : BaseDimension<TNumber, TDimension>, new() {
-			var newDimensions = new List<TDimension>();
+		public static List<Dimension> Simplify<TNumber>(this List<Dimension> list, ref TNumber value) 
+				where TNumber : INumber<TNumber> {
+			var newDimensions = new List<Dimension>();
 			var processedDimensions = new List<int>();
 			TNumber computedValue = value;
 
 			for (int index = 0; index < list.Count; index++) {
-				TDimension dimension = list[index];
+				Dimension dimension = list[index];
 				if (dimension.Power != 0 && !processedDimensions.Contains(index)) {
 					for (int i = index + 1; i < list.Count; i++) {
 						if (dimension.Unit.System.Name == list[i].Unit.System.Name) {
@@ -98,6 +99,17 @@ namespace ForgedSoftware.Measurement {
 				};
 
 			return number.ToString(CultureInfo.InvariantCulture).Aggregate("", (current, t) => current + supers[t]);
+		}
+
+		public static bool OperationsAllowed<TNumber>(this TNumber number, List<Func<TNumber, bool>> neededOperations)
+				where TNumber : INumber<TNumber> {
+			bool allowed = true;
+			try {
+				neededOperations.Select(f => f(number));
+			} catch (Exception ex) {
+				allowed = false;
+			}
+			return allowed;
 		}
 	}
 }

@@ -66,7 +66,7 @@ namespace ForgedSoftware.Measurement {
 					}
 				}
 			}
-			double computedValue = 1;
+			var computedValue = new DoubleWrapper(1);
 			Derived = Derived.Simplify(ref computedValue);
 		}
 

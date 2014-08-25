@@ -6,44 +6,134 @@ using System.Runtime.Serialization;
 
 namespace ForgedSoftware.Measurement {
 
+	/*
+		#region Formatting
+
+		/// <summary>
+		/// Provides a formatted version of this quantities value.
+		/// TODO - This method is quite long, maybe it should be split up?
+		/// </summary>
+		/// <param name="options">The options that describe the format transformations</param>
+		/// <returns>The formatted value</returns>
+		public override string FormatValue(FormatOptions options) {
+			string valueStr = "";
+
+			// Precision/Fixed
+			if (options.Fixed >= 0) {
+				valueStr += Value.ToString("F" + options.Fixed);
+			} else if (options.Precision > 0) {
+				valueStr += Value.ToString("G" + options.Fixed);
+			} else {
+				valueStr += Value.ToString("G");
+			}
+
+			// Separator/Decimal
+			int numLength = valueStr.IndexOf(".", StringComparison.InvariantCulture);
+			if (numLength == -1) {
+				numLength = valueStr.Length;
+			}
+			var separatorPos = numLength - options.GroupSize;
+			valueStr = valueStr.Replace(".", options.DecimalSeparator);
+			if (options.GroupSeparator.Length > 0 && !double.IsInfinity(Value) && !double.IsNaN(Value)) {
+				while (separatorPos > 0) {
+					valueStr = valueStr.Insert(separatorPos, options.GroupSeparator);
+					separatorPos -= options.GroupSize;
+				}
+			}
+
+			// Exponents
+			if (options.ExpandExponent) {
+				int eIndex = valueStr.IndexOf("E", StringComparison.InvariantCulture);
+				if (eIndex >= 0) {
+					double exponent = Math.Floor(Math.Log(Value) / Math.Log(10));
+					valueStr = valueStr.Substring(0, eIndex);
+					string exponentStr = (options.Ascii) ? "^" + exponent : ((int)exponent).ToSuperScript();
+					valueStr += " x 10" + exponentStr;
+				}
+			}
+
+			return valueStr;
+		}
+
+		#endregion
+
+	}
+		 * 
+		 * */
+
 	/// <summary>
-	/// A Quantity represents a specific measured Value and its associated Dimensions.
-	/// This object will allow Quantities to be created, converted to other dimensions,
-	/// have mathematical operations performed on them, be simplified, and be formatted.
+	/// A generics based approach to quantity that allows any type of number to be used
+	/// providing a very broad range of functionality for manipulating quantities.
 	/// </summary>
-	/// <example>
-	/// A simple measured value of five metres is a Quantity. It has a Value of 5
-	/// and a single Dimension with a power of 1 which is a distance with a Unit of metres.
-	/// </example>
+	/// <typeparam name="TNumber">The number type that this quantity manipulates</typeparam>
 	[DataContract]
-	public abstract class BaseQuantity<TNumber, TQuantity, TDimension> : IValue<TQuantity, TNumber>,
-		ISerializable, IFormatter, IFormattable, ICopyable<TQuantity>, IObjectReference
-			where TQuantity : BaseQuantity<TNumber, TQuantity, TDimension>, new()
-			where TDimension : BaseDimension<TNumber, TDimension>, new() {
+	public class Quantity<TNumber> : IQuantity<TNumber, TNumber, Quantity<TNumber>>
+			where TNumber : INumber<TNumber> {
 
 		#region Constructors
 
 		/// <summary>
-		/// Default private constructor
+		/// Default constructor
 		/// </summary>
-		protected BaseQuantity() {
-			Dimensions = new List<TDimension>();
+		public Quantity() {
+			Dimensions = new List<Dimension>();
 		}
 
 		/// <summary>
-		/// Dimensionless constructor with prefix
+		/// Dimensionless constructor
 		/// </summary>
 		/// <param name="value">The value of the quantity</param>
-		protected BaseQuantity(TNumber value)
-			: this() {
+		public Quantity(TNumber value) : this() {
 			Value = value;
+		}
+
+		/// <summary>
+		/// Helper constructor for quantity with a single dimension
+		/// </summary>
+		/// <param name="value">The value of the quantity</param>
+		/// <param name="unitName">The common name of the unit of the dimension</param>
+		public Quantity(TNumber value, string unitName)
+			: this(value) {
+			Dimensions.Add(new Dimension(unitName));
+		}
+
+		/// <summary>
+		/// Helper constructor for quantity with multiple simple dimensions
+		/// </summary>
+		/// <param name="value">The value of the quantity</param>
+		/// <param name="unitNames">A set of unit names to turn into dimensions</param>
+		public Quantity(TNumber value, IEnumerable<string> unitNames)
+			: this(value) {
+			foreach (string unitName in unitNames) {
+				Dimensions.Add(new Dimension(unitName));
+			}
+		}
+
+		/// <summary>
+		/// Helper constructor for quantity with single complex dimension
+		/// </summary>
+		/// <param name="value">The value of the quantity</param>
+		/// <param name="dimension">Pre-existing dimension to use with this quantity</param>
+		public Quantity(TNumber value, Dimension dimension)
+			: this(value) {
+			Dimensions.Add(dimension);
+		}
+
+		/// <summary>
+		/// A full constructor for multiple, complex dimensions
+		/// </summary>
+		/// <param name="value">The value of the quantity</param>
+		/// <param name="dimensions">Pre-existing dimensions to use with this quantity</param>
+		public Quantity(TNumber value, IEnumerable<Dimension> dimensions)
+			: this(value) {
+			Dimensions.AddRange(dimensions ?? new List<Dimension>());
 		}
 
 		/// <summary>
 		/// Copy constructor
 		/// </summary>
 		/// <param name="quantity">The quantity to copy</param>
-		protected BaseQuantity(TQuantity quantity) {
+		public Quantity(Quantity<TNumber> quantity) {
 			Value = quantity.Value;
 			Dimensions = quantity.Dimensions.CopyList();
 		}
@@ -54,17 +144,16 @@ namespace ForgedSoftware.Measurement {
 
 		/// <summary>
 		/// The Value of a Quantity is an unqualified, dimensionless measurement.
-		/// In this case it is a scalar.
 		/// </summary>
 		[DataMember(Name = "value")]
-		public TNumber Value { get; protected set; }
+		public TNumber Value { get; set; }
 
 		/// <summary>
 		/// The Dimensions of a Quantity are the combination of units of measurement
 		/// that qualify this quantity in the real world.
 		/// </summary>
 		[DataMember(Name = "dimensions")]
-		public List<TDimension> Dimensions { get; protected set; }
+		public List<Dimension> Dimensions { get; private set; }
 
 		#endregion
 
@@ -75,7 +164,7 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <param name="unitName">The name of the unit to convert</param>
 		/// <returns>The converted quantity</returns>
-		public TQuantity Convert(string unitName) {
+		public Quantity<TNumber> Convert(string unitName) {
 			return Convert(MeasurementFactory.FindUnit(unitName));
 		}
 
@@ -84,8 +173,8 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <param name="unit">The unit to convert</param>
 		/// <returns>The converted quantity</returns>
-		public TQuantity Convert(Unit unit) {
-			TQuantity quantityAsBase = ConvertToBase();
+		public Quantity<TNumber> Convert(Unit unit) {
+			Quantity<TNumber> quantityAsBase = ConvertToBase();
 			return quantityAsBase.ConvertFromBase(unit);
 		}
 
@@ -94,8 +183,8 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <param name="quantity">The other quantity whose dimensions to converge on</param>
 		/// <returns>The converted quantity</returns>
-		public TQuantity Convert(TQuantity quantity) {
-			TQuantity quantityAsBase = ConvertToBase();
+		public Quantity<TNumber> Convert(Quantity<TNumber> quantity) {
+			Quantity<TNumber> quantityAsBase = ConvertToBase();
 			if (!IsCommensurable(quantity)) {
 				throw new Exception("Quantities must have commensurable dimensions in order to convert between them");
 			}
@@ -104,19 +193,37 @@ namespace ForgedSoftware.Measurement {
 		}
 
 		/// <summary>
-		/// Converts the dimensions in a quantity to use base units.
+		/// Converts the quantity into the base units of each dimension.
 		/// </summary>
 		/// <returns>The converted quantity</returns>
-		public abstract TQuantity ConvertToBase();
+		public Quantity<TNumber> ConvertToBase() {
+			TNumber convertedValue = Value;
+			List<Dimension> newDimensions = Dimensions
+				.Select(dimension => dimension.ConvertToBase(ref convertedValue)).ToList();
+			return new Quantity<TNumber>(convertedValue, newDimensions);
+		}
 
 		/// <summary>
-		/// Converts the dimensions already in base units that match the system of the
-		/// provided unit into that unit and the provided prefix.
+		/// Converts a quantity in based on a unit.
+		/// Assumes that the dimensions that have the same system as the provided unit are in a base unit.
 		/// </summary>
-		/// <param name="unit">The unit to convert relevant dimensions into</param>
-		/// <param name="prefix">A prefix to use of a dimension that is converted</param>
+		/// <param name="unit">The unit to convert into</param>
+		/// <param name="prefix">The prefix to convert into</param>
 		/// <returns>The converted quantity</returns>
-		protected abstract TQuantity ConvertFromBase(Unit unit, Prefix prefix = null);
+		public Quantity<TNumber> ConvertFromBase(Unit unit, Prefix prefix = null) {
+			TNumber convertedValue = Value;
+			var newDimensions = new List<Dimension>();
+
+			foreach (var dimension in Dimensions) {
+				if (dimension.Unit.System.Units.Contains(unit)) {
+					newDimensions.Add(dimension.ConvertFromBase(ref convertedValue, unit, prefix));
+				} else {
+					newDimensions.Add(dimension.Copy());
+				}
+			}
+			return new Quantity<TNumber>(convertedValue, newDimensions);
+		}
+
 
 		#endregion
 
@@ -131,7 +238,17 @@ namespace ForgedSoftware.Measurement {
 		/// 5 m^2.in.ft^-1.s^-1 => 897930.494 m^2.s^-1
 		/// </example>
 		/// <returns>The simplified quantity</returns>
-		public abstract TQuantity Simplify();
+		public Quantity<TNumber> Simplify() {
+			TNumber computedValue = Value;
+			List<Dimension> simplifiedDimensions = Dimensions.Simplify(ref computedValue);
+			// TODO - Abstracting Simplify() to the superclass fails here as we can't create a new object
+			var resultingQuantity = new Quantity<TNumber>(computedValue, simplifiedDimensions);
+
+			if (MeasurementFactory.Options.UseAutomaticPrefixManagement) {
+				resultingQuantity = resultingQuantity.TidyPrefixes();
+			}
+			return resultingQuantity;
+		}
 
 		/// <summary>
 		/// Tidies the prefixes associated with the quantity.
@@ -142,8 +259,8 @@ namespace ForgedSoftware.Measurement {
 		/// TODO - Too long! Split into smaller methods
 		/// </summary>
 		/// <returns>A quantity with tidied prefixes</returns>
-		public TQuantity TidyPrefixes() {
-			TQuantity quantity = Copy();
+		public Quantity<TNumber> TidyPrefixes() {
+			Quantity<TNumber> quantity = Copy();
 			if (IsDimensionless()) {
 				return quantity;
 			}
@@ -152,7 +269,7 @@ namespace ForgedSoftware.Measurement {
 			// Try add a prefix to prefixless dimensions
 			if (numberOfPrefixes == 0) {
 				for (int i = 0; i < quantity.Dimensions.Count; i++) {
-					TDimension dimension = quantity.Dimensions[i];
+					Dimension dimension = quantity.Dimensions[i];
 					if (dimension.CanApplyPrefix()) {
 						TNumber computedValue = quantity.Value;
 						quantity.Dimensions[i] = dimension.ApplyPrefix(ref computedValue);
@@ -169,7 +286,7 @@ namespace ForgedSoftware.Measurement {
 			if (numberOfPrefixes > 1) {
 				bool seenPrefix = false;
 				for (int j = 0; j < quantity.Dimensions.Count; j++) {
-					TDimension dimension = quantity.Dimensions[j];
+					Dimension dimension = quantity.Dimensions[j];
 					if (dimension.Prefix != null) {
 						if (seenPrefix) {
 							// Remove prefix
@@ -188,7 +305,7 @@ namespace ForgedSoftware.Measurement {
 			if (MeasurementFactory.Options.CanReorderDimensions) {
 				int index = quantity.Dimensions.FindIndex(d => d.Prefix != null);
 				if (index > 0) {
-					TDimension prefixedDimension = quantity.Dimensions[index];
+					Dimension prefixedDimension = quantity.Dimensions[index];
 					quantity.Dimensions.RemoveAt(index);
 					quantity.Dimensions.Insert(0, prefixedDimension);
 				}
@@ -217,15 +334,15 @@ namespace ForgedSoftware.Measurement {
 		/// </example>
 		/// <param name="quantity">The quantity to compare with</param>
 		/// <returns>True if they are commensurable, else false</returns>
-		public bool IsCommensurable(TQuantity quantity) {
+		public bool IsCommensurable(Quantity<TNumber> quantity) {
 
 			// Dimensionless
 			if (IsDimensionless() && quantity.IsDimensionless()) {
 				return true;
 			}
 
-			TQuantity simplifiedThis = Simplify();
-			TQuantity simplifiedQuantity = quantity.Simplify();
+			Quantity<TNumber> simplifiedThis = Simplify();
+			Quantity<TNumber> simplifiedQuantity = quantity.Simplify();
 
 			if (simplifiedThis.Dimensions.Count != simplifiedQuantity.Dimensions.Count) {
 				return false;
@@ -255,14 +372,18 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <param name="value">The value that is the multiplier</param>
 		/// <returns>A new quantity that is the product of the two original values</returns>
-		public abstract TQuantity Multiply(TNumber value);
+		public Quantity<TNumber> Multiply(TNumber value) {
+			return new Quantity<TNumber>(Value.Multiply(value), Dimensions.CopyList());
+		}
 
 		/// <summary>
 		/// Divides the quantity as a dividend by a dimensionless value.
 		/// </summary>
 		/// <param name="value">The value that is the divisor</param>
 		/// <returns>A new quantity that is the quotient</returns>
-		public abstract TQuantity Divide(TNumber value);
+		public Quantity<TNumber> Divide(TNumber value) {
+			return new Quantity<TNumber>(Value.Divide(value), Dimensions.CopyList());
+		}
 
 		/// <summary>
 		/// Adds an arbitrary value to the original quantity.
@@ -270,7 +391,9 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <param name="value">The value to be added</param>
 		/// <returns>A new quantity with the sum of the values</returns>
-		public abstract TQuantity Add(TNumber value);
+		public Quantity<TNumber> Add(TNumber value) {
+			return new Quantity<TNumber>(Value.Add(value), Dimensions.CopyList());
+		}
 
 		/// <summary>
 		/// Subtracts an arbitrary value from the original quanity.
@@ -278,7 +401,9 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <param name="value">The value to be subtracted</param>
 		/// <returns>A new quantity with the difference of the values</returns>
-		public abstract TQuantity Subtract(TNumber value);
+		public Quantity<TNumber> Subtract(TNumber value) {
+			return new Quantity<TNumber>(Value.Subtract(value), Dimensions.CopyList());
+		}
 
 		#endregion
 
@@ -290,7 +415,12 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <param name="q">The quantity being multiplied by</param>
 		/// <returns>A resulting quantity that is the product of the two quantities</returns>
-		public abstract TQuantity Multiply(TQuantity q);
+		public Quantity<TNumber> Multiply(Quantity<TNumber> q) {
+			List<Dimension> clonedDimensions = Dimensions.CopyList();
+			clonedDimensions.AddRange(q.Dimensions.CopyList());
+			var newQuantity = new Quantity<TNumber>(Value.Multiply(q.Value), clonedDimensions);
+			return newQuantity.Simplify();
+		}
 
 		/// <summary>
 		/// Divides this quantity with another, returning a quantity with dimensions
@@ -299,7 +429,12 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <param name="q">The quantity that is the divisor</param>
 		/// <returns>A resulting quantity that is the quotient of the two quantities</returns>
-		public abstract TQuantity Divide(TQuantity q);
+		public Quantity<TNumber> Divide(Quantity<TNumber> q) {
+			List<Dimension> clonedDimensions = Dimensions.CopyList();
+			clonedDimensions.AddRange(q.Dimensions.CopyList().Select(d => d.Invert()));
+			var newQuantity = new Quantity<TNumber>(Value.Divide(q.Value), clonedDimensions);
+			return newQuantity.Simplify();
+		}
 
 		/// <summary>
 		/// Adds this quantity with another that has commensurable dimensions.
@@ -307,7 +442,11 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <param name="q">The quantity being added</param>
 		/// <returns>A resulting quantity that is the sum of the two quantities</returns>
-		public abstract TQuantity Add(TQuantity q);
+		public Quantity<TNumber> Add(Quantity<TNumber> q) {
+			// Convert value into same units
+			Quantity<TNumber> convertedQuantity = q.Convert(this);
+			return new Quantity<TNumber>(Value.Add(convertedQuantity.Value), Dimensions.CopyList());
+		}
 
 		/// <summary>
 		/// Subtracts this quantity from another that has commensurable dimensions.
@@ -315,23 +454,78 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <param name="q">The quantity being subtracted</param>
 		/// <returns>A resulting quantity that is the difference of the two quantities</returns>
-		public abstract TQuantity Subtract(TQuantity q);
+		public Quantity<TNumber> Subtract(Quantity<TNumber> q) {
+			// Convert value into same units
+			Quantity<TNumber> convertedQuantity = q.Convert(this);
+			return new Quantity<TNumber>(Value.Subtract(convertedQuantity.Value), Dimensions.CopyList());
+		}
 
 		/// <summary>
-		/// Negates this quantity.
+		/// Negates this quantity by making the value negative and inverting the powers
+		/// on the dimensions.
 		/// </summary>
-		/// <returns>A resulting quantity that is the negation of the original</returns>
-		public abstract TQuantity Negate();
+		/// <returns>A resulting quantity that is the negation of the original one</returns>
+		public Quantity<TNumber> Negate() {
+			return new Quantity<TNumber>(Value.Negate(), Dimensions.CopyList().Select(d => d.Invert()));
+		}
+
+		#endregion
+		
+		#region Extended Math
+
+		public Quantity<TNumber> Abs() {
+			return new Quantity<TNumber>(Value.Abs(), Dimensions.CopyList());
+		}
+
+		public Quantity<TNumber> Ceiling() {
+			return new Quantity<TNumber>(Value.Ceiling(), Dimensions.CopyList());
+		}
+
+		public Quantity<TNumber> Floor() {
+			return new Quantity<TNumber>(Value.Floor(), Dimensions.CopyList());
+		}
+
+		public Quantity<TNumber> Pow(double power) {
+			return new Quantity<TNumber>(Value.Pow(power), Dimensions.CopyList());
+		}
+
+		public Quantity<TNumber> Round() {
+			return new Quantity<TNumber>(Value.Round(), Dimensions.CopyList());
+		}
+
+		public Quantity<TNumber> Sqrt() {
+			return new Quantity<TNumber>(Value.Sqrt(), Dimensions.CopyList());
+		}
+
+		public Quantity<TNumber> Max(Quantity<TNumber> other) {
+			return Max(new[] {other});
+		}
+
+		public Quantity<TNumber> Max(params Quantity<TNumber>[] values) {
+			var quantities = new List<Quantity<TNumber>>(values) {this};
+			return new Quantity<TNumber>(quantities.Max(q => q.Convert(this)));
+		}
+
+		public Quantity<TNumber> Min(Quantity<TNumber> other) {
+			return Min(new[] { other });
+		}
+
+		public Quantity<TNumber> Min(params Quantity<TNumber>[] values) {
+			var quantities = new List<Quantity<TNumber>>(values) { this };
+			return new Quantity<TNumber>(quantities.Min(q => q.Convert(this)));
+		}
 
 		#endregion
 
 		#region Copyable
 
 		/// <summary>
-		/// Helper method that utilises the copy constructor to copy the existing quantity.
+		/// Utilizes the copy constructor to make a copy of this quantity.
 		/// </summary>
 		/// <returns>A copy of this quantity</returns>
-		public abstract TQuantity Copy();
+		public Quantity<TNumber> Copy() {
+			return new Quantity<TNumber>(this);
+		}
 
 		#endregion
 
@@ -350,8 +544,8 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <param name="json">The json serialization of a quantity</param>
 		/// <returns>The deserialized quantity</returns>
-		public static TQuantity FromJson(string json) {
-			return json.FromJson<TQuantity>();
+		public static Quantity<TNumber> FromJson(string json) {
+			return json.FromJson<Quantity<TNumber>>();
 		}
 
 		/// <summary>
@@ -359,9 +553,9 @@ namespace ForgedSoftware.Measurement {
 		/// is instantiated properly during deserialization.
 		/// </summary>
 		object IObjectReference.GetRealObject(StreamingContext context) {
-			return new TQuantity {
+			return new Quantity<TNumber> {
 				Value = Value,
-				Dimensions = Dimensions ?? new List<TDimension>()
+				Dimensions = Dimensions ?? new List<Dimension>()
 			};
 		}
 
@@ -391,7 +585,7 @@ namespace ForgedSoftware.Measurement {
 			string valueStr = FormatValue(options);
 
 			// Dimensions
-			List<TDimension> clonedDimensions = Dimensions.CopyList();
+			List<Dimension> clonedDimensions = Dimensions.CopyList();
 			if (options.Sort) {
 				//clonedDimensions.Sort((d1, d2) => (d1.Power == d2.Power) ? -2 : d2.Power - d1.Power);
 				clonedDimensions = clonedDimensions.OrderBy(d => -d.Power).ToList();
@@ -419,7 +613,9 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <param name="options">The format options to use</param>
 		/// <returns>A string of the formatted value</returns>
-		public abstract string FormatValue(FormatOptions options);
+		public string FormatValue(FormatOptions options) {
+			return Value.ToString(); // TODO properly!!!
+		}
 
 		#endregion
 
@@ -482,28 +678,30 @@ namespace ForgedSoftware.Measurement {
 		}
 
 		#endregion
+
 	}
-	
+
 	/// <summary>
 	/// A basic quantity type, based around a double, provides basic quantity
-	/// functionality and ease-of-use.
+	/// functionality and ease-of-use. It also provides some extended math functions.
 	/// </summary>
-	public class Quantity : BaseQuantity<double, Quantity, Dimension> {
+	[DataContract]
+	public class Quantity : IQuantity<double, DoubleWrapper, Quantity> {
+
+		private readonly Quantity<DoubleWrapper> _q;
+
+		// Properties for deserializing only
+		private double _deserializedValue;
+		private List<Dimension> _deserializedDimensions;
 
 		#region Constructors
 
 		/// <summary>
-		/// Default constructor
-		/// </summary>
-		public Quantity() {
-		}
-
-		/// <summary>
-		/// Dimensionless constructor with prefix
+		/// Dimensionless constructor
 		/// </summary>
 		/// <param name="value">The value of the quantity</param>
-		public Quantity(double value)
-			: base(value) {
+		public Quantity(double value) {
+			_q = new Quantity<DoubleWrapper>(new DoubleWrapper(value));
 		}
 
 		/// <summary>
@@ -511,9 +709,8 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <param name="value">The value of the quantity</param>
 		/// <param name="unitName">The common name of the unit of the dimension</param>
-		public Quantity(double value, string unitName)
-			: base(value) {
-			Dimensions.Add(new Dimension(unitName));
+		public Quantity(double value, string unitName) {
+			_q = new Quantity<DoubleWrapper>(new DoubleWrapper(value), unitName);
 		}
 
 		/// <summary>
@@ -521,11 +718,8 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <param name="value">The value of the quantity</param>
 		/// <param name="unitNames">A set of unit names to turn into dimensions</param>
-		public Quantity(double value, IEnumerable<string> unitNames)
-			: base(value) {
-			foreach (string unitName in unitNames) {
-				Dimensions.Add(new Dimension(unitName));
-			}
+		public Quantity(double value, IEnumerable<string> unitNames) {
+			_q = new Quantity<DoubleWrapper>(new DoubleWrapper(value), unitNames);
 		}
 
 		/// <summary>
@@ -533,9 +727,8 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <param name="value">The value of the quantity</param>
 		/// <param name="dimension">Pre-existing dimension to use with this quantity</param>
-		public Quantity(double value, Dimension dimension)
-			: base(value) {
-			Dimensions.Add(dimension);
+		public Quantity(double value, Dimension dimension) {
+			_q = new Quantity<DoubleWrapper>(new DoubleWrapper(value), dimension);
 		}
 
 		/// <summary>
@@ -543,17 +736,48 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <param name="value">The value of the quantity</param>
 		/// <param name="dimensions">Pre-existing dimensions to use with this quantity</param>
-		public Quantity(double value, IEnumerable<Dimension> dimensions)
-			: base(value) {
-			Dimensions.AddRange(dimensions);
+		public Quantity(double value, IEnumerable<Dimension> dimensions) {
+			_q = new Quantity<DoubleWrapper>(new DoubleWrapper(value), dimensions);
 		}
 
 		/// <summary>
 		/// Copy constructor
 		/// </summary>
 		/// <param name="quantity">The quantity to copy</param>
-		protected Quantity(Quantity quantity)
-			: base(quantity) {
+		protected Quantity(Quantity quantity) {
+			_q = new Quantity<DoubleWrapper>(quantity._q);
+		}
+
+		/// <summary>
+		/// Helper constructor taking in the quantity to be wrapped
+		/// </summary>
+		/// <param name="wrappedQuantity">Quantity to be wrapped</param>
+		private Quantity(Quantity<DoubleWrapper> wrappedQuantity) {
+			_q = wrappedQuantity;
+		}
+
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// The Value of a Quantity is an unqualified, dimensionless measurement.
+		/// In this case it is a scalar.
+		/// </summary>
+		[DataMember(Name = "value")]
+		public double Value {
+			get { return _q.Value.Value; }
+			set { _deserializedValue = value; }
+		}
+
+		/// <summary>
+		/// The Dimensions of a Quantity are the combination of units of measurement
+		/// that qualify this quantity in the real world.
+		/// </summary>
+		[DataMember(Name = "dimensions")]
+		public List<Dimension> Dimensions {
+			get { return _q.Dimensions; }
+			set { _deserializedDimensions = value; }
 		}
 
 		#endregion
@@ -561,35 +785,38 @@ namespace ForgedSoftware.Measurement {
 		#region Conversion
 
 		/// <summary>
-		/// Converts the quantity into the base units of each dimension.
+		/// A wrapper for <see cref="Quantity{DoubleWrapper}.Convert(string)"/>
 		/// </summary>
-		/// <returns>The converted quantity</returns>
-		public override Quantity ConvertToBase() {
-			double convertedValue = Value;
-			List<Dimension> newDimensions = Dimensions
-				.Select(dimension => dimension.ConvertToBase(ref convertedValue)).ToList();
-			return new Quantity(convertedValue, newDimensions);
+		public Quantity Convert(string unitName) {
+			return new Quantity(_q.Convert(unitName));
 		}
 
 		/// <summary>
-		/// Converts a quantity in based on a unit.
-		/// Assumes that the dimensions that have the same system as the provided unit are in a base unit.
+		/// A wrapper for <see cref="Quantity{DoubleWrapper}.Convert(Unit)"/>
 		/// </summary>
-		/// <param name="unit">The unit to convert into</param>
-		/// <param name="prefix">The prefix to convert into</param>
-		/// <returns>The converted quantity</returns>
-		protected override Quantity ConvertFromBase(Unit unit, Prefix prefix = null) {
-			double convertedValue = Value;
-			var newDimensions = new List<Dimension>();
+		public Quantity Convert(Unit unit) {
+			return new Quantity(_q.Convert(unit));
+		}
 
-			foreach (var dimension in Dimensions) {
-				if (dimension.Unit.System.Units.Contains(unit)) {
-					newDimensions.Add(dimension.ConvertFromBase(ref convertedValue, unit, prefix));
-				} else {
-					newDimensions.Add(dimension.Copy());
-				}
-			}
-			return new Quantity(convertedValue, newDimensions);
+		/// <summary>
+		/// A wrapper for <see cref="Quantity{DoubleWrapper}.Convert(Quantity{DoubleWrapper})"/>
+		/// </summary>
+		public Quantity Convert(Quantity quantity) {
+			return new Quantity(_q.Convert(quantity._q));
+		}
+
+		/// <summary>
+		/// A wrapper for <see cref="Quantity{DoubleWrapper}.ConvertToBase()"/>
+		/// </summary>
+		public Quantity ConvertToBase() {
+			return new Quantity(_q.ConvertToBase());
+		}
+
+		/// <summary>
+		/// A wrapper for <see cref="Quantity{DoubleWrapper}.ConvertFromBase(Unit, Prefix)"/>
+		/// </summary>
+		public Quantity ConvertFromBase(Unit unit, Prefix prefix = null) {
+			return new Quantity(_q.ConvertFromBase(unit, prefix));
 		}
 
 		#endregion
@@ -597,66 +824,31 @@ namespace ForgedSoftware.Measurement {
 		#region General Operations
 
 		/// <summary>
-		/// Simplifies a quantity to the most simple set of dimensions possible.
-		/// Dimension order is preserved during the simplification in order to choose
-		/// the appropriate units.
+		/// A wrapper for <see cref="Quantity{DoubleWrapper}.Simplify()"/>
 		/// </summary>
-		/// <example>
-		/// 5 m^2.in.ft^-1.s^-1 => 897930.494 m^2.s^-1
-		/// </example>
-		/// <returns>The simplified quantity</returns>
-		public override Quantity Simplify() {
-			double computedValue = Value;
-			List<Dimension> simplifiedDimensions = Dimensions.Simplify(ref computedValue);
-			// TODO - Abstracting Simplify() to the superclass fails here as we can't create a new object
-			var resultingQuantity = new Quantity(computedValue, simplifiedDimensions);
-
-			if (MeasurementFactory.Options.UseAutomaticPrefixManagement) {
-				resultingQuantity = resultingQuantity.TidyPrefixes();
-			}
-			return resultingQuantity;
-		}
-
-		#endregion
-
-		#region Basic Math - Dimensionless
-
-		/// <summary>
-		/// Multiplies the quantity as the multiplicand by a dimensionless value.
-		/// </summary>
-		/// <param name="value">The value that is the multiplier</param>
-		/// <returns>A new quantity that is the product of the two original values</returns>
-		public override Quantity Multiply(double value) {
-			return new Quantity(Value * value, Dimensions.CopyList());
+		public Quantity Simplify() {
+			return new Quantity(_q.Simplify());
 		}
 
 		/// <summary>
-		/// Divides the quantity as a dividend by a dimensionless value.
+		/// A wrapper for <see cref="Quantity{DoubleWrapper}.TidyPrefixes()"/>
 		/// </summary>
-		/// <param name="value">The value that is the divisor</param>
-		/// <returns>A new quantity that is the quotient</returns>
-		public override Quantity Divide(double value) {
-			return new Quantity(Value / value, Dimensions.CopyList());
+		public Quantity TidyPrefixes() {
+			return new Quantity(_q.TidyPrefixes());
 		}
 
 		/// <summary>
-		/// Adds an arbitrary value to the original quantity.
-		/// Assumes that value has the same dimensions as the original quantity.
+		/// A wrapper for <see cref="Quantity{DoubleWrapper}.IsDimensionless()"/>
 		/// </summary>
-		/// <param name="value">The value to be added</param>
-		/// <returns>A new quantity with the sum of the values</returns>
-		public override Quantity Add(double value) {
-			return new Quantity(Value + value, Dimensions.CopyList());
+		public bool IsDimensionless() {
+			return _q.IsDimensionless();
 		}
 
 		/// <summary>
-		/// Subtracts an arbitrary value from the original quanity.
-		/// Assumes that the value has the same dimensions as the original quantity.
+		/// A wrapper for <see cref="Quantity{DoubleWrapper}.IsCommensurable(Quantity{DoubleWrapper})"/>
 		/// </summary>
-		/// <param name="value">The value to be subtracted</param>
-		/// <returns>A new quantity with the difference of the values</returns>
-		public override Quantity Subtract(double value) {
-			return new Quantity(Value - value, Dimensions.CopyList());
+		public bool IsCommensurable(Quantity quantity) {
+			return _q.IsCommensurable(quantity._q);
 		}
 
 		#endregion
@@ -664,77 +856,75 @@ namespace ForgedSoftware.Measurement {
 		#region Basic Math - Quantity Based
 
 		/// <summary>
-		/// Multiplies this quantity with another and combines the existing dimensions.
-		/// Simplifies the result afterwards.
+		/// A wrapper for <see cref="Quantity{DoubleWrapper}.Add(Quantity{DoubleWrapper})"/>
 		/// </summary>
-		/// <param name="q">The quantity being multiplied by</param>
-		/// <returns>A resulting quantity that is the product of the two quantities</returns>
-		public override Quantity Multiply(Quantity q) {
-			List<Dimension> clonedDimensions = Dimensions.CopyList();
-			clonedDimensions.AddRange(q.Dimensions.CopyList());
-			var newQuantity = new Quantity(Value * q.Value, clonedDimensions);
-			return newQuantity.Simplify();
+		public Quantity Add(Quantity add) {
+			return new Quantity(_q.Add(add._q));
 		}
 
 		/// <summary>
-		/// Divides this quantity with another, returning a quantity with dimensions
-		/// that are the difference of the dividend and the divisor.
-		/// Simplifies the result afterwards.
+		/// A wrapper for <see cref="Quantity{DoubleWrapper}.Subtract(Quantity{DoubleWrapper})"/>
 		/// </summary>
-		/// <param name="q">The quantity that is the divisor</param>
-		/// <returns>A resulting quantity that is the quotient of the two quantities</returns>
-		public override Quantity Divide(Quantity q) {
-			List<Dimension> clonedDimensions = Dimensions.CopyList();
-			clonedDimensions.AddRange(q.Dimensions.CopyList().Select(d => d.Invert()));
-			var newQuantity = new Quantity(Value / q.Value, clonedDimensions);
-			return newQuantity.Simplify();
+		public Quantity Subtract(Quantity subtract) {
+			return new Quantity(_q.Subtract(subtract._q));
 		}
 
 		/// <summary>
-		/// Adds this quantity with another that has commensurable dimensions.
-		/// Takes care of converting the parameter quantity into the same units.
+		/// A wrapper for <see cref="Quantity{DoubleWrapper}.Multiply(Quantity{DoubleWrapper})"/>
 		/// </summary>
-		/// <param name="q">The quantity being added</param>
-		/// <returns>A resulting quantity that is the sum of the two quantities</returns>
-		public override Quantity Add(Quantity q) {
-			// Convert value into same units
-			Quantity convertedQuantity = q.Convert(this);
-			return new Quantity(Value + convertedQuantity.Value, Dimensions.CopyList());
+		public Quantity Multiply(Quantity multiply) {
+			return new Quantity(_q.Multiply(multiply._q));
 		}
 
 		/// <summary>
-		/// Subtracts this quantity from another that has commensurable dimensions.
-		/// Takes care of converting the parameter quantity into the same units.
+		/// A wrapper for <see cref="Quantity{DoubleWrapper}.Divide(Quantity{DoubleWrapper})"/>
 		/// </summary>
-		/// <param name="q">The quantity being subtracted</param>
-		/// <returns>A resulting quantity that is the difference of the two quantities</returns>
-		public override Quantity Subtract(Quantity q) {
-			// Convert value into same units
-			Quantity convertedQuantity = q.Convert(this);
-			return new Quantity(Value - convertedQuantity.Value, Dimensions.CopyList());
-		}
-
-		/// <summary>
-		/// Negates this quantity by making the value negative and inverting the powers
-		/// on the dimensions.
-		/// </summary>
-		/// <returns>A resulting quantity that is the negation of the original one</returns>
-		public override Quantity Negate() {
-			return new Quantity(-Value, Dimensions.CopyList().Select(d => d.Invert()));
+		public Quantity Divide(Quantity divide) {
+			return new Quantity(_q.Divide(divide._q));
 		}
 
 		#endregion
 
-		#region Extended Math
-		// TODO - Can this be added somehow into Quantity<>
-		// Or maybe specified through a Interface?
+		#region Basic Math - Dimensionless
 
-		// Extensions of System.Math functions
-
-		/// <seealso cref="System.Math.Abs(double)"/>
-		public Quantity Abs() {
-			return new Quantity(Math.Abs(Value), Dimensions.CopyList());
+		/// <summary>
+		/// A wrapper for <see cref="Quantity{DoubleWrapper}.Add(DoubleWrapper)"/>
+		/// </summary>
+		public Quantity Add(double add) {
+			return new Quantity(_q.Add(new DoubleWrapper(add)));
 		}
+
+		/// <summary>
+		/// A wrapper for <see cref="Quantity{DoubleWrapper}.Subtract(DoubleWrapper)"/>
+		/// </summary>
+		public Quantity Subtract(double subtract) {
+			return new Quantity(_q.Subtract(new DoubleWrapper(subtract)));
+		}
+
+		/// <summary>
+		/// A wrapper for <see cref="Quantity{DoubleWrapper}.Multiply(DoubleWrapper)"/>
+		/// </summary>
+		public Quantity Multiply(double multiply) {
+			return new Quantity(_q.Multiply(new DoubleWrapper(multiply)));
+		}
+
+		/// <summary>
+		/// A wrapper for <see cref="Quantity{DoubleWrapper}.Divide(DoubleWrapper)"/>
+		/// </summary>
+		public Quantity Divide(double divide) {
+			return new Quantity(_q.Divide(new DoubleWrapper(divide)));
+		}
+
+		/// <summary>
+		/// A wrapper for <see cref="Quantity{DoubleWrapper}.Negate()"/>
+		/// </summary>
+		public Quantity Negate() {
+			return new Quantity(_q.Negate());
+		}
+
+		#endregion
+
+		#region Scalar Math Functions (Extensions of System.Math Functions)
 
 		/// <seealso cref="System.Math.Acos(double)"/>
 		public Quantity Acos() {
@@ -751,11 +941,6 @@ namespace ForgedSoftware.Measurement {
 			return new Quantity(Math.Atan(Value), Dimensions.CopyList());
 		}
 
-		/// <seealso cref="System.Math.Ceiling(double)"/>
-		public Quantity Ceiling() {
-			return new Quantity(Math.Ceiling(Value), Dimensions.CopyList());
-		}
-
 		/// <seealso cref="System.Math.Cos(double)"/>
 		public Quantity Cos() {
 			return new Quantity(Math.Cos(Value), Dimensions.CopyList());
@@ -764,11 +949,6 @@ namespace ForgedSoftware.Measurement {
 		/// <seealso cref="System.Math.Exp(double)"/>
 		public Quantity Exp() {
 			return new Quantity(Math.Exp(Value), Dimensions.CopyList());
-		}
-
-		/// <seealso cref="System.Math.Floor(double)"/>
-		public Quantity Floor() {
-			return new Quantity(Math.Floor(Value), Dimensions.CopyList());
 		}
 
 		/// <seealso cref="System.Math.Log(double)"/>
@@ -781,41 +961,14 @@ namespace ForgedSoftware.Measurement {
 			return new Quantity(Math.Log10(Value), Dimensions.CopyList());
 		}
 
-		/// <seealso cref="System.Math.Round(double)"/>
-		public Quantity Round() {
-			return new Quantity(Math.Round(Value), Dimensions.CopyList());
-		}
-
 		/// <seealso cref="System.Math.Sin(double)"/>
 		public Quantity Sin() {
 			return new Quantity(Math.Sin(Value), Dimensions.CopyList());
 		}
 
-		/// <seealso cref="System.Math.Sqrt(double)"/>
-		public Quantity Sqrt() {
-			return new Quantity(Math.Sqrt(Value), Dimensions.CopyList());
-		}
-
 		/// <seealso cref="System.Math.Tan(double)"/>
 		public Quantity Tan() {
 			return new Quantity(Math.Tan(Value), Dimensions.CopyList());
-		}
-
-		// Extra functions not avaliable in JS version
-
-		/// <seealso cref="System.Math.Cosh(double)"/>
-		public Quantity Cosh() {
-			return new Quantity(Math.Cosh(Value), Dimensions.CopyList());
-		}
-
-		/// <seealso cref="System.Math.Sinh(double)"/>
-		public Quantity Sinh() {
-			return new Quantity(Math.Sinh(Value), Dimensions.CopyList());
-		}
-
-		/// <seealso cref="System.Math.Tanh(double)"/>
-		public Quantity Tanh() {
-			return new Quantity(Math.Tanh(Value), Dimensions.CopyList());
 		}
 
 		// Functions requiring a parameter
@@ -840,6 +993,43 @@ namespace ForgedSoftware.Measurement {
 		/// <returns>The atan2 result with the dimensions of the x value</returns>
 		public Quantity Atan2(Quantity y) {
 			return Atan2(y.Convert(this).Value);
+		}
+
+		#region Extra Functionality (Not Available in JS Version)
+
+		/// <seealso cref="System.Math.Cosh(double)"/>
+		public Quantity Cosh() {
+			return new Quantity(Math.Cosh(Value), Dimensions.CopyList());
+		}
+
+		/// <seealso cref="System.Math.Sinh(double)"/>
+		public Quantity Sinh() {
+			return new Quantity(Math.Sinh(Value), Dimensions.CopyList());
+		}
+
+		/// <seealso cref="System.Math.Tanh(double)"/>
+		public Quantity Tanh() {
+			return new Quantity(Math.Tanh(Value), Dimensions.CopyList());
+		}
+
+		#endregion
+
+		#endregion
+
+		#region Extended Math
+
+		// TODO - Use Quantity<> instead of directly implementing these...
+
+		public Quantity Abs() {
+			return new Quantity(Math.Abs(Value), Dimensions.CopyList());
+		}
+
+		public Quantity Ceiling() {
+			return new Quantity(Math.Ceiling(Value), Dimensions.CopyList());
+		}
+
+		public Quantity Floor() {
+			return new Quantity(Math.Floor(Value), Dimensions.CopyList());
 		}
 
 		/// <summary>
@@ -867,16 +1057,23 @@ namespace ForgedSoftware.Measurement {
 			return Pow(y.Value);
 		}
 
+		public Quantity Round() {
+			return new Quantity(Math.Round(Value), Dimensions.CopyList());
+		}
+
+		public Quantity Sqrt() {
+			return new Quantity(Math.Sqrt(Value), Dimensions.CopyList());
+		}
+
 		#region Max
+
+		public Quantity Max(Quantity y) {
+			return Max(y.Convert(this).Value);
+		}
 
 		/// <seealso cref="System.Math.Max(double, double)"/>
 		public Quantity Max(double y) {
 			return new Quantity(Math.Max(Value, y), Dimensions.CopyList());
-		}
-
-		/// <seealso cref="System.Math.Max(double, double)"/>
-		public Quantity Max(Quantity y) {
-			return Max(y.Convert(this).Value);
 		}
 
 		/// <summary>
@@ -951,8 +1148,40 @@ namespace ForgedSoftware.Measurement {
 		/// Utilizes the copy constructor to make a copy of this quantity.
 		/// </summary>
 		/// <returns>A copy of this quantity</returns>
-		public override Quantity Copy() {
+		public Quantity Copy() {
 			return new Quantity(this);
+		}
+
+		#endregion
+
+		#region Serialization
+
+		/// <summary>
+		/// Serializes the quantity as a json string.
+		/// </summary>
+		/// <returns>The serialized quantity</returns>
+		string ISerializable.ToJson() {
+			return this.ToJson();
+		}
+
+		/// <summary>
+		/// Static method to deserialize a json string into a quantity.
+		/// </summary>
+		/// <param name="json">The json serialization of a quantity</param>
+		/// <returns>The deserialized quantity</returns>
+		public static Quantity FromJson(string json) {
+			return json.FromJson<Quantity>();
+		}
+
+		/// <summary>
+		/// Explicit implementation of IObjectReference to make sure quantity
+		/// is instantiated properly during deserialization.
+		/// </summary>
+		public object GetRealObject(StreamingContext context) {
+			var q1 = new Quantity(_deserializedValue, _deserializedDimensions);
+			_deserializedValue = default(double);
+			_deserializedDimensions = null;
+			return q1;
 		}
 
 		#endregion
@@ -960,144 +1189,36 @@ namespace ForgedSoftware.Measurement {
 		#region Formatting
 
 		/// <summary>
-		/// Provides a formatted version of this quantities value.
-		/// TODO - This method is quite long, maybe it should be split up?
+		/// A wrapper for <see cref="Quantity{DoubleWrapper}.Format()"/>
 		/// </summary>
-		/// <param name="options">The options that describe the format transformations</param>
-		/// <returns>The formatted value</returns>
-		public override string FormatValue(FormatOptions options) {
-			string valueStr = "";
+		public string Format() {
+			return _q.Format();
+		}
 
-			// Precision/Fixed
-			if (options.Fixed >= 0) {
-				valueStr += Value.ToString("F" + options.Fixed);
-			} else if (options.Precision > 0) {
-				valueStr += Value.ToString("G" + options.Fixed);
-			} else {
-				valueStr += Value.ToString("G");
-			}
 
-			// Separator/Decimal
-			int numLength = valueStr.IndexOf(".", StringComparison.InvariantCulture);
-			if (numLength == -1) {
-				numLength = valueStr.Length;
-			}
-			var separatorPos = numLength - options.GroupSize;
-			valueStr = valueStr.Replace(".", options.DecimalSeparator);
-			if (options.GroupSeparator.Length > 0 && !double.IsInfinity(Value) && !double.IsNaN(Value)) {
-				while (separatorPos > 0) {
-					valueStr = valueStr.Insert(separatorPos, options.GroupSeparator);
-					separatorPos -= options.GroupSize;
-				}
-			}
-
-			// Exponents
-			if (options.ExpandExponent) {
-				int eIndex = valueStr.IndexOf("E", StringComparison.InvariantCulture);
-				if (eIndex >= 0) {
-					double exponent = Math.Floor(Math.Log(Value) / Math.Log(10));
-					valueStr = valueStr.Substring(0, eIndex);
-					string exponentStr = (options.Ascii) ? "^" + exponent : ((int)exponent).ToSuperScript();
-					valueStr += " x 10" + exponentStr;
-				}
-			}
-
-			return valueStr;
+		/// <summary>
+		/// A wrapper for <see cref="Quantity{DoubleWrapper}.Format(FormatOptions)"/>
+		/// </summary>
+		public string Format(FormatOptions options) {
+			return _q.Format(options);
 		}
 
 		#endregion
 
-	}
+		#region ToString
 
-	/// <summary>
-	/// A generics based approach to quantity that allows any type of number to be used
-	/// providing a very broad range of functionality for manipulating quantities.
-	/// </summary>
-	/// <typeparam name="T">The number type that this quantity manipulates</typeparam>
-	public class Quantity<T> : BaseQuantity<T, Quantity<T>, Dimension<T>> where T : INumber<T> {
-
-		#region Constructors
-
-		// TODO
-
-		#endregion
-
-		#region Conversion
-
-		public override Quantity<T> ConvertToBase() {
-			throw new NotImplementedException();
+		/// <summary>
+		/// A wrapper for <see cref="Quantity{DoubleWrapper}.ToString()"/>
+		/// </summary>
+		public override string ToString() {
+			return _q.ToString();
 		}
 
-		protected override Quantity<T> ConvertFromBase(Unit unit, Prefix prefix = null) {
-			throw new NotImplementedException();
-		}
-
-		#endregion
-
-		#region General Operations
-
-		public override Quantity<T> Simplify() {
-			throw new NotImplementedException();
-		}
-
-		#endregion
-
-		#region Basic Math - Dimensionless
-
-		public override Quantity<T> Multiply(T value) {
-			throw new NotImplementedException();
-		}
-
-		public override Quantity<T> Divide(T value) {
-			throw new NotImplementedException();
-		}
-
-		public override Quantity<T> Add(T value) {
-			throw new NotImplementedException();
-		}
-
-		public override Quantity<T> Subtract(T value) {
-			throw new NotImplementedException();
-		}
-
-		#endregion
-
-		#region Basic Math - Quantity Based
-
-		public override Quantity<T> Multiply(Quantity<T> q) {
-			throw new NotImplementedException();
-		}
-
-		public override Quantity<T> Divide(Quantity<T> q) {
-			throw new NotImplementedException();
-		}
-
-		public override Quantity<T> Add(Quantity<T> q) {
-			throw new NotImplementedException();
-		}
-
-		public override Quantity<T> Subtract(Quantity<T> q) {
-			throw new NotImplementedException();
-		}
-
-		public override Quantity<T> Negate() {
-			throw new NotImplementedException();
-		}
-
-		#endregion
-
-		#region Copyable
-
-		public override Quantity<T> Copy() {
-			throw new NotImplementedException();
-		}
-
-		#endregion
-
-		#region Formatting
-
-		public override string FormatValue(FormatOptions options) {
-			throw new NotImplementedException();
+		/// <summary>
+		/// A wrapper for <see cref="Quantity{DoubleWrapper}.ToString(string, IFormatProvider)"/>
+		/// </summary>
+		public string ToString(string format, IFormatProvider formatProvider) {
+			return _q.ToString(format, formatProvider);
 		}
 
 		#endregion

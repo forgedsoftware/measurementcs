@@ -1,12 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using System.Runtime.Serialization;
 
 namespace ForgedSoftware.Measurement {
 
 	/// <summary>
 	/// A representation of a double value with a positive and negative uncertainty
 	/// </summary>
-	public struct Uncertainty : INumberMath<Uncertainty>, IFormattable, IEquatable<Uncertainty>,
+	[DataContract]
+	public struct Uncertainty : INumber<Uncertainty>, IFormattable, IEquatable<Uncertainty>,
 		IComparable, IComparable<Uncertainty>, ICopyable<Uncertainty> {
 
 		private const double SQRT_POWER = 0.5;
@@ -104,16 +108,19 @@ namespace ForgedSoftware.Measurement {
 		/// <summary>
 		/// The central value.
 		/// </summary>
+		[DataMember(Name = "value")]
 		public double Value { get; private set; }
 
 		/// <summary>
 		/// The amount of uncertainty below the value.
 		/// </summary>
+		[DataMember(Name = "lower")]
 		public double LowerUncertainty { get; private set; }
 
 		/// <summary>
 		/// The amount of uncertainty above the value.
 		/// </summary>
+		[DataMember(Name = "upper")]
 		public double UpperUncertainty { get; private set; }
 
 		/// <summary>
@@ -121,6 +128,7 @@ namespace ForgedSoftware.Measurement {
 		/// absolute. A relative uncertainty is defined based on a percentage,
 		/// whereas an absolute is defined by an actual set of values.
 		/// </summary>
+		[DataMember(Name = "isRelative", EmitDefaultValue = false, IsRequired = false)]
 		public bool IsRelative { get; private set; }
 
 		/// <summary>
@@ -158,6 +166,13 @@ namespace ForgedSoftware.Measurement {
 			get { return UpperUncertainty + LowerUncertainty; }
 		}
 
+		/// <summary>
+		/// An approximate equivalent value of the uncertainty as a double.
+		/// </summary>
+		public double EquivalentValue {
+			get { return Value; }
+		}
+
 		#endregion
 
 		#region Uncertainty Functions
@@ -187,7 +202,19 @@ namespace ForgedSoftware.Measurement {
 
 		#endregion
 
-		#region IMathFunction
+		#region Extended Math
+
+		public Uncertainty Abs() {
+			return new Uncertainty(Math.Abs(Value), LowerUncertainty, UpperUncertainty, IsRelative);
+		}
+
+		public Uncertainty Ceiling() {
+			return new Uncertainty(Math.Ceiling(Value), LowerUncertainty, UpperUncertainty, IsRelative);
+		}
+
+		public Uncertainty Floor() {
+			return new Uncertainty(Math.Floor(Value), LowerUncertainty, UpperUncertainty, IsRelative);
+		}
 
 		/// <summary>
 		/// Calculates an uncertainty raised to a power. The uncertainty is calculated using the relative
@@ -197,6 +224,10 @@ namespace ForgedSoftware.Measurement {
 		/// <returns>The uncertainty value raised to a power</returns>
 		public Uncertainty Pow(double power) {
 			return FromPercentage(Math.Pow(Value, power), LowerPercentage * power, UpperPercentage * power);
+		}
+
+		public Uncertainty Round() {
+			return new Uncertainty(Math.Round(Value), LowerUncertainty, UpperUncertainty, IsRelative);
 		}
 
 		/// <summary>
@@ -217,6 +248,11 @@ namespace ForgedSoftware.Measurement {
 			return (Value >= other.Value) ? this : other;
 		}
 
+		public Uncertainty Max(params Uncertainty[] values) {
+			var uncertainties = new List<Uncertainty>(values) { this };
+			return uncertainties.Max();
+		}
+
 		/// <summary>
 		/// Finds the smallest uncertainty out of two. Uses purely the central value and ignores the uncertainties.
 		/// </summary>
@@ -224,6 +260,11 @@ namespace ForgedSoftware.Measurement {
 		/// <returns>The smaller of the two uncertainties</returns>
 		public Uncertainty Min(Uncertainty other) {
 			return (Value <= other.Value) ? this : other;
+		}
+
+		public Uncertainty Min(params Uncertainty[] values) {
+			var uncertainties = new List<Uncertainty>(values) { this };
+			return uncertainties.Min();
 		}
 
 		#endregion
@@ -666,6 +707,5 @@ namespace ForgedSoftware.Measurement {
 		}
 
 		#endregion
-
 	}
 }

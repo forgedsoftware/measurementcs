@@ -6,7 +6,10 @@ namespace ForgedSoftware.Measurement {
 	/// INumber.
 	/// </summary>
 	/// <typeparam name="TNumber">The type of the implementing concrete class</typeparam>
-	public interface INumber<TNumber> : IValue<TNumber, double>
+	public interface INumber<TNumber> : IValueExtended<TNumber, double>
 		where TNumber : INumber<TNumber> {
+
+		// TODO - Document me
+		double EquivalentValue { get; }
 	}
 }

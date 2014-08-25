@@ -1,15 +1,19 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using System.Runtime.Serialization;
 
 namespace ForgedSoftware.Measurement {
 	
 	/// <summary>
-	/// A class describing a standard three dimensional vector and associate math, providing a set of
-	/// vector specific functionality including dot product, cross product, angle, magnitude.
-	/// TODO - Maybe create 2D and 4D form...
+	/// A class describing a standard four dimensional vector and associate math, providing a set of
+	/// vector specific functionality including dot product, angle, magnitude.
+	/// TODO - Test me!
 	/// </summary>
-	public struct Vector : INumberMath<Vector>, IFormattable, IEquatable<Vector>,
-		IComparable, IComparable<Vector>, ICopyable<Vector> {
+	[DataContract]
+	public struct Vector4 : INumber<Vector4>, IFormattable, IEquatable<Vector4>,
+		IComparable, IComparable<Vector4>, ICopyable<Vector4>, IVector<Vector4> {
 
 		/// <summary>
 		/// This is a reasonable epsilon for vector comparisons and equitability.
@@ -21,40 +25,45 @@ namespace ForgedSoftware.Measurement {
 		/// <summary>
 		/// A static vector describing an origin vector.
 		/// </summary>
-		public static readonly Vector Origin = new Vector(0, 0, 0);
+		public static readonly Vector4 Origin = new Vector4(0, 0, 0, 0);
 
 		/// <summary>
 		/// A static vector describing a unit vector along the x-axis.
 		/// </summary>
-		public static readonly Vector XAxis = new Vector(1, 0, 0);
+		public static readonly Vector4 XAxis = new Vector4(1, 0, 0, 0);
 
 		/// <summary>
 		/// A static vector describing a unit vector along the y-axis.
 		/// </summary>
-		public static readonly Vector YAxis = new Vector(0, 1, 0);
+		public static readonly Vector4 YAxis = new Vector4(0, 1, 0, 0);
 
 		/// <summary>
 		/// A static vector describing a unit vector along the z-axis.
 		/// </summary>
-		public static readonly Vector ZAxis = new Vector(0, 0, 1);
+		public static readonly Vector4 ZAxis = new Vector4(0, 0, 1, 0);
+
+		/// <summary>
+		/// A static vector describing a unit vector along the t-axis.
+		/// </summary>
+		public static readonly Vector4 TAxis = new Vector4(0, 0, 0, 1);
 
 		/// <summary>
 		/// A static vector describing the min value of on each axis.
 		/// </summary>
-		public static readonly Vector MinValue =
-			new Vector(Double.MinValue, Double.MinValue, Double.MinValue);
+		public static readonly Vector4 MinValue =
+			new Vector4(Double.MinValue, Double.MinValue, Double.MinValue, Double.MinValue);
 
 		/// <summary>
 		/// A static vector describing the max value of on each axis.
 		/// </summary>
-		public static readonly Vector MaxValue =
-			new Vector(Double.MaxValue, Double.MaxValue, Double.MaxValue);
+		public static readonly Vector4 MaxValue =
+			new Vector4(Double.MaxValue, Double.MaxValue, Double.MaxValue, Double.MaxValue);
 
 		/// <summary>
 		/// A static vector describing the standard double epsilon value of on each axis.
 		/// </summary>
-		public static readonly Vector Epsilon =
-			new Vector(Double.Epsilon, Double.Epsilon, Double.Epsilon);
+		public static readonly Vector4 Epsilon =
+			new Vector4(Double.Epsilon, Double.Epsilon, Double.Epsilon, Double.Epsilon);
 
 		#endregion
 
@@ -66,18 +75,20 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="x">The x axis value</param>
 		/// <param name="y">The y axis value</param>
 		/// <param name="z">The z axis value</param>
-		public Vector(double x, double y, double z)
+		/// <param name="t">The t axis value</param>
+		public Vector4(double x, double y, double z, double t)
 				: this() {
-			XValue = x;
-			YValue = y;
-			ZValue = z;
+			X = x;
+			Y = y;
+			Z = z;
+			T = t;
 		}
 
 		/// <summary>
 		/// Array constructor
 		/// </summary>
 		/// <param name="values">The vector as an array of values</param>
-		public Vector(double[] values)
+		public Vector4(double[] values)
 				: this() {
 			Array = values;
 		}
@@ -85,109 +96,91 @@ namespace ForgedSoftware.Measurement {
 		/// <summary>
 		/// Copy constructor
 		/// </summary>
-		public Vector(Vector vector)
+		public Vector4(Vector4 vector)
 				: this() {
-			XValue = vector.XValue;
-			YValue = vector.YValue;
-			ZValue = vector.ZValue;
+			X = vector.X;
+			Y = vector.Y;
+			Z = vector.Z;
+			T = vector.T;
 		}
 
 		#endregion
 
+		#region Properties
+
 		/// <summary>
 		/// A value representing the magnitude of the vector with respect to the x-axis.
 		/// </summary>
-		public double XValue { get; private set; }
+		[DataMember(Name = "x")]
+		public double X { get; private set; }
 
 		/// <summary>
 		/// A value representing the magnitude of the vector with respect to the y-axis.
 		/// </summary>
-		public double YValue { get; private set; }
+		[DataMember(Name = "y")]
+		public double Y { get; private set; }
 
 		/// <summary>
 		/// A value representing the magnitude of the vector with respect to the z-axis.
 		/// </summary>
-		public double ZValue { get; private set; }
+		[DataMember(Name = "z")]
+		public double Z { get; private set; }
+
+		/// <summary>
+		/// A value representing the magnitude of the vector with respect to the t-axis.
+		/// </summary>
+		[DataMember(Name = "t")]
+		public double T { get; private set; }
 
 		/// <summary>
 		/// A array representation of the three axis of the vector.
 		/// </summary>
 		public double[] Array {
-			get { return new[] { XValue, YValue, ZValue }; }
+			get { return new[] { X, Y, Z, T }; }
 			private set {
-				if (value.Length != 3) {
-					throw new ArgumentException("An array needs to contain 3 values to be a valid vector");
+				if (value.Length != 4) {
+					throw new ArgumentException("An array needs to contain 4 values to be a valid vector");
 				}
-				XValue = value[0];
-				YValue = value[1];
-				ZValue = value[2];
+				X = value[0];
+				Y = value[1];
+				Z = value[2];
+				T = value[3];
 			}
 		}
 
+		/// <summary>
+		/// An approximate equivalent value of the vector as a double.
+		/// In this case we use the magnitude.
+		/// </summary>
+		public double EquivalentValue {
+			get { return Magnitude; }
+		}
+
+		#endregion
+
 		#region Vector Functionality
 
-		/// <summary>
-		/// Calculates the magnitude or size of the vector
-		/// </summary>
 		public double Magnitude {
 			get { return Math.Sqrt(Pow(2).SumComponents); }
 		}
 
-		/// <summary>
-		/// Returns the sum of each of the components of the vector
-		/// </summary>
 		public double SumComponents {
-			get { return XValue + YValue + ZValue; }
+			get { return X + Y + Z + T; }
 		}
 
-		/// <summary>
-		/// Returns the dot product or scalar product of two vectors. This is equivalent to the
-		/// multiplication of each vector component and then summing them together.
-		/// </summary>
-		/// <param name="vector">The other vector</param>
-		/// <returns>The dot product of the two vectors</returns>
-		public double DotProduct(Vector vector) {
-			return (XValue * vector.XValue + YValue * vector.YValue + ZValue * vector.ZValue);
+		public double DotProduct(Vector4 vector) {
+			return (X * vector.X + Y * vector.Y + Z * vector.Z + T * vector.T);
 		}
 
-		/// <summary>
-		/// Returns the cross product of two vectors. This is a non-commutable operation.
-		/// The cross product is a vector perpendicular to the other two vectors, uses the Right Hand Rule,
-		/// and has a magnitude equal to the area of the parallelogram the vectors span.
-		/// </summary>
-		/// <param name="vector">The other vector</param>
-		/// <returns>The cross product of the two vectors</returns>
-		public Vector CrossProduct(Vector vector) {
-			// Non-commutable
-			return new Vector(
-				YValue * vector.ZValue - ZValue * vector.YValue,
-				ZValue * vector.XValue - XValue * vector.ZValue,
-				XValue * vector.YValue - YValue * vector.XValue);
-		}
-
-		/// <summary>
-		/// Checks if the vector is a unit vector. Unit vectors are vectors that have
-		/// a magnitude of 1.
-		/// </summary>
-		/// <returns>True if it is a unit vector, else false</returns>
 		public bool IsUnitVector() {
 			return (Math.Abs(Magnitude - 1) < EquatableEpsilon);
 		}
 
-		/// <summary>
-		/// Returns the angle between the two vectors in radians.
-		/// </summary>
-		/// <param name="vector">The other vector</param>
-		/// <returns>The angle between the two vectors</returns>
-		public double Angle(Vector vector) {
+		public double Angle(Vector4 vector) {
 			return Math.Acos(Normalize.DotProduct(vector.Normalize));
 		}
 
-		/// <summary>
-		/// Returns the normalized form of the vector. A normalized vector is a vector
-		/// scaled to the size of a unit vector.
-		/// </summary>
-		public Vector Normalize {
+		public Vector4 Normalize {
 			get {
 				if (Math.Abs(Magnitude) < EquatableEpsilon) {
 					throw new DivideByZeroException("A vector must have a magnitude of greater than 0 to normalize");
@@ -197,45 +190,43 @@ namespace ForgedSoftware.Measurement {
 			}
 		}
 
-		/// <summary>
-		/// Finds the distance between two vectors using the Pythagoras theorem.
-		/// </summary>
-		/// <param name="vector">The other vector</param>
-		/// <returns>The distance between the two vectors</returns>
-		public double Distance(Vector vector) {
+		public double Distance(Vector4 vector) {
 			return Math.Sqrt(
-				(XValue - vector.XValue) * (XValue - vector.XValue) +
-				(YValue - vector.YValue) * (YValue - vector.YValue) +
-				(ZValue - vector.ZValue) * (ZValue - vector.ZValue));
+				(X - vector.X) * (X - vector.X) +
+				(Y - vector.Y) * (Y - vector.Y) +
+				(Z - vector.Z) * (Z - vector.Z) +
+				(T - vector.T) * (T - vector.T));
 		}
 
-		/// <summary>
-		/// Determines if two vectors are perpendicular, that is at right angles to each other.
-		/// </summary>
-		/// <param name="vector">The other vector</param>
-		/// <returns>True if perpendicular, else false</returns>
-		public bool IsPerpendicular(Vector vector) {
+		public bool IsPerpendicular(Vector4 vector) {
 			return Math.Abs(DotProduct(vector)) < EquatableEpsilon;
 		}
 
 		#endregion
 
-		#region IMathFunctions
+		#region Extended Math
 
-		/// <summary>
-		/// The power function raises each component of the vector to a specified power.
-		/// </summary>
-		/// <param name="power">The power to raise by</param>
-		/// <returns>A vector raised to the provided power</returns>
-		public Vector Pow(double power) {
+		public Vector4 Abs() {
+			return FuncOneParam(Math.Abs);
+		}
+
+		public Vector4 Ceiling() {
+			return FuncOneParam(Math.Ceiling);
+		}
+
+		public Vector4 Floor() {
+			return FuncOneParam(Math.Floor);
+		}
+
+		public Vector4 Pow(double power) {
 			return FuncTwoParam(Math.Pow, power);
 		}
 
-		/// <summary>
-		/// The squareroot function applies a squareroot to each component of the vector.
-		/// </summary>
-		/// <returns>The squareroot of the vector</returns>
-		public Vector Sqrt() {
+		public Vector4 Round() {
+			return FuncOneParam(Math.Round);
+		}
+
+		public Vector4 Sqrt() {
 			return FuncOneParam(Math.Sqrt);
 		}
 
@@ -245,8 +236,13 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <param name="vector">The other vector</param>
 		/// <returns>The larger of the two vectors</returns>
-		public Vector Max(Vector vector) {
+		public Vector4 Max(Vector4 vector) {
 			return (this >= vector) ? this : vector;
+		}
+
+		public Vector4 Max(params Vector4[] values) {
+			var vectors = new List<Vector4>(values) { this };
+			return vectors.Max();
 		}
 
 		/// <summary>
@@ -255,22 +251,27 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <param name="vector">The other vector</param>
 		/// <returns>The smaller of the two vectors</returns>
-		public Vector Min(Vector vector) {
+		public Vector4 Min(Vector4 vector) {
 			return (this <= vector) ? this : vector;
+		}
+
+		public Vector4 Min(params Vector4[] values) {
+			var vectors = new List<Vector4>(values) { this };
+			return vectors.Min();
 		}
 
 		/// <summary>
 		/// Helper method to apply System.Math functions with one parameter.
 		/// </summary>
-		private Vector FuncOneParam(Func<double, double> func) {
-			return new Vector(func(XValue), func(YValue), func(ZValue));
+		private Vector4 FuncOneParam(Func<double, double> func) {
+			return new Vector4(func(X), func(Y), func(Z), func(T));
 		}
 
 		/// <summary>
 		/// Helper method to apply System.Math functions with two parameters.
 		/// </summary>
-		private Vector FuncTwoParam(Func<double, double, double> func, double param) {
-			return new Vector(func(XValue, param), func(YValue, param), func(ZValue, param));
+		private Vector4 FuncTwoParam(Func<double, double, double> func, double param) {
+			return new Vector4(func(X, param), func(Y, param), func(Z, param), func(T, param));
 		}
 
 		#endregion
@@ -282,8 +283,8 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <param name="add">The vector to add</param>
 		/// <returns>The summed vector</returns>
-		public Vector Add(Vector add) {
-			return new Vector(XValue + add.XValue, YValue + add.YValue, ZValue + add.ZValue);
+		public Vector4 Add(Vector4 add) {
+			return new Vector4(X + add.X, Y + add.Y, Z + add.Z, T + add.T);
 		}
 
 		/// <summary>
@@ -291,25 +292,23 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <param name="subtract">The vector to subtract</param>
 		/// <returns>The vector of the difference</returns>
-		public Vector Subtract(Vector subtract) {
-			return new Vector(XValue - subtract.XValue, YValue - subtract.YValue, ZValue - subtract.ZValue);
+		public Vector4 Subtract(Vector4 subtract) {
+			return new Vector4(X - subtract.X, Y - subtract.Y, Z - subtract.Z, T - subtract.T);
 		}
 
 		/// <summary>
-		/// Multiplies two vectors together with a cross product. This operation
-		/// is non-commutable.
+		/// Multiplying two 4D vectors to return another is not a defined operation.
+		/// This method is provided for completeness but will throw an <exception cref="InvalidOperationException" />
 		/// </summary>
-		/// <param name="multiply">The vector to multiply by</param>
-		/// <returns>The cross product of the two vectors</returns>
-		public Vector Multiply(Vector multiply) {
-			return CrossProduct(multiply);
+		public Vector4 Multiply(Vector4 multiply) {
+			throw new InvalidOperationException("This operation is not implemented as it does not make sense for 4D vectors");
 		}
 
 		/// <summary>
 		/// Division of vectors is not a well defined mathematical operation.
 		/// This method is provided for completeness but will throw an <exception cref="InvalidOperationException" />
 		/// </summary>
-		public Vector Divide(Vector divide) {
+		public Vector4 Divide(Vector4 divide) {
 			throw new InvalidOperationException("This operation is not implemented for vectors as it is mathematically not well defined");
 		}
 
@@ -317,7 +316,7 @@ namespace ForgedSoftware.Measurement {
 		/// Addition of a scalar value to a vector is not mathematically defined.
 		/// This method is provided for completeness but will throw an <exception cref="InvalidOperationException" />
 		/// </summary>
-		public Vector Add(double add) {
+		public Vector4 Add(double add) {
 			throw new InvalidOperationException("Adding a scalar value to a vector is not valid");
 		}
 
@@ -325,7 +324,7 @@ namespace ForgedSoftware.Measurement {
 		/// Subtraction of a scalar value from a vector is not mathematically defined.
 		/// This method is provided for completeness but will throw an <exception cref="InvalidOperationException" />
 		/// </summary>
-		public Vector Subtract(double subtract) {
+		public Vector4 Subtract(double subtract) {
 			throw new InvalidOperationException("Subtracting a scalar value from a vector is not valid");
 		}
 
@@ -334,8 +333,8 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <param name="multiply">The scalar value to multiply by</param>
 		/// <returns>The multiplied vector</returns>
-		public Vector Multiply(double multiply) {
-			return new Vector(XValue * multiply, YValue * multiply, ZValue * multiply);
+		public Vector4 Multiply(double multiply) {
+			return new Vector4(X * multiply, Y * multiply, Z * multiply, T * multiply);
 		}
 
 		/// <summary>
@@ -343,8 +342,8 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <param name="divide">The scalar value to divide by</param>
 		/// <returns>The divided vector</returns>
-		public Vector Divide(double divide) {
-			return new Vector(XValue / divide, YValue / divide, ZValue / divide);
+		public Vector4 Divide(double divide) {
+			return new Vector4(X / divide, Y / divide, Z / divide, T / divide);
 		}
 		
 		/// <summary>
@@ -352,8 +351,8 @@ namespace ForgedSoftware.Measurement {
 		/// each component of the vector.
 		/// </summary>
 		/// <returns>The negated vector</returns>
-		public Vector Negate() {
-			return new Vector(-XValue, -YValue, -ZValue);
+		public Vector4 Negate() {
+			return new Vector4(-X, -Y, -Z, -T);
 		}
 
 		#endregion
@@ -363,16 +362,16 @@ namespace ForgedSoftware.Measurement {
 		/// <summary>
 		/// Overrides the + (addition) operator with a standard adding of vectors.
 		/// </summary>
-		/// <seealso cref="Add(Vector)"/>
-		public static Vector operator +(Vector vector1, Vector vector2) {
+		/// <seealso cref="Add(Vector4)"/>
+		public static Vector4 operator +(Vector4 vector1, Vector4 vector2) {
 			return vector1.Add(vector2);
 		}
 
 		/// <summary>
 		/// Overrides the - (subtraction) operator with a standard subtraction of vectors.
 		/// </summary>
-		/// <seealso cref="Subtract(Vector)"/>
-		public static Vector operator -(Vector vector1, Vector vector2) {
+		/// <seealso cref="Subtract(Vector4)"/>
+		public static Vector4 operator -(Vector4 vector1, Vector4 vector2) {
 			return vector1.Subtract(vector2);
 		}
 
@@ -380,7 +379,7 @@ namespace ForgedSoftware.Measurement {
 		/// Overrides the - (negation) operator with a vector negation
 		/// </summary>
 		/// <seealso cref="Negate()"/>
-		public static Vector operator -(Vector vector1) {
+		public static Vector4 operator -(Vector4 vector1) {
 			return vector1.Negate();
 		}
 
@@ -388,7 +387,7 @@ namespace ForgedSoftware.Measurement {
 		/// Overrides the + (reinforcement) operator by returning a copy of the vector
 		/// </summary>
 		/// <seealso cref="Copy()"/>
-		public static Vector operator +(Vector vector1) {
+		public static Vector4 operator +(Vector4 vector1) {
 			return vector1.Copy();
 		}
 
@@ -397,7 +396,7 @@ namespace ForgedSoftware.Measurement {
 		/// as a scalar multiply.
 		/// </summary>
 		/// <seealso cref="Multiply(double)"/>
-		public static Vector operator *(Vector vector1, double d2) {
+		public static Vector4 operator *(Vector4 vector1, double d2) {
 			return vector1.Multiply(d2);
 		}
 
@@ -406,20 +405,9 @@ namespace ForgedSoftware.Measurement {
 		/// as a scalar multiply.
 		/// </summary>
 		/// <seealso cref="Multiply(double)"/>
-		public static Vector operator *(double d1, Vector vector2) {
+		public static Vector4 operator *(double d1, Vector4 vector2) {
 			// Commutable
 			return vector2.Multiply(d1);
-		}
-
-		/// <summary>
-		/// Overrides the * (multiplication) operator between two vectors as the cross
-		/// product of two vectors. Care should be taken here not to confuse the result
-		/// with the scalar result of the dot product.
-		/// </summary>
-		/// <seealso cref="Multiply(Vector)"/>
-		/// <seealso cref="CrossProduct(Vector)"/>
-		public static Vector operator *(Vector vector1, Vector vector2) {
-			return vector1.Multiply(vector2);
 		}
 
 		/// <summary>
@@ -427,7 +415,7 @@ namespace ForgedSoftware.Measurement {
 		/// as a scalar division.
 		/// </summary>
 		/// <seealso cref="Divide(double)"/>
-		public static Vector operator /(Vector vector1, double d2) {
+		public static Vector4 operator /(Vector4 vector1, double d2) {
 			return vector1.Divide(d2);
 		}
 
@@ -435,15 +423,15 @@ namespace ForgedSoftware.Measurement {
 		/// Overrides the / (division) operator between a scalar and a vector
 		/// as a scalar division.
 		/// </summary>
-		public static Vector operator /(double d1, Vector vector2) {
-			return new Vector(d1 / vector2.XValue, d1 / vector2.YValue, d1 / vector2.ZValue);
+		public static Vector4 operator /(double d1, Vector4 vector2) {
+			return new Vector4(d1 / vector2.X, d1 / vector2.Y, d1 / vector2.Z, d1 / vector2.T);
 		}
 
 		/// <summary>
 		/// Overrides the &lt; (less than) operator as the test of whether the
 		/// magnitude of the first vector is less than that of the second.
 		/// </summary>
-		public static bool operator <(Vector vector1, Vector vector2) {
+		public static bool operator <(Vector4 vector1, Vector4 vector2) {
 			return vector1.Magnitude < vector2.Magnitude;
 		}
 
@@ -451,7 +439,7 @@ namespace ForgedSoftware.Measurement {
 		/// Overrides the &lt;= (less than or equal) operator as the test of whether the
 		/// magnitude of the first vector is less than or equal to that of the second.
 		/// </summary>
-		public static bool operator <=(Vector vector1, Vector vector2) {
+		public static bool operator <=(Vector4 vector1, Vector4 vector2) {
 			return vector1.Magnitude <= vector2.Magnitude;
 		}
 
@@ -459,7 +447,7 @@ namespace ForgedSoftware.Measurement {
 		/// Overrides the &gt; (greater than) operator as the test of whether the
 		/// magnitude of the first vector is greater than that of the second.
 		/// </summary>
-		public static bool operator >(Vector vector1, Vector vector2) {
+		public static bool operator >(Vector4 vector1, Vector4 vector2) {
 			return vector1.Magnitude > vector2.Magnitude;
 		}
 
@@ -467,7 +455,7 @@ namespace ForgedSoftware.Measurement {
 		/// Overrides the &gt;= (greater than or equal) operator as the test of whether the
 		/// magnitude of the first vector is greater than or equal to that of the second.
 		/// </summary>
-		public static bool operator >=(Vector vector1, Vector vector2) {
+		public static bool operator >=(Vector4 vector1, Vector4 vector2) {
 			return vector1.Magnitude >= vector2.Magnitude;
 		}
 
@@ -476,22 +464,23 @@ namespace ForgedSoftware.Measurement {
 		/// based on whether the component values are the same (epsilon test).
 		/// Comparing two null values also returns true.
 		/// </summary>
-		public static bool operator ==(Vector vector1, Vector vector2) {
+		public static bool operator ==(Vector4 vector1, Vector4 vector2) {
 			if (((object) vector1 == null) && ((object) vector2 == null)) {
 				return true;
 			}
 			return (((object) vector1 != null) && ((object) vector2 != null) &&
-				(Math.Abs(vector1.XValue - vector2.XValue) <= EquatableEpsilon) &&
-				(Math.Abs(vector1.YValue - vector2.YValue) <= EquatableEpsilon) &&
-				(Math.Abs(vector1.ZValue - vector2.ZValue) <= EquatableEpsilon));
+				(Math.Abs(vector1.X - vector2.X) <= EquatableEpsilon) &&
+				(Math.Abs(vector1.Y - vector2.Y) <= EquatableEpsilon) &&
+				(Math.Abs(vector1.Z - vector2.Z) <= EquatableEpsilon) &&
+				(Math.Abs(vector1.T - vector2.T) <= EquatableEpsilon));
 		}
 
 		/// <summary>
 		/// Overrides the != (inequality) operator to test whether the vectors
 		/// are not equivalent. It is a direct inverse of the equality operator.
 		/// </summary>
-		/// <seealso cref="operator ==(Vector, Vector)"/>
-		public static bool operator !=(Vector vector1, Vector vector2) {
+		/// <seealso cref="operator ==(Vector4, Vector4)"/>
+		public static bool operator !=(Vector4 vector1, Vector4 vector2) {
 			return !(vector1 == vector2);
 		}
 
@@ -502,10 +491,10 @@ namespace ForgedSoftware.Measurement {
 		/// <summary>
 		/// An override of the equals method. It checks equality not reference equals.
 		/// </summary>
-		/// <seealso cref="operator ==(Vector, Vector)"/>
+		/// <seealso cref="operator ==(Vector4, Vector4)"/>
 		public override bool Equals(object obj) {
-			if (obj is Vector) {
-				return this == (Vector)obj;
+			if (obj is Vector4) {
+				return this == (Vector4)obj;
 			}
 			return false;
 		}
@@ -513,8 +502,8 @@ namespace ForgedSoftware.Measurement {
 		/// <summary>
 		/// Implements the equals method. It checks equality not reference equals.
 		/// </summary>
-		/// <seealso cref="operator ==(Vector, Vector)"/>
-		public bool Equals(Vector vector) {
+		/// <seealso cref="operator ==(Vector4, Vector4)"/>
+		public bool Equals(Vector4 vector) {
 			return this == vector;
 		}
 
@@ -524,9 +513,10 @@ namespace ForgedSoftware.Measurement {
 		public override int GetHashCode() {
 			unchecked {
 				int hash = (int)2166136261;
-				hash = hash * 16777619 ^ XValue.GetHashCode();
-				hash = hash * 16777619 ^ YValue.GetHashCode();
-				hash = hash * 16777619 ^ ZValue.GetHashCode();
+				hash = hash * 16777619 ^ X.GetHashCode();
+				hash = hash * 16777619 ^ Y.GetHashCode();
+				hash = hash * 16777619 ^ Z.GetHashCode();
+				hash = hash * 16777619 ^ T.GetHashCode();
 				return hash;
 			}
 		}
@@ -540,8 +530,8 @@ namespace ForgedSoftware.Measurement {
 		/// <returns>Returns -1 if this is smaller than the other vector, 0 if they
 		/// are the same, and 1 if this vector is larger in terms of magnitude.</returns>
 		public int CompareTo(object obj) {
-			if (obj is Vector) {
-				return CompareTo((Vector)obj);
+			if (obj is Vector4) {
+				return CompareTo((Vector4)obj);
 			}
 			throw new ArgumentException("Cannot compare a Vector with a " + obj.GetType());
 		}
@@ -552,7 +542,7 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="vector">The vector to compare with</param>
 		/// <returns>Returns -1 if this is smaller than the other vector, 0 if they
 		/// are the same, and 1 if this vector is larger in terms of magnitude.</returns>
-		public int CompareTo(Vector vector) {
+		public int CompareTo(Vector4 vector) {
 			if (this < vector) {
 				return -1;
 			}
@@ -570,25 +560,30 @@ namespace ForgedSoftware.Measurement {
 		/// Copies the current vector using the copy constructor.
 		/// </summary>
 		/// <returns>The copy of the vector</returns>
-		public Vector Copy() {
-			return new Vector(this);
+		public Vector4 Copy() {
+			return new Vector4(this);
 		}
 
 		#endregion
 
 		#region ToString
 
+		public override string ToString() {
+			return ToString("G", CultureInfo.CurrentCulture);
+		}
+
 		/// <summary>
 		/// Provides a formattable ToString implementation. A format string and a format
 		/// provider can be defined. Format strings can be any of the following, optionally
 		/// appended by a number format string to be used:
 		/// <list type="bullet">
-		/// <item><term>G</term><description>A General format string, e.g. (1.2, 3.4, 5.6)</description></item>
+		/// <item><term>G</term><description>A General format string, e.g. (1.2, 3.4, 5.6, 0.3)</description></item>
 		/// <item><term>X</term><description>An X component string, e.g. 1.2</description></item>
 		/// <item><term>Y</term><description>A Y component string, e.g. 3.4</description></item>
 		/// <item><term>Z</term><description>A Z component string, e.g. 5.6</description></item>
-		/// <item><term>L</term><description>A Long format string, e.g. (x=1.2, y=3.4, z=5.6)</description></item>
-		/// <item><term>A</term><description>A Array format string, e.g. [1.2, 3.4, 5.6]</description></item>
+		/// <item><term>T</term><description>A Z component string, e.g. 0.3</description></item>
+		/// <item><term>L</term><description>A Long format string, e.g. (x=1.2, y=3.4, z=5.6, t=0.3)</description></item>
+		/// <item><term>A</term><description>A Array format string, e.g. [1.2, 3.4, 5.6, 0.3]</description></item>
 		/// </list>
 		/// </summary>
 		/// <param name="format">The format string to use</param>
@@ -608,31 +603,31 @@ namespace ForgedSoftware.Measurement {
 			}
 			switch (format) {
 				case "X":
-					return XValue.ToString(valFormat, formatProvider);
+					return X.ToString(valFormat, formatProvider);
 				case "Y":
-					return YValue.ToString(valFormat, formatProvider);
+					return Y.ToString(valFormat, formatProvider);
 				case "Z":
-					return ZValue.ToString(valFormat, formatProvider);
+					return Z.ToString(valFormat, formatProvider);
+				case "T":
+					return T.ToString(valFormat, formatProvider);
 				case "L":
-					return Format("(x={0}, y={1}, z={2})", valFormat, formatProvider);
+					return Format("(x={0}, y={1}, z={2}, t={3})", valFormat, formatProvider);
 				case "A":
-					return Format("[{0}, {1}, {2}]", valFormat, formatProvider);
+					return Format("[{0}, {1}, {2}, {3}]", valFormat, formatProvider);
 				default: // "G"
-					return Format("({0}, {1}, {2})", valFormat, formatProvider);
+					return Format("({0}, {1}, {2}, {3})", valFormat, formatProvider);
 			}
 		}
 		
 		private string Format(string formatStr, string valueFormat, IFormatProvider formatProvider) {
 			return String.Format(formatStr,
-				XValue.ToString(valueFormat, formatProvider),
-				YValue.ToString(valueFormat, formatProvider),
-				ZValue.ToString(valueFormat, formatProvider));
-		}
-
-		public override string ToString() {
-			return ToString("G", CultureInfo.CurrentCulture);
+				X.ToString(valueFormat, formatProvider),
+				Y.ToString(valueFormat, formatProvider),
+				Z.ToString(valueFormat, formatProvider),
+				T.ToString(valueFormat, formatProvider));
 		}
 
 		#endregion
+
 	}
 }
