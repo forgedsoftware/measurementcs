@@ -11,6 +11,9 @@ namespace ForgedSoftware.Measurement {
 	/// </example>
 	public class Unit {
 
+		/// <summary>
+		/// Main constructor for a unit
+		/// </summary>
 		public Unit() {
 			Multiplier = 1;
 			UnitSystems = new List<string>();

@@ -15,6 +15,8 @@ namespace ForgedSoftware.Measurement {
 	public struct Vector4 : INumber<Vector4>, IFormattable, IEquatable<Vector4>,
 		IComparable, IComparable<Vector4>, ICopyable<Vector4>, IVector<Vector4> {
 
+		private const int NUM_AXIS = 4;
+
 		/// <summary>
 		/// This is a reasonable epsilon for vector comparisons and equitability.
 		/// </summary>
@@ -138,7 +140,7 @@ namespace ForgedSoftware.Measurement {
 		public double[] Array {
 			get { return new[] { X, Y, Z, T }; }
 			private set {
-				if (value.Length != 4) {
+				if (value.Length != NUM_AXIS) {
 					throw new ArgumentException("An array needs to contain 4 values to be a valid vector");
 				}
 				X = value[0];

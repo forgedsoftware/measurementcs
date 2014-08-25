@@ -8,7 +8,7 @@ namespace ForgedSoftware.Measurement {
 
 	/*
 		#region Formatting
-
+		// TODO - Figure out how to integrate this...
 		/// <summary>
 		/// Provides a formatted version of this quantities value.
 		/// TODO - This method is quite long, maybe it should be split up?
@@ -1018,18 +1018,16 @@ namespace ForgedSoftware.Measurement {
 
 		#region Extended Math
 
-		// TODO - Use Quantity<> instead of directly implementing these...
-
 		public Quantity Abs() {
-			return new Quantity(Math.Abs(Value), Dimensions.CopyList());
+			return new Quantity(_q.Abs());
 		}
 
 		public Quantity Ceiling() {
-			return new Quantity(Math.Ceiling(Value), Dimensions.CopyList());
+			return new Quantity(_q.Ceiling());
 		}
 
 		public Quantity Floor() {
-			return new Quantity(Math.Floor(Value), Dimensions.CopyList());
+			return new Quantity(_q.Floor());
 		}
 
 		/// <summary>
@@ -1039,7 +1037,7 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="y">The raw power value</param>
 		/// <returns>The base raised to the provided power</returns>
 		public Quantity Pow(double y) {
-			return new Quantity(Math.Pow(Value, y), Dimensions.CopyList());
+			return new Quantity(_q.Pow(y));
 		}
 
 		/// <summary>
@@ -1058,34 +1056,22 @@ namespace ForgedSoftware.Measurement {
 		}
 
 		public Quantity Round() {
-			return new Quantity(Math.Round(Value), Dimensions.CopyList());
+			return new Quantity(_q.Round());
 		}
 
 		public Quantity Sqrt() {
-			return new Quantity(Math.Sqrt(Value), Dimensions.CopyList());
+			return new Quantity(_q.Sqrt());
 		}
 
 		#region Max
 
 		public Quantity Max(Quantity y) {
-			return Max(y.Convert(this).Value);
+			return new Quantity(_q.Max(y._q));
 		}
 
 		/// <seealso cref="System.Math.Max(double, double)"/>
 		public Quantity Max(double y) {
-			return new Quantity(Math.Max(Value, y), Dimensions.CopyList());
-		}
-
-		/// <summary>
-		/// A varargs function for calculating the max value of a set of values including this.
-		/// All values are assumed to have the same dimensions as the initial quantity.
-		/// </summary>
-		/// <param name="values">The varargs of values to test</param>
-		/// <returns>The largest value as a quantity</returns>
-		public Quantity Max(params double[] values) {
-			List<double> vals = values.ToList();
-			vals.Add(Value);
-			return new Quantity(vals.Max(), Dimensions.CopyList());
+			return new Quantity(_q.Max(new Quantity(y)._q));
 		}
 
 		/// <summary>
@@ -1096,8 +1082,7 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="values">The varargs of quantities to test</param>
 		/// <returns>The largest value as a quantity</returns>
 		public Quantity Max(params Quantity[] values) {
-			// TODO option controlled whether to keep base units or use new units
-			return Max(values.ToList().Select(q => q.Convert(this).Value).ToArray());
+			return new Quantity(_q.Max(values.Select(v => v._q).ToArray()));
 		}
 
 		#endregion
@@ -1105,25 +1090,13 @@ namespace ForgedSoftware.Measurement {
 		#region Min
 
 		/// <seealso cref="System.Math.Min(double, double)"/>
-		public Quantity Min(double y) {
-			return new Quantity(Math.Min(Value, y), Dimensions.CopyList());
+		public Quantity Min(Quantity y) {
+			return new Quantity(_q.Min(y._q));
 		}
 
 		/// <seealso cref="System.Math.Min(double, double)"/>
-		public Quantity Min(Quantity y) {
-			return Min(y.Convert(this).Value);
-		}
-
-		/// <summary>
-		/// A varargs function for calculating the min value of a set of values including this.
-		/// All values are assumed to have the same dimensions as the initial quantity.
-		/// </summary>
-		/// <param name="values">The varargs of values to test</param>
-		/// <returns>The smallest value as a quantity</returns>
-		public Quantity Min(params double[] values) {
-			List<double> vals = values.ToList();
-			vals.Add(Value);
-			return new Quantity(vals.Min(), Dimensions.CopyList());
+		public Quantity Min(double y) {
+			return new Quantity(_q.Min(new Quantity(y)._q));
 		}
 
 		/// <summary>
@@ -1134,8 +1107,7 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="values">The varargs of quantities to test</param>
 		/// <returns>The smallest value as a quantity</returns>
 		public Quantity Min(params Quantity[] values) {
-			// TODO option controlled whether to keep base units or use new units
-			return Min(values.ToList().Select(q => q.Convert(this).Value).ToArray());
+			return new Quantity(_q.Max(values.Select(v => v._q).ToArray()));
 		}
 
 		#endregion

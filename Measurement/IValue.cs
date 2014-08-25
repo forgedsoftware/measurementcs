@@ -9,6 +9,7 @@ namespace ForgedSoftware.Measurement {
 	/// <exception cref="InvalidOperationException" /> can be thrown.
 	/// </summary>
 	/// <typeparam name="TValue">The type of the value</typeparam>
+	/// <typeparam name="TScalar">The type of the scalar to use</typeparam>
 	public interface IValue<TValue, TScalar> {
 
 		/// <summary>

@@ -9,7 +9,10 @@ namespace ForgedSoftware.Measurement {
 	public interface INumber<TNumber> : IValueExtended<TNumber, double>
 		where TNumber : INumber<TNumber> {
 
-		// TODO - Document me
+		/// <summary>
+		/// An approximate value of the underlying INumber. It can be used for
+		/// comparisons.
+		/// </summary>
 		double EquivalentValue { get; }
 	}
 }

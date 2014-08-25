@@ -15,6 +15,8 @@ namespace ForgedSoftware.Measurement {
 	public struct Vector3 : INumber<Vector3>, IFormattable, IEquatable<Vector3>,
 		IComparable, IComparable<Vector3>, ICopyable<Vector3>, IVector<Vector3> {
 
+		private const int NUM_AXIS = 3;
+
 		/// <summary>
 		/// This is a reasonable epsilon for vector comparisons and equitability.
 		/// </summary>
@@ -124,7 +126,7 @@ namespace ForgedSoftware.Measurement {
 		public double[] Array {
 			get { return new[] { X, Y, Z }; }
 			private set {
-				if (value.Length != 3) {
+				if (value.Length != NUM_AXIS) {
 					throw new ArgumentException("An array needs to contain 3 values to be a valid vector");
 				}
 				X = value[0];
