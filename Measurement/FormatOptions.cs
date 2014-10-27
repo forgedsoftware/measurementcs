@@ -15,7 +15,6 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		public FormatOptions() {
 			Show = QuantityParts.All;
-			Fixed = -1;
 			Precision = -1;
 			ExpandExponent = true;
 			DecimalSeparator = ".";
@@ -36,7 +35,7 @@ namespace ForgedSoftware.Measurement {
 			}
 			var numProvider = provider as NumberFormatInfo;
 			if (numProvider != null) {
-				Fixed = numProvider.NumberDecimalDigits;
+				Precision = numProvider.NumberDecimalDigits;
 				GroupSeparator = numProvider.NumberGroupSeparator;
 				if (numProvider.NumberGroupSizes.Length > 0) {
 					GroupSize = numProvider.NumberGroupSizes[numProvider.NumberGroupSizes.Length - 1];
@@ -55,7 +54,6 @@ namespace ForgedSoftware.Measurement {
 		
 		// Value
 		public int Precision { get; set; }
-		public int Fixed { get; set; }
 		public bool ExpandExponent { get; set; }
 		public string DecimalSeparator { get; set; }
 		public string GroupSeparator { get; set; }

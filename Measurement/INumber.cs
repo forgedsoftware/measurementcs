@@ -1,4 +1,5 @@
-﻿
+﻿using System;
+
 namespace ForgedSoftware.Measurement {
 
 	/// <summary>
@@ -6,7 +7,7 @@ namespace ForgedSoftware.Measurement {
 	/// INumber.
 	/// </summary>
 	/// <typeparam name="TNumber">The type of the implementing concrete class</typeparam>
-	public interface INumber<TNumber> : IValueExtended<TNumber, double>
+	public interface INumber<TNumber> : IValueExtended<TNumber, double>, IFormattable
 		where TNumber : INumber<TNumber> {
 
 		/// <summary>

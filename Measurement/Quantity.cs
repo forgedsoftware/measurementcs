@@ -6,61 +6,6 @@ using System.Runtime.Serialization;
 
 namespace ForgedSoftware.Measurement {
 
-	/*
-		#region Formatting
-		// TODO - Figure out how to integrate this...
-		/// <summary>
-		/// Provides a formatted version of this quantities value.
-		/// TODO - This method is quite long, maybe it should be split up?
-		/// </summary>
-		/// <param name="options">The options that describe the format transformations</param>
-		/// <returns>The formatted value</returns>
-		public override string FormatValue(FormatOptions options) {
-			string valueStr = "";
-
-			// Precision/Fixed
-			if (options.Fixed >= 0) {
-				valueStr += Value.ToString("F" + options.Fixed);
-			} else if (options.Precision > 0) {
-				valueStr += Value.ToString("G" + options.Fixed);
-			} else {
-				valueStr += Value.ToString("G");
-			}
-
-			// Separator/Decimal
-			int numLength = valueStr.IndexOf(".", StringComparison.InvariantCulture);
-			if (numLength == -1) {
-				numLength = valueStr.Length;
-			}
-			var separatorPos = numLength - options.GroupSize;
-			valueStr = valueStr.Replace(".", options.DecimalSeparator);
-			if (options.GroupSeparator.Length > 0 && !double.IsInfinity(Value) && !double.IsNaN(Value)) {
-				while (separatorPos > 0) {
-					valueStr = valueStr.Insert(separatorPos, options.GroupSeparator);
-					separatorPos -= options.GroupSize;
-				}
-			}
-
-			// Exponents
-			if (options.ExpandExponent) {
-				int eIndex = valueStr.IndexOf("E", StringComparison.InvariantCulture);
-				if (eIndex >= 0) {
-					double exponent = Math.Floor(Math.Log(Value) / Math.Log(10));
-					valueStr = valueStr.Substring(0, eIndex);
-					string exponentStr = (options.Ascii) ? "^" + exponent : ((int)exponent).ToSuperScript();
-					valueStr += " x 10" + exponentStr;
-				}
-			}
-
-			return valueStr;
-		}
-
-		#endregion
-
-	}
-		 * 
-		 * */
-
 	/// <summary>
 	/// A generics based approach to quantity that allows any type of number to be used
 	/// providing a very broad range of functionality for manipulating quantities.
@@ -581,19 +526,19 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="options">An object detailing the different format options</param>
 		/// <returns>The formatted string.</returns>
 		public string Format(FormatOptions options) {
+			IFormatProvider formatProvider = null; // TODO Fix me!
+
+			string formatType = "Q";
+			if (options.ExpandExponent) {
+				formatType += (options.Ascii) ? "T" : "S";
+			} else {
+				formatType += "G";
+			}
 			// Value
-			string valueStr = FormatValue(options);
+			string valueStr = Value.ToString("Q" + formatType + options.Precision, formatProvider); // TODO Fix me!
 
 			// Dimensions
-			List<Dimension> clonedDimensions = Dimensions.CopyList();
-			if (options.Sort) {
-				//clonedDimensions.Sort((d1, d2) => (d1.Power == d2.Power) ? -2 : d2.Power - d1.Power);
-				clonedDimensions = clonedDimensions.OrderBy(d => -d.Power).ToList();
-			}
-			IEnumerable<string> dimensionStrings = clonedDimensions.Select(d => d.Format(options));
-
-			string joiner = (options.FullName) ? " " : options.UnitSeparator;
-			string dimStr = dimensionStrings.Aggregate((current, next) => current + joiner + next);
+			string dimStr = FormatDimensions(options);
 
 			// Returning
 			if (options.Show == FormatOptions.QuantityParts.DimensionsOnly) {
@@ -608,13 +553,15 @@ namespace ForgedSoftware.Measurement {
 			return valueStr + dimStr;
 		}
 
-		/// <summary>
-		/// Formats the value into a valid string.
-		/// </summary>
-		/// <param name="options">The format options to use</param>
-		/// <returns>A string of the formatted value</returns>
-		public string FormatValue(FormatOptions options) {
-			return Value.ToString(); // TODO properly!!!
+		private string FormatDimensions(FormatOptions options) {
+			List<Dimension> clonedDimensions = Dimensions.CopyList();
+			if (options.Sort) {
+				clonedDimensions = clonedDimensions.OrderBy(d => -d.Power).ToList();
+			}
+			IEnumerable<string> dimensionStrings = clonedDimensions.Select(d => d.Format(options));
+
+			string joiner = (options.FullName) ? " " : options.UnitSeparator;
+			return dimensionStrings.Aggregate((current, next) => current + joiner + next);
 		}
 
 		#endregion

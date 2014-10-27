@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.Serialization;
 
@@ -9,7 +10,7 @@ namespace ForgedSoftware.Measurement {
 	/// This is a wrapper of a double to provide the standard set of INumber functions.
 	/// </summary>
 	[DataContract]
-	public struct DoubleWrapper : INumber<DoubleWrapper> {
+	public struct DoubleWrapper : INumber<DoubleWrapper>, IFormattable {
 
 		#region Constructors
 
@@ -171,8 +172,11 @@ namespace ForgedSoftware.Measurement {
 		#endregion
 
 		public override string ToString() {
-			return Value.ToString(); // TODO - Do this properly!!
+			return ToString("G", CultureInfo.CurrentCulture);
 		}
 
+		public string ToString(string format, IFormatProvider formatProvider) {
+			return Value.ExtendedToString(format, formatProvider);
+		}
 	}
 }

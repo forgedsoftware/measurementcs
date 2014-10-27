@@ -19,6 +19,7 @@ namespace ForgedSoftware.Measurement {
 	public class Dimension : ISerializable, IFormatter, IFormattable, ICopyable<Dimension>, IObjectReference {
 
 		private const int DEFAULT_POWER = 1;
+		private const double EPSILON = 1E-15;
 
 		#region Constructors
 
@@ -164,15 +165,26 @@ namespace ForgedSoftware.Measurement {
 		/// Underlying convert method
 		/// </summary>
 		private TNumber DoConvert<TNumber>(TNumber value, Unit unit, Prefix prefix, bool toBase) where TNumber : INumber<TNumber> {
+			// Ignore offset allows us to avoid adding/subtracting scalars where it is not reasonable to do so.
+			// For example, conversion of vectors. If offset is required, this will still throw an error.
+			bool ignoreOffset = (!value.OperationsAllowed(v => v.Add(1), v => v.Subtract(1)) && Math.Abs(unit.Offset) < EPSILON);
 			TNumber calculatedValue = value;
 			for (int pow = 0; pow < Math.Abs(Power); pow++) {
 				if (prefix != null) {
 					calculatedValue = toBase ? prefix.Remove(calculatedValue) : Prefix.Apply(calculatedValue);
 				}
-				if (toBase ? (Power > 0) : (Power < 0)) { // TODO - Add will fail for Vector
-					calculatedValue = (calculatedValue.Multiply(unit.Multiplier)).Add(unit.Offset); // TODO dimensionality with offsets may not work with compound dimensions.
-				} else { // TODO - Subtract will fail for vector
-					calculatedValue = (calculatedValue.Subtract(unit.Offset)).Divide(unit.Multiplier); // TODO dimensionality with offsets may not work with compound dimensions.
+				if (toBase ? (Power > 0) : (Power < 0)) {
+					calculatedValue = calculatedValue.Multiply(unit.Multiplier);
+					if (!ignoreOffset) {
+						calculatedValue = calculatedValue.Add(unit.Offset);
+							// TODO dimensionality with offsets may not work with compound dimensions.
+					}
+				} else {
+					if (!ignoreOffset) {
+						calculatedValue = calculatedValue.Subtract(unit.Offset);
+					}
+					calculatedValue = calculatedValue.Divide(unit.Multiplier);
+					// TODO dimensionality with offsets may not work with compound dimensions.
 				}
 			}
 			return calculatedValue;

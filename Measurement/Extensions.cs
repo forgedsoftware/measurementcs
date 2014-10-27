@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Json;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace ForgedSoftware.Measurement {
 
@@ -101,15 +102,49 @@ namespace ForgedSoftware.Measurement {
 			return number.ToString(CultureInfo.InvariantCulture).Aggregate("", (current, t) => current + supers[t]);
 		}
 
-		public static bool OperationsAllowed<TNumber>(this TNumber number, List<Func<TNumber, bool>> neededOperations)
+		public static bool OperationsAllowed<TNumber>(this TNumber number, params Func<TNumber, TNumber>[] neededOperations)
 				where TNumber : INumber<TNumber> {
 			bool allowed = true;
 			try {
-				neededOperations.Select(f => f(number));
+				neededOperations.ToList().ForEach(f => f(number));
 			} catch (Exception ex) {
 				allowed = false;
 			}
 			return allowed;
+		}
+
+		public static string ExtendedToString(this double value, string format, IFormatProvider formatProvider) {
+			string startLetter = format.Substring(0, 1).ToUpper();
+			if (new Regex(@"[C-G]|N|P|R|X|[^A-Z]").IsMatch(startLetter)) {
+				return value.ToString(format, formatProvider);
+			}
+			switch (startLetter) {
+				case "Q": // Quantity format string
+					return value.ExtendedToString(format.Substring(1), formatProvider) + " {0}";
+				case "S": // Straight scientific format
+					return ScientificFormat(value, format.Substring(1), formatProvider, false);
+				case "T": // Text version of scientific format
+					return ScientificFormat(value, format.Substring(1), formatProvider, true);
+				default:
+					throw new FormatException("Provided format was not valid.");
+			}
+		}
+
+		private static string ScientificFormat(double value, string format, IFormatProvider formatProvider, bool asciiOnly) {
+			//int sigFig = int.Parse(format);
+
+			string valueStr = value.ToString("G" + format, formatProvider);
+
+			// Exponents
+			int eIndex = valueStr.IndexOf("E", StringComparison.InvariantCulture);
+			if (eIndex >= 0) {
+				double exponent = Math.Floor(Math.Log(value) / Math.Log(10));
+				valueStr = valueStr.Substring(0, eIndex);
+				string exponentStr = (asciiOnly) ? "^" + exponent : ((int)exponent).ToSuperScript();
+				valueStr += " x 10" + exponentStr;
+			}
+
+			return valueStr;
 		}
 	}
 }
