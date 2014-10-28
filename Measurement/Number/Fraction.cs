@@ -5,7 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.Serialization;
 
-namespace ForgedSoftware.Measurement {
+namespace ForgedSoftware.Measurement.Number {
 
 	/// <summary>
 	/// Provides a representation of a Fractional number to provide the functionality of representing the full set of Rational numbers.

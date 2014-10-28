@@ -1,4 +1,4 @@
-﻿using ForgedSoftware.Measurement;
+﻿using ForgedSoftware.Measurement.Number;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ForgedSoftware.MeasurementTests {

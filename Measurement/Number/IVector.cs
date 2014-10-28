@@ -1,5 +1,5 @@
 ﻿
-namespace ForgedSoftware.Measurement {
+namespace ForgedSoftware.Measurement.Number {
 
 	/// <summary>
 	/// A interface describing the general functionality of vectors

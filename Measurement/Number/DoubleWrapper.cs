@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.Serialization;
 
-namespace ForgedSoftware.Measurement {
+namespace ForgedSoftware.Measurement.Number {
 
 	/// <summary>
 	/// This is a wrapper of a double to provide the standard set of INumber functions.

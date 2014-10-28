@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Globalization;
-using ForgedSoftware.Measurement;
+using ForgedSoftware.Measurement.Number;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ForgedSoftware.MeasurementTests {

@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.Serialization;
 
-namespace ForgedSoftware.Measurement {
+namespace ForgedSoftware.Measurement.Number {
 
 	/// <summary>
 	/// A representation of a double value with a positive and negative uncertainty

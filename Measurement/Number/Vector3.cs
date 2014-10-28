@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.Serialization;
 
-namespace ForgedSoftware.Measurement {
+namespace ForgedSoftware.Measurement.Number {
 	
 	/// <summary>
 	/// A class describing a standard three dimensional vector and associate math, providing a set of
