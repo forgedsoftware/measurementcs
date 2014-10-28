@@ -7,6 +7,7 @@ namespace ForgedSoftware.Measurement {
 	/// In some cases it may not make sense to implement both the scalar and the value
 	/// based maths, these cases should be avoided, but if necessary an
 	/// <exception cref="InvalidOperationException" /> can be thrown.
+	/// TODO - Consider adding 'Modulus' operation
 	/// </summary>
 	/// <typeparam name="TValue">The type of the value</typeparam>
 	/// <typeparam name="TScalar">The type of the scalar to use</typeparam>

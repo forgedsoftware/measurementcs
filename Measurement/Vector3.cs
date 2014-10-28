@@ -12,7 +12,7 @@ namespace ForgedSoftware.Measurement {
 	/// TODO - Maybe create a 4D form...
 	/// </summary>
 	[DataContract]
-	public struct Vector3 : INumber<Vector3>, IFormattable, IEquatable<Vector3>,
+	public struct Vector3 : INumber<Vector3>, IEquatable<Vector3>,
 		IComparable, IComparable<Vector3>, ICopyable<Vector3>, IVector<Vector3> {
 
 		private const int NUM_AXIS = 3;

@@ -10,7 +10,7 @@ namespace ForgedSoftware.Measurement {
 	/// This is a wrapper of a double to provide the standard set of INumber functions.
 	/// </summary>
 	[DataContract]
-	public struct DoubleWrapper : INumber<DoubleWrapper>, IFormattable {
+	public struct DoubleWrapper : INumber<DoubleWrapper> {
 
 		#region Constructors
 
