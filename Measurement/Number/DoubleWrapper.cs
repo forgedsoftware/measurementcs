@@ -171,6 +171,10 @@ namespace ForgedSoftware.Measurement.Number {
 
 		#endregion
 
+		public DoubleWrapper Copy() {
+			return new DoubleWrapper(Value);
+		}
+
 		public override string ToString() {
 			return ToString("G", CultureInfo.CurrentCulture);
 		}

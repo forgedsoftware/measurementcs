@@ -7,8 +7,8 @@ namespace ForgedSoftware.Measurement {
 	/// INumber.
 	/// </summary>
 	/// <typeparam name="TNumber">The type of the implementing concrete class</typeparam>
-	public interface INumber<TNumber> : IValueExtended<TNumber, double>, IFormattable
-		where TNumber : INumber<TNumber> {
+	public interface INumber<TNumber> : IValueExtended<TNumber, double>, IFormattable, ICopyable<TNumber>
+			where TNumber : INumber<TNumber> {
 
 		/// <summary>
 		/// An approximate value of the underlying INumber. It can be used for

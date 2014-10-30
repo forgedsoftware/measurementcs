@@ -133,6 +133,14 @@ namespace ForgedSoftware.Measurement {
 
 		#endregion
 
+		#region Options
+
+		public static void ResetToDefaultOptions() {
+			Options = new MeasurementOptions();
+		}
+
+		#endregion
+
 		#region Quantity Factory Methods
 
 		public static Quantity CreateQuantity(double val) {

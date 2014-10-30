@@ -66,8 +66,10 @@ namespace ForgedSoftware.MeasurementTests {
 
 		[TestMethod]
 		public void TestMultiplyComplexCommensurableQuantities() {
+			MeasurementFactory.Options.IgnoreDerivedSystems = true;
 			Quantity result = new Quantity(3.2, new[] { "minute", "metre", "coulomb" })
 				.Multiply(new Quantity(3, new[] { "second", "mile", "coulomb" }));
+			MeasurementFactory.ResetToDefaultOptions();
 			Assert.AreEqual(257.49504, result.Value, 0.0001);
 			Assert.AreEqual(3, result.Dimensions.Count);
 			foreach (Dimension dim in result.Dimensions) {

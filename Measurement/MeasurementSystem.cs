@@ -31,6 +31,10 @@ namespace ForgedSoftware.Measurement {
 		public string DerivedString { get; set; }
 		public List<Dimension> Derived { get; private set; }
 
+		public bool IsDerived() {
+			return Derived.Count > 0;
+		}
+
 		public void UpdateDerived() {
 			Derived.Clear();
 			if (string.IsNullOrEmpty(DerivedString)) {
@@ -68,7 +72,7 @@ namespace ForgedSoftware.Measurement {
 				}
 			}
 			var computedValue = new DoubleWrapper(1);
-			Derived = Derived.Simplify(ref computedValue);
+			Derived = Derived.SimpleSimplify(ref computedValue);
 		}
 
 		#endregion

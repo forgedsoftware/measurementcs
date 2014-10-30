@@ -33,7 +33,7 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="list">The list of dimensions to simplify</param>
 		/// <param name="value">The value to be converted as the dimensions are simplified</param>
 		/// <returns>A new list of simplified dimensions</returns>
-		public static List<Dimension> Simplify<TNumber>(this List<Dimension> list, ref TNumber value) 
+		public static List<Dimension> SimpleSimplify<TNumber>(this List<Dimension> list, ref TNumber value)
 				where TNumber : INumber<TNumber> {
 			var newDimensions = new List<Dimension>();
 			var processedDimensions = new List<int>();
@@ -57,6 +57,107 @@ namespace ForgedSoftware.Measurement {
 
 			value = computedValue;
 			return newDimensions;
+		}
+
+		public static List<Dimension> Simplify<TNumber>(this List<Dimension> list, ref TNumber value)
+				where TNumber : INumber<TNumber> {
+			// TODO somewhere some option control is needed
+				// want to deep simplify?
+				// prefer base systems?
+			var dimensionLists = new List<SimplifiedDimensions<TNumber>>();
+			// simple simplify
+			TNumber copy = value.Copy();
+			List<Dimension> basicSimplifiedDimensions = list.SimpleSimplify(ref copy);
+			// keep copy of simplified dimensions
+			dimensionLists.Add(new SimplifiedDimensions<TNumber>(basicSimplifiedDimensions, copy));
+			if (!MeasurementFactory.Options.IgnoreDerivedSystems) {
+				// convert dimensions to base systems
+				TNumber copy2 = value.Copy();
+				List<Dimension> baseSystemDimensions = basicSimplifiedDimensions
+					.SelectMany(d => d.ToBaseSystems(ref copy2)).ToList();
+				// simple simplify
+				baseSystemDimensions = baseSystemDimensions.SimpleSimplify(ref copy2);
+				// keep copy of dimensions in base systems
+				dimensionLists.Add(new SimplifiedDimensions<TNumber>(baseSystemDimensions, copy2));
+				// find matching systems based on base dimensions
+				dimensionLists.AddRange(FindDerivedSystems(baseSystemDimensions, copy2));
+				// keep only the results with a max of X dimensions (determine X somehow!)
+				// score dimension sets and choose heuristically the fittest result
+			}
+			dimensionLists.ForEach(x => x.ScoreList());
+			SimplifiedDimensions<TNumber> bestDimensions = dimensionLists.OrderByDescending(x => x.Score).First();
+			value = bestDimensions.Value;
+			return bestDimensions.Dimensions;
+		}
+
+		private static List<SimplifiedDimensions<TNumber>> FindDerivedSystems<TNumber>
+				(List<Dimension> dimensions, TNumber value)
+				where TNumber : INumber<TNumber> {
+			var derivedSystems = new List<SimplifiedDimensions<TNumber>>();
+			// for each derived system
+			foreach (MeasurementSystem system in MeasurementFactory.Systems.Where(s => s.IsDerived())) {
+				List<Dimension> neededSystems = system.Derived.CopyList();
+				// for each existing dimension
+				List<Dimension> currentDimensions = dimensions.CopyList();
+				var currentDimensionsToRemove = new List<Dimension>();
+				foreach (Dimension dimension in currentDimensions) {
+					if (dimension.Unit.System.IsDerived()) {
+						break;
+					}
+					bool exactMatchFound = dimension.MatchDimensions(neededSystems);
+					if (exactMatchFound) {
+						currentDimensionsToRemove.Add(dimension);
+					}
+				}
+				currentDimensionsToRemove.ForEach(d => currentDimensions.Remove(d));
+
+				// if neededDimensions is empty
+				if (neededSystems.Count == 0) {
+					// add derived system to dimensions
+					currentDimensions.Add(new Dimension(system.BaseUnit, 1));
+					// save dimensions as a new set
+					derivedSystems.Add(new SimplifiedDimensions<TNumber>(currentDimensions, value.Copy())); // Do wee need to simple simplify again here??
+					// repeat for each derived system until no more matches are found - recursive?
+					derivedSystems.AddRange(FindDerivedSystems(currentDimensions, value.Copy()));
+				}
+			}
+			return derivedSystems;
+		}
+
+		/// <summary>
+		/// A helper class to provide handling and scoring of dimensions while simplifying.
+		/// </summary>
+		private class SimplifiedDimensions<TNumber>
+				where TNumber : INumber<TNumber> {
+
+			public SimplifiedDimensions(List<Dimension> dimensions, TNumber value) {
+				Dimensions = dimensions;
+				Value = value;
+			}
+
+			public List<Dimension> Dimensions { get; private set; }
+			public TNumber Value { get; private set; }
+			public double Score { get; private set; }
+
+			/// <summary>
+			/// Heuristically score the list of dimensions
+			/// </summary>
+			public void ScoreList() {
+				double score = 1000;
+				// minimise number of dimensions
+				score -= Dimensions.Count * 10;
+				// minimise total powers
+				score -= Dimensions.Select(x => Math.Abs(x.Power)).Sum() * 5;
+				// penalize derived dimensions
+				score -= Dimensions.Count(d => d.Unit.System.IsDerived()) * 5;
+				// favour positive dimensions over negative dimensions
+				score -= Dimensions.Count(x => x.Power < 0) * 3;
+				// favour units in the original dimension list ??????
+				// TODO
+				// TODO - can we determine anything heuristically about the value? maybe penalize really small/large numbers/NaN?
+				Score = score;
+			}
+
 		}
 
 		/// <summary>

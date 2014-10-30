@@ -210,7 +210,8 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="value">The value to be converted while combining</param>
 		/// <param name="dimension">The dimension to combine</param>
 		/// <returns>The combined dimension</returns>
-		public Dimension Combine<TNumber>(ref TNumber value, Dimension dimension) where TNumber : INumber<TNumber> {
+		public Dimension Combine<TNumber>(ref TNumber value, Dimension dimension)
+				where TNumber : INumber<TNumber> {
 			// Some validation
 			if (Unit.System.Name != dimension.Unit.System.Name) {
 				throw new Exception("Dimensions must have the same system to combine");
@@ -226,6 +227,40 @@ namespace ForgedSoftware.Measurement {
 			}
 
 			return new Dimension(Unit, aggregatePower);
+		}
+
+		public List<Dimension> ToBaseSystems<TNumber>(ref TNumber copy2)
+				where TNumber : INumber<TNumber> {
+			// TODO this currently assumes the derived dimension has base units...
+			if (!Unit.System.IsDerived()) {
+				return new List<Dimension> { Copy() };
+			}
+			List<Dimension> baseSystems = Unit.System.Derived.CopyList();
+			baseSystems.ForEach(d => d.Power = d.Power * Power);
+			return baseSystems;
+		}
+
+		public bool MatchDimensions(List<Dimension> neededSystems) {
+			bool exactMatchFound = false;
+			// find matching dimension and power in derived system
+			var neededSystemsToRemove = new List<Dimension>();
+			foreach (Dimension needed in neededSystems) {
+				if (needed.Unit.System.Name == Unit.System.Name) {
+					if (Math.Sign(needed.Power) == Math.Sign(Power) &&
+						Math.Abs(needed.Power) <= Math.Abs(Power)) {
+						neededSystemsToRemove.Add(needed);
+						if (needed.Power == Power) {
+							exactMatchFound = true;
+						} else {
+							Power = Math.Sign(needed.Power)*(Math.Abs(Power) - Math.Abs(needed.Power));
+						}
+					} else {
+						break;
+					}
+				}
+			}
+			neededSystemsToRemove.ForEach(d => neededSystems.Remove(d));
+			return exactMatchFound;
 		}
 
 		#endregion
@@ -516,6 +551,5 @@ namespace ForgedSoftware.Measurement {
 		}
 
 		#endregion
-
 	}
 }

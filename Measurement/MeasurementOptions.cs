@@ -16,6 +16,7 @@ namespace ForgedSoftware.Measurement {
 			CanReorderDimensions = true;
 
 			// Defaults - Systems & Units
+			IgnoreDerivedSystems = false;
 			AllowedUnitSystems = new List<string> { "imperial", "usCustomary", "metric" };
 			// TODO - Need to tidy this up!!
 			// Others: nautical, cgi, traditional Chinese, historical, [no system], oldImperial, astronomicalUnits, avoirdupois, jewellery, cgs, si
@@ -48,6 +49,8 @@ namespace ForgedSoftware.Measurement {
 		#endregion
 
 		#region Systems & Units
+
+		public bool IgnoreDerivedSystems { get; set; }
 
 		// TODO - Documentation
 		// TODO - Use it!

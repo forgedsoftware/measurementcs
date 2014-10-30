@@ -187,7 +187,6 @@ namespace ForgedSoftware.Measurement {
 		public Quantity<TNumber> Simplify() {
 			TNumber computedValue = Value;
 			List<Dimension> simplifiedDimensions = Dimensions.Simplify(ref computedValue);
-			// TODO - Abstracting Simplify() to the superclass fails here as we can't create a new object
 			var resultingQuantity = new Quantity<TNumber>(computedValue, simplifiedDimensions);
 
 			if (MeasurementFactory.Options.UseAutomaticPrefixManagement) {
