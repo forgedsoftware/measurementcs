@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Dimension.cs" />
+    <Compile Include="MeasurementSystem.cs" />
     <Compile Include="Number\DoubleWrapper.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="FormatOptions.cs" />
@@ -61,7 +62,7 @@
     <Compile Include="Prefix.cs" />
     <Compile Include="Quantity.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="MeasurementSystem.cs" />
+    <Compile Include="DimensionDefinition.cs" />
     <Compile Include="Number\Uncertainty.cs" />
     <Compile Include="Unit.cs" />
     <Compile Include="Number\Vector2.cs" />

@@ -43,7 +43,7 @@ namespace ForgedSoftware.Measurement {
 				Dimension dimension = list[index];
 				if (dimension.Power != 0 && !processedDimensions.Contains(index)) {
 					for (int i = index + 1; i < list.Count; i++) {
-						if (dimension.Unit.System.Name == list[i].Unit.System.Name) {
+						if (dimension.Unit.DimensionDefinition.Name == list[i].Unit.DimensionDefinition.Name) {
 							dimension = dimension.Combine(ref computedValue, list[i]);
 							processedDimensions.Add(i);
 						}
@@ -80,7 +80,7 @@ namespace ForgedSoftware.Measurement {
 				// keep copy of dimensions in base systems
 				dimensionLists.Add(new SimplifiedDimensions<TNumber>(baseSystemDimensions, copy2));
 				// find matching systems based on base dimensions
-				dimensionLists.AddRange(FindDerivedSystems(baseSystemDimensions, copy2));
+				dimensionLists.AddRange(FindDerivedDimensions(baseSystemDimensions, copy2));
 				// keep only the results with a max of X dimensions (determine X somehow!)
 				// score dimension sets and choose heuristically the fittest result
 			}
@@ -90,21 +90,21 @@ namespace ForgedSoftware.Measurement {
 			return bestDimensions.Dimensions;
 		}
 
-		private static List<SimplifiedDimensions<TNumber>> FindDerivedSystems<TNumber>
+		private static List<SimplifiedDimensions<TNumber>> FindDerivedDimensions<TNumber>
 				(List<Dimension> dimensions, TNumber value)
 				where TNumber : INumber<TNumber> {
-			var derivedSystems = new List<SimplifiedDimensions<TNumber>>();
+			var simplifiedDimensions = new List<SimplifiedDimensions<TNumber>>();
 			// for each derived system
-			foreach (MeasurementSystem system in MeasurementFactory.Systems.Where(s => s.IsDerived())) {
-				List<Dimension> neededSystems = system.Derived.CopyList();
+			foreach (DimensionDefinition dimDef in MeasurementFactory.Dimensions.Where(s => s.IsDerived())) {
+				List<Dimension> neededDimensions = dimDef.Derived.CopyList();
 				// for each existing dimension
 				List<Dimension> currentDimensions = dimensions.CopyList();
 				var currentDimensionsToRemove = new List<Dimension>();
 				foreach (Dimension dimension in currentDimensions) {
-					if (dimension.Unit.System.IsDerived()) {
+					if (dimension.Unit.DimensionDefinition.IsDerived()) {
 						break;
 					}
-					bool exactMatchFound = dimension.MatchDimensions(neededSystems);
+					bool exactMatchFound = dimension.MatchDimensions(neededDimensions);
 					if (exactMatchFound) {
 						currentDimensionsToRemove.Add(dimension);
 					}
@@ -112,16 +112,16 @@ namespace ForgedSoftware.Measurement {
 				currentDimensionsToRemove.ForEach(d => currentDimensions.Remove(d));
 
 				// if neededDimensions is empty
-				if (neededSystems.Count == 0) {
+				if (neededDimensions.Count == 0) {
 					// add derived system to dimensions
-					currentDimensions.Add(new Dimension(system.BaseUnit, 1));
+					currentDimensions.Add(new Dimension(dimDef.BaseUnit, 1));
 					// save dimensions as a new set
-					derivedSystems.Add(new SimplifiedDimensions<TNumber>(currentDimensions, value.Copy())); // Do wee need to simple simplify again here??
+					simplifiedDimensions.Add(new SimplifiedDimensions<TNumber>(currentDimensions, value.Copy())); // Do wee need to simple simplify again here??
 					// repeat for each derived system until no more matches are found - recursive?
-					derivedSystems.AddRange(FindDerivedSystems(currentDimensions, value.Copy()));
+					simplifiedDimensions.AddRange(FindDerivedDimensions(currentDimensions, value.Copy()));
 				}
 			}
-			return derivedSystems;
+			return simplifiedDimensions;
 		}
 
 		/// <summary>
@@ -149,7 +149,7 @@ namespace ForgedSoftware.Measurement {
 				// minimise total powers
 				score -= Dimensions.Select(x => Math.Abs(x.Power)).Sum() * 5;
 				// penalize derived dimensions
-				score -= Dimensions.Count(d => d.Unit.System.IsDerived()) * 5;
+				score -= Dimensions.Count(d => d.Unit.DimensionDefinition.IsDerived()) * 5;
 				// favour positive dimensions over negative dimensions
 				score -= Dimensions.Count(x => x.Power < 0) * 3;
 				// favour units in the original dimension list ??????

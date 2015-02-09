@@ -29,7 +29,7 @@ namespace ForgedSoftware.MeasurementTests
 			Assert.AreEqual(1, newDims.Count);
 			Assert.AreEqual(10, value.Value);
 			Assert.AreEqual(1, newDims[0].Power);
-			Assert.AreEqual("metrePerSecond", newDims[0].Unit.Name);
+			Assert.AreEqual("metrePerSecond", newDims[0].Unit.Key);
 		}
 
 		[TestMethod]
@@ -44,7 +44,7 @@ namespace ForgedSoftware.MeasurementTests
 			Assert.AreEqual(1, newDims[0].Power);
 			Assert.AreEqual(1, newDims[1].Power);
 			Assert.AreEqual("metre", newDims[0].Unit.Name);
-			Assert.AreEqual("metresPerSecondSquared", newDims[1].Unit.Name);
+			Assert.AreEqual("metrePerSquareSecond", newDims[1].Unit.Key);
 		}
 	}
 }

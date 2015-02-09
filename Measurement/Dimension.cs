@@ -134,7 +134,7 @@ namespace ForgedSoftware.Measurement {
 				return Copy();
 			}
 
-			Unit baseUnit = Unit.System.BaseUnit;
+			Unit baseUnit = Unit.DimensionDefinition.BaseUnit;
 			if (baseUnit == null) {
 				throw new Exception("Base unit could not be found!");
 			}
@@ -201,7 +201,7 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="dimension">The dimension to check against</param>
 		/// <returns>True if they are commensurable, else false</returns>
 		public bool IsCommensurableMatch(Dimension dimension) {
-			return Unit.System.Name == dimension.Unit.System.Name && Power == dimension.Power;
+			return Unit.DimensionDefinition.Name == dimension.Unit.DimensionDefinition.Name && Power == dimension.Power;
 		}
 
 		/// <summary>
@@ -213,7 +213,7 @@ namespace ForgedSoftware.Measurement {
 		public Dimension Combine<TNumber>(ref TNumber value, Dimension dimension)
 				where TNumber : INumber<TNumber> {
 			// Some validation
-			if (Unit.System.Name != dimension.Unit.System.Name) {
+			if (Unit.DimensionDefinition.Name != dimension.Unit.DimensionDefinition.Name) {
 				throw new Exception("Dimensions must have the same system to combine");
 			}
 
@@ -232,10 +232,10 @@ namespace ForgedSoftware.Measurement {
 		public List<Dimension> ToBaseSystems<TNumber>(ref TNumber copy2)
 				where TNumber : INumber<TNumber> {
 			// TODO this currently assumes the derived dimension has base units...
-			if (!Unit.System.IsDerived()) {
+			if (!Unit.DimensionDefinition.IsDerived()) {
 				return new List<Dimension> { Copy() };
 			}
-			List<Dimension> baseSystems = Unit.System.Derived.CopyList();
+			List<Dimension> baseSystems = Unit.DimensionDefinition.Derived.CopyList();
 			baseSystems.ForEach(d => d.Power = d.Power * Power);
 			return baseSystems;
 		}
@@ -245,7 +245,7 @@ namespace ForgedSoftware.Measurement {
 			// find matching dimension and power in derived system
 			var neededSystemsToRemove = new List<Dimension>();
 			foreach (Dimension needed in neededSystems) {
-				if (needed.Unit.System.Name == Unit.System.Name) {
+				if (needed.Unit.DimensionDefinition.Name == Unit.DimensionDefinition.Name) {
 					if (Math.Sign(needed.Power) == Math.Sign(Power) &&
 						Math.Abs(needed.Power) <= Math.Abs(Power)) {
 						neededSystemsToRemove.Add(needed);
@@ -425,7 +425,7 @@ namespace ForgedSoftware.Measurement {
 
 		[DataMember(Name = "systemName")]
 		public string SystemName {
-			get { return Unit.System.Name; }
+			get { return Unit.DimensionDefinition.Name; }
 			private set { _systemName = value; }
 		}
 

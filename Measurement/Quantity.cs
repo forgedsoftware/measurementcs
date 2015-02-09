@@ -161,7 +161,7 @@ namespace ForgedSoftware.Measurement {
 			var newDimensions = new List<Dimension>();
 
 			foreach (var dimension in Dimensions) {
-				if (dimension.Unit.System.Units.Contains(unit)) {
+				if (dimension.Unit.DimensionDefinition.Units.Contains(unit)) {
 					newDimensions.Add(dimension.ConvertFromBase(ref convertedValue, unit, prefix));
 				} else {
 					newDimensions.Add(dimension.Copy());

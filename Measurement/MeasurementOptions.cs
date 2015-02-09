@@ -20,7 +20,7 @@ namespace ForgedSoftware.Measurement {
 			AllowedUnitSystems = new List<string> { "imperial", "usCustomary", "metric" };
 			// TODO - Need to tidy this up!!
 			// Others: nautical, cgi, traditional Chinese, historical, [no system], oldImperial, astronomicalUnits, avoirdupois, jewellery, cgs, si
-			IgnoredMeasurementSystems = new List<MeasurementSystem>();
+			IgnoredMeasurementSystems = new List<DimensionDefinition>();
 			UseEstimatedUnits = false;
 			UseRareUnits = false;
 			UseHistoricalUnits = false;
@@ -58,7 +58,7 @@ namespace ForgedSoftware.Measurement {
 
 		// TODO - Documentation
 		// TODO - Use it!
-		public List<MeasurementSystem> IgnoredMeasurementSystems { get; private set; }
+		public List<DimensionDefinition> IgnoredMeasurementSystems { get; private set; }
 
 		// TODO - Documentation
 		// TODO - Use it!

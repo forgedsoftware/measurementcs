@@ -12,14 +12,18 @@ namespace ForgedSoftware.Measurement {
 	/// </summary>
 	public static class MeasurementFactory {
 
-		public static List<MeasurementSystem> Systems { get; private set; }
+		public static List<MeasurementSystem> AllSystems { get; private set; }
+		public static List<MeasurementSystem> RootSystems { get; private set; }
+		public static List<DimensionDefinition> Dimensions { get; private set; }
 		public static List<Prefix> Prefixes { get; private set; }
 		public static MeasurementOptions Options { get; private set; }
 
 		#region Setup
 
 		static MeasurementFactory() {
-			Systems = new List<MeasurementSystem>();
+			AllSystems = new List<MeasurementSystem>();
+			RootSystems = new List<MeasurementSystem>();
+			Dimensions = new List<DimensionDefinition>();
 			Prefixes = new List<Prefix>();
 			LoadSystemsAndPrefixes();
 			Options = new MeasurementOptions();
@@ -29,10 +33,14 @@ namespace ForgedSoftware.Measurement {
 			using (var r = new StreamReader(GetPath())) {
 				var serializer = new JavaScriptSerializer();
 				string json = r.ReadToEnd();
-
 				var items = (Dictionary<string, object>)serializer.DeserializeObject(json);
+
 				var systemsJson = (Dictionary<string, object>)items["systems"];
 				ParseSystems(systemsJson);
+				PrepareTree();
+
+				var dimensionsJson = (Dictionary<string, object>)items["dimensions"];
+				ParseDimensions(dimensionsJson);
 
 				var prefixesJson = (Dictionary<string, object>)items["prefixes"];
 				ParsePrefixes(prefixesJson);
@@ -51,25 +59,64 @@ namespace ForgedSoftware.Measurement {
 			foreach (KeyValuePair<string, object> systemKeyValuePair in systemsJson) {
 				var systemJson = (Dictionary<string, object>) systemKeyValuePair.Value;
 				var system = new MeasurementSystem {
-					Name = systemKeyValuePair.Key,
-					Symbol = Parse<string>(systemJson, "symbol"),
-					DerivedString = Parse<string>(systemJson, "derived")
+					Key = systemKeyValuePair.Key,
+					Name = Parse<string>(systemJson, "name"),
+					IsHistorical = Parse<bool>(systemJson, "historical"),
+					Inherits = Parse<string>(systemJson, "inherits")
 				};
-				system.OtherNames.AddRange(ParseArray<string>(systemJson, "otherNames"));
-
-				ParseUnits(systemJson, system);
-				Systems.Add(system);
+				AllSystems.Add(system);
 			}
-			Systems.ForEach(s => s.UpdateDerived());
 		}
 
-		private static void ParseUnits(Dictionary<string, object> systemJson, MeasurementSystem system) {
-			string baseUnitName = Parse<string>(systemJson, "baseUnit");
-			foreach (KeyValuePair<string, object> unitKeyValuePair in (Dictionary<string, object>) systemJson["units"]) {
+		private static void PrepareTree() {
+			foreach (MeasurementSystem system in AllSystems) {
+				if (string.IsNullOrWhiteSpace(system.Inherits)) {
+					RootSystems.Add(system);
+				} else {
+					foreach (MeasurementSystem parentSystem in AllSystems) {
+						if (parentSystem.Key == system.Inherits) {
+							parentSystem.Children.Add(system);
+							system.Parent = parentSystem;
+						}
+					}
+				}
+			}
+		}
+
+		private static void ParseDimensions(Dictionary<string, object> dimensionsJson) {
+			foreach (KeyValuePair<string, object> systemKeyValuePair in dimensionsJson) {
+				var dimensionJson = (Dictionary<string, object>) systemKeyValuePair.Value;
+				var dimension = new DimensionDefinition {
+					Key = systemKeyValuePair.Key,
+					Name = Parse<string>(dimensionJson, "name"),
+					Symbol = Parse<string>(dimensionJson, "symbol"),
+					DerivedString = Parse<string>(dimensionJson, "derived"),
+					BaseUnitName = Parse<string>(dimensionJson, "baseUnit"),
+					Vector = Parse<bool>(dimensionJson, "vector"),
+					IsDimensionless = Parse<bool>(dimensionJson, "dimensionless"),
+					InheritedUnits = Parse<string>(dimensionJson, "inheritedUnits")
+				};
+				dimension.OtherNames.AddRange(ParseArray<string>(dimensionJson, "otherNames"));
+				dimension.OtherSymbols.AddRange(ParseArray<string>(dimensionJson, "otherSymbols"));
+
+				ParseUnits(dimensionJson, dimension);
+				Dimensions.Add(dimension);
+			}
+			Dimensions.ForEach(s => s.UpdateDerived());
+			List<DimensionDefinition> inheritingDims = Dimensions.Where(d => !string.IsNullOrWhiteSpace(d.InheritedUnits)).ToList();
+			inheritingDims.ForEach(a => a.Units.AddRange(Dimensions.First(d => d.Key == a.InheritedUnits).Units));
+			inheritingDims.ForEach(a => a.Units.ForEach(u => u.InheritedDimensionDefinitions.Add(a)));
+			inheritingDims.ForEach(a => a.BaseUnit = a.Units.First(u => u.Key == a.BaseUnitName));
+		}
+
+		private static void ParseUnits(Dictionary<string, object> dimensionJson, DimensionDefinition dimension) {
+			foreach (KeyValuePair<string, object> unitKeyValuePair in (Dictionary<string, object>)dimensionJson["units"]) {
 				var unitJson = (Dictionary<string, object>) unitKeyValuePair.Value;
 				var unit = new Unit {
-					Name = unitKeyValuePair.Key,
-					System = system,
+					Key = unitKeyValuePair.Key,
+					Name = Parse<string>(unitJson, "name"),
+					Plural = Parse<string>(unitJson, "plural"),
+					DimensionDefinition = dimension,
 					Type = Parse<UnitType>(unitJson, "type"),
 					Symbol = Parse<string>(unitJson, "symbol"),
 					Multiplier = Parse<double>(unitJson, "multiplier"),
@@ -79,12 +126,13 @@ namespace ForgedSoftware.Measurement {
 					PrefixName = Parse<string>(unitJson, "prefixName"),
 					PrefixFreeName = Parse<string>(unitJson, "prefixFreeName")
 				};
-				unit.UnitSystems.AddRange(ParseArray<string>(unitJson, "systems"));
+				unit.MeasurementSystemNames.AddRange(ParseArray<string>(unitJson, "systems"));
 				unit.OtherNames.AddRange(ParseArray<string>(unitJson, "otherNames"));
 				unit.OtherSymbols.AddRange(ParseArray<string>(unitJson, "otherSymbols"));
-				system.Units.Add(unit);
-				if (baseUnitName == unit.Name) {
-					system.BaseUnit = unit;
+				unit.UpdateMeasurementSystems();
+				dimension.Units.Add(unit);
+				if (dimension.BaseUnitName == unit.Key) {
+					dimension.BaseUnit = unit;
 				}
 			}
 		}
@@ -96,7 +144,7 @@ namespace ForgedSoftware.Measurement {
 					Name = prefixKeyValuePair.Key,
 					Symbol = Parse<string>(prefixJson, "symbol"),
 					Type = Parse<PrefixType>(prefixJson, "type"),
-					IsRare = Parse<bool>(prefixJson, "isRare"),
+					IsRare = Parse<bool>(prefixJson, "rare"),
 					Multiplier = Parse<double>(prefixJson, "multiplier"),
 					Power = Parse<double>(prefixJson, "power"),
 					Base = Parse<double>(prefixJson, "base")
@@ -164,16 +212,16 @@ namespace ForgedSoftware.Measurement {
 		#region Find
 
 		public static Unit FindBaseUnit(string systemName) {
-			MeasurementSystem system = Systems.FirstOrDefault(s => s.Name == systemName);
+			DimensionDefinition system = Dimensions.FirstOrDefault(s => s.Key == systemName);
 			return (system != null) ? system.BaseUnit : null;
 		}
 
 		public static Unit FindUnit(string unitName) {
-			return Systems.SelectMany(s => s.Units).FirstOrDefault(u => u.Name == unitName);
+			return Dimensions.SelectMany(s => s.Units).FirstOrDefault(u => u.Name == unitName);
 		}
 
 		public static Unit FindUnit(string unitName, string systemName) {
-			return Systems.First(s => s.Name == systemName).Units.FirstOrDefault(u => u.Name == unitName);
+			return Dimensions.First(s => s.Key == systemName).Units.FirstOrDefault(u => u.Name == unitName);
 		}
 
 		public static Prefix FindPrefix(string prefixName) {

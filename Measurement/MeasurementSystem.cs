@@ -1,81 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using ForgedSoftware.Measurement.Number;
+﻿using System.Collections.Generic;
 
 namespace ForgedSoftware.Measurement {
-
 	/// <summary>
-	/// A measurement system is a particular type of measurement
-	/// that can be obtained via direct observation of the world.
+	/// A measurement system is a man-made construction that provides a series
+	/// of units for providing a quantified view of the world.
 	/// </summary>
 	/// <example>
-	/// Examples of measurement systems are: length, mass, acceleration, time
+	/// Examples of measurement systems are: metric system, imperial system
 	/// </example>
 	public class MeasurementSystem {
 
 		public MeasurementSystem() {
+			Children = new List<MeasurementSystem>();
 			Units = new List<Unit>();
-			OtherNames = new List<string>();
-			Derived = new List<Dimension>();
 		}
 
-		public List<Unit> Units { get; private set; }
+		// Basic Properties
+		public string Key { get; set; }
 		public string Name { get; set; }
-		public List<string> OtherNames { get; private set; }
-		public string Symbol { get; set; }
-		public Unit BaseUnit { get; set; }
+		public bool IsHistorical { get; set; }
+		public string Inherits { get; set; }
 
-		#region Derived
+		// Calculated Properties
+		public MeasurementSystem Parent { get; set; }
+		public List<MeasurementSystem> Children { get; private set; }
+		public List<Unit> Units { get; private set; }
 
-		public string DerivedString { get; set; }
-		public List<Dimension> Derived { get; private set; }
-
-		public bool IsDerived() {
-			return Derived.Count > 0;
+		public bool IsRootSystem() {
+			return (Parent == null);
 		}
-
-		public void UpdateDerived() {
-			Derived.Clear();
-			if (string.IsNullOrEmpty(DerivedString)) {
-				return;
-			}
-			foreach (Match match in Regex.Matches(DerivedString, @"(^\w+|([\*|/])(\w+))")) {
-				if (match.Success) {
-					string type;
-					string systemName;
-					if (!string.IsNullOrEmpty(match.Groups[3].Value)) {
-						type = match.Groups[2].Value;
-						systemName = match.Groups[3].Value;
-					} else {
-						type = "*";
-						systemName = match.Groups[1].Value;
-					}
-					Unit baseUnit = MeasurementFactory.FindBaseUnit(systemName);
-					if (baseUnit != null) {
-						switch (type) {
-							case "*": {
-								Derived.Add(new Dimension(baseUnit, 1));
-								break;
-							}
-							case "/": {
-								Derived.Add(new Dimension(baseUnit, -1));
-								break;
-							}
-							default: {
-								throw new Exception("Derived divider is not valid - must be either '*' or '/'");
-							}
-						}
-					} else if (systemName != "1") {
-						throw new Exception("All derived entries must be the name of a system or the '1' placeholder");
-					}
-				}
-			}
-			var computedValue = new DoubleWrapper(1);
-			Derived = Derived.SimpleSimplify(ref computedValue);
-		}
-
-		#endregion
-
 	}
 }
