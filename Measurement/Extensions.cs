@@ -71,7 +71,7 @@ namespace ForgedSoftware.Measurement {
 			List<Dimension> basicSimplifiedDimensions = list.SimpleSimplify(ref copy);
 			// keep copy of simplified dimensions
 			dimensionLists.Add(new SimplifiedDimensions<TNumber>(basicSimplifiedDimensions, copy));
-			if (!MeasurementFactory.Options.IgnoreDerivedSystems) {
+			if (!MeasurementCorpus.Options.IgnoreDerivedSystems) {
 				// convert dimensions to base systems
 				TNumber copy2 = value.Copy();
 				List<Dimension> baseSystemDimensions = basicSimplifiedDimensions
@@ -96,7 +96,7 @@ namespace ForgedSoftware.Measurement {
 				where TNumber : INumber<TNumber> {
 			var simplifiedDimensions = new List<SimplifiedDimensions<TNumber>>();
 			// for each derived system
-			foreach (DimensionDefinition dimDef in MeasurementFactory.Dimensions.Where(s => s.IsDerived())) {
+			foreach (DimensionDefinition dimDef in MeasurementCorpus.Dimensions.Where(s => s.IsDerived())) {
 				List<Dimension> neededDimensions = dimDef.Derived.CopyList();
 				// for each existing dimension
 				List<Dimension> currentDimensions = dimensions.CopyList();

@@ -49,26 +49,26 @@ namespace ForgedSoftware.Measurement {
 		}
 
 		public void UpdateMeasurementSystems() {
-			MeasurementSystems.AddRange(MeasurementFactory.AllSystems.Where(s => MeasurementSystemNames.Contains(s.Key)));
+			MeasurementSystems.AddRange(MeasurementCorpus.AllSystems.Where(s => MeasurementSystemNames.Contains(s.Key)));
 			MeasurementSystems.ForEach(s => s.Units.Add(this));
 		}
 
 		public bool IsCompatible(Prefix prefix) {
-			if (MeasurementFactory.Options.AllowedRarePrefixCombinations.Contains(new KeyValuePair<Unit, Prefix>(this, prefix))) {
+			if (MeasurementCorpus.Options.AllowedRarePrefixCombinations.Contains(new KeyValuePair<Unit, Prefix>(this, prefix))) {
 				return true;
 			}
-			if (prefix.IsRare && !MeasurementFactory.Options.UseRarePrefixes) {
+			if (prefix.IsRare && !MeasurementCorpus.Options.UseRarePrefixes) {
 				return false;
 			}
 			switch (prefix.Type) {
 				case PrefixType.Si: {
-					return Type == UnitType.Si || (Type == UnitType.Binary && !MeasurementFactory.Options.PreferBinaryPrefixes);
+					return Type == UnitType.Si || (Type == UnitType.Binary && !MeasurementCorpus.Options.PreferBinaryPrefixes);
 				}
 				case PrefixType.SiBinary: {
-					return Type == UnitType.Binary && MeasurementFactory.Options.PreferBinaryPrefixes;
+					return Type == UnitType.Binary && MeasurementCorpus.Options.PreferBinaryPrefixes;
 				}
 				case PrefixType.SiUnofficial: {
-					return Type == UnitType.Si && MeasurementFactory.Options.UseUnofficalPrefixes;
+					return Type == UnitType.Si && MeasurementCorpus.Options.UseUnofficalPrefixes;
 				}
 				default: {
 					return false;

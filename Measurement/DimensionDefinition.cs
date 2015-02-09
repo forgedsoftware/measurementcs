@@ -65,7 +65,7 @@ namespace ForgedSoftware.Measurement {
 						type = "*";
 						systemName = match.Groups[1].Value;
 					}
-					Unit baseUnit = MeasurementFactory.FindBaseUnit(systemName);
+					Unit baseUnit = MeasurementCorpus.FindBaseUnit(systemName);
 					if (baseUnit != null) {
 						switch (type) {
 							case "*": {

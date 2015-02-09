@@ -56,8 +56,8 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="power">The power of the dimension</param>
 		/// <param name="prefixName">The optional name of the prefix</param>
 		public Dimension(string unitName, int power, string prefixName = null)
-			: this(MeasurementFactory.FindUnit(unitName), power,
-				MeasurementFactory.FindPrefix(prefixName)) {
+			: this(MeasurementCorpus.FindUnit(unitName), power,
+				MeasurementCorpus.FindPrefix(prefixName)) {
 		}
 
 		/// <summary>
@@ -78,8 +78,8 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="power">The power of the dimension</param>
 		/// <param name="prefixName">The optional name of the prefix</param>
 		public Dimension(string unitName, string systemName, int power, string prefixName = null)
-			: this(MeasurementFactory.FindUnit(unitName, systemName), power,
-				MeasurementFactory.FindPrefix(prefixName)) {
+			: this(MeasurementCorpus.FindUnit(unitName, systemName), power,
+				MeasurementCorpus.FindPrefix(prefixName)) {
 		}
 
 		/// <summary>
@@ -303,7 +303,7 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="value">The value that the prefix will be applied to</param>
 		/// <returns>If no usable prefix that is better than no prefix, returns null, else the prefix</returns>
 		private Prefix FindPrefix<TNumber>(TNumber value) where TNumber : INumber<TNumber> {
-			IEnumerable<Prefix> possiblePrefixes = MeasurementFactory.Prefixes.Where(p => Unit.IsCompatible(p));
+			IEnumerable<Prefix> possiblePrefixes = MeasurementCorpus.Prefixes.Where(p => Unit.IsCompatible(p));
 			KeyValuePair<Prefix, double> bestPrefixKv = possiblePrefixes
 				.Select(p => new KeyValuePair<Prefix, double>(p, GetPrefixRating(p.Apply(value), p)))
 				.OrderBy(kv => kv.Value)
@@ -326,15 +326,15 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="prefix">The prefix that has been applied, or null if no prefix</param>
 		/// <returns>A rating of the 'fitness' of the prefix for the value, lower is better</returns>
 		private double GetPrefixRating<TNumber>(TNumber value, Prefix prefix = null) where TNumber : INumber<TNumber> {
-			double upper = MeasurementFactory.Options.UpperPrefixValue;
-			double lower = MeasurementFactory.Options.LowerPrefixValue;
+			double upper = MeasurementCorpus.Options.UpperPrefixValue;
+			double lower = MeasurementCorpus.Options.LowerPrefixValue;
 			if (upper <= lower) {
 				throw new Exception("The UpperPrefixValue must be greater than the LowerPrefixValue");
 			}
 			double score = (value.EquivalentValue > upper || value.EquivalentValue < lower) ? upper : value.EquivalentValue;
 			// Prefer no prefix
 			if (prefix != null) {
-				score += MeasurementFactory.Options.HavingPrefixScoreOffset;
+				score += MeasurementCorpus.Options.HavingPrefixScoreOffset;
 			}
 			// If a unit has a prefix applied by default, we should apply that prefix if possible.
 			// This deals with the edge case of preferring kilogramme over gramme.
@@ -407,9 +407,9 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		object IObjectReference.GetRealObject(StreamingContext context) {
 			return new Dimension {
-				Unit = MeasurementFactory.FindUnit(_unitName, _systemName),
+				Unit = MeasurementCorpus.FindUnit(_unitName, _systemName),
 				Power = _power ?? DEFAULT_POWER,
-				Prefix = MeasurementFactory.FindPrefix(_prefixName)
+				Prefix = MeasurementCorpus.FindPrefix(_prefixName)
 			};
 		}
 

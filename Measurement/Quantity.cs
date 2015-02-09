@@ -113,7 +113,7 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="unitName">The name of the unit to convert</param>
 		/// <returns>The converted quantity</returns>
 		public Quantity<TNumber> Convert(string unitName) {
-			return Convert(MeasurementFactory.FindUnit(unitName));
+			return Convert(MeasurementCorpus.FindUnit(unitName));
 		}
 
 		/// <summary>
@@ -191,7 +191,7 @@ namespace ForgedSoftware.Measurement {
 			List<Dimension> simplifiedDimensions = Dimensions.Simplify(ref computedValue);
 			var resultingQuantity = new Quantity<TNumber>(computedValue, simplifiedDimensions);
 
-			if (MeasurementFactory.Options.UseAutomaticPrefixManagement) {
+			if (MeasurementCorpus.Options.UseAutomaticPrefixManagement) {
 				resultingQuantity = resultingQuantity.TidyPrefixes();
 			}
 			return resultingQuantity;
@@ -249,7 +249,7 @@ namespace ForgedSoftware.Measurement {
 
 			// Move prefixed dimension to start
 			// Assumption: There is a max of one dimension with a prefix
-			if (MeasurementFactory.Options.CanReorderDimensions) {
+			if (MeasurementCorpus.Options.CanReorderDimensions) {
 				int index = quantity.Dimensions.FindIndex(d => d.Prefix != null);
 				if (index > 0) {
 					Dimension prefixedDimension = quantity.Dimensions[index];

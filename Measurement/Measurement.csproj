@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="Dimension.cs" />
     <Compile Include="Interfaces\ITreeNode.cs" />
+    <Compile Include="CorpusBuilder.cs" />
     <Compile Include="MeasurementSystem.cs" />
     <Compile Include="Number\DoubleWrapper.cs" />
     <Compile Include="Extensions.cs" />
@@ -58,7 +59,7 @@
     <Compile Include="Interfaces\ISerializable.cs" />
     <Compile Include="Interfaces\IValue.cs" />
     <Compile Include="Interfaces\IVector.cs" />
-    <Compile Include="MeasurementFactory.cs" />
+    <Compile Include="MeasurementCorpus.cs" />
     <Compile Include="MeasurementOptions.cs" />
     <Compile Include="Prefix.cs" />
     <Compile Include="Quantity.cs" />

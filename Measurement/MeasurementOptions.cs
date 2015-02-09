@@ -31,7 +31,7 @@ namespace ForgedSoftware.Measurement {
 			UseUnofficalPrefixes = false;
 			AllowedRarePrefixCombinations = new List<KeyValuePair<Unit, Prefix>> {
 				new KeyValuePair<Unit, Prefix>(
-					MeasurementFactory.FindUnit("metre"), MeasurementFactory.FindPrefix("centi"))
+					MeasurementCorpus.FindUnit("metre"), MeasurementCorpus.FindPrefix("centi"))
 			};
 			PreferBinaryPrefixes = true;
 			UpperPrefixValue = 1000;
