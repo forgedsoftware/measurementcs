@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.Serialization;
+using ForgedSoftware.Measurement.Interfaces;
 
 namespace ForgedSoftware.Measurement.Number {
-	
+
 	/// <summary>
 	/// A class describing a standard four dimensional vector and associate math, providing a set of
 	/// vector specific functionality including dot product, angle, magnitude.

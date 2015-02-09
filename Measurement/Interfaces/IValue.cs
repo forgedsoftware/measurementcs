@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ForgedSoftware.Measurement {
+namespace ForgedSoftware.Measurement.Interfaces {
 
 	/// <summary>
 	/// An interface representing a value and allowing basic math to be performed.

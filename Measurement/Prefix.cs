@@ -1,5 +1,5 @@
-﻿
-using System;
+﻿using System;
+using ForgedSoftware.Measurement.Interfaces;
 
 namespace ForgedSoftware.Measurement {
 

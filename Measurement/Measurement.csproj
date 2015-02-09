@@ -44,20 +44,20 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Dimension.cs" />
-    <Compile Include="ITree.cs" />
+    <Compile Include="Interfaces\ITreeNode.cs" />
     <Compile Include="MeasurementSystem.cs" />
     <Compile Include="Number\DoubleWrapper.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="FormatOptions.cs" />
     <Compile Include="Number\Fraction.cs" />
-    <Compile Include="ICopyable.cs" />
-    <Compile Include="IFormatter.cs" />
-    <Compile Include="IValueExtended.cs" />
-    <Compile Include="INumber.cs" />
-    <Compile Include="IQuantity.cs" />
-    <Compile Include="ISerializable.cs" />
-    <Compile Include="IValue.cs" />
-    <Compile Include="Number\IVector.cs" />
+    <Compile Include="Interfaces\ICopyable.cs" />
+    <Compile Include="Interfaces\IFormatter.cs" />
+    <Compile Include="Interfaces\IValueExtended.cs" />
+    <Compile Include="Interfaces\INumber.cs" />
+    <Compile Include="Interfaces\IQuantity.cs" />
+    <Compile Include="Interfaces\ISerializable.cs" />
+    <Compile Include="Interfaces\IValue.cs" />
+    <Compile Include="Interfaces\IVector.cs" />
     <Compile Include="MeasurementFactory.cs" />
     <Compile Include="MeasurementOptions.cs" />
     <Compile Include="Prefix.cs" />

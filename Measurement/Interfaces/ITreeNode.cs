@@ -1,13 +1,12 @@
 ﻿using System.Collections.Generic;
 
-namespace ForgedSoftware.Measurement {
+namespace ForgedSoftware.Measurement.Interfaces {
 
 	/// <summary>
 	/// Basic interface for a tree node.
 	/// </summary>
 	/// <typeparam name="TValue">The concrete implementation of ITreeNode</typeparam>
-	public interface ITreeNode<TValue>
-		where TValue : ITreeNode<TValue> {
+	public interface ITreeNode<TValue> where TValue : ITreeNode<TValue> {
 
 		/// <summary>
 		/// The parent of the current node.

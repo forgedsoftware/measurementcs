@@ -1,5 +1,5 @@
 ﻿
-namespace ForgedSoftware.Measurement {
+namespace ForgedSoftware.Measurement.Interfaces {
 
 	/// <summary>
 	/// An interface that provides a series of math functions

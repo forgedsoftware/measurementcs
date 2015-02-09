@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using ForgedSoftware.Measurement.Interfaces;
 
 namespace ForgedSoftware.Measurement {
 	/// <summary>

@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.Serialization;
+using ForgedSoftware.Measurement.Interfaces;
+using IFormatter = ForgedSoftware.Measurement.Interfaces.IFormatter;
+using ISerializable = ForgedSoftware.Measurement.Interfaces.ISerializable;
 
 namespace ForgedSoftware.Measurement {
 

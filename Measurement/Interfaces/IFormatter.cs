@@ -1,5 +1,5 @@
 ﻿
-namespace ForgedSoftware.Measurement {
+namespace ForgedSoftware.Measurement.Interfaces {
 
 	/// <summary>
 	/// A simple interface providing formatting to an object

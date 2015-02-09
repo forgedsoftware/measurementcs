@@ -4,6 +4,7 @@ using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.Serialization;
+using ForgedSoftware.Measurement.Interfaces;
 
 namespace ForgedSoftware.Measurement.Number {
 

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ForgedSoftware.Measurement {
+namespace ForgedSoftware.Measurement.Interfaces {
 
 	/// <summary>
 	/// An extension of the IValue interface, enforcing that the number described must also be of type
