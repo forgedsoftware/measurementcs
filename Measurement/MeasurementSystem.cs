@@ -8,12 +8,14 @@ namespace ForgedSoftware.Measurement {
 	/// <example>
 	/// Examples of measurement systems are: metric system, imperial system
 	/// </example>
-	public class MeasurementSystem {
+	public class MeasurementSystem : ITreeNode<MeasurementSystem> {
 
 		public MeasurementSystem() {
 			Children = new List<MeasurementSystem>();
 			Units = new List<Unit>();
 		}
+
+		#region Properties
 
 		// Basic Properties
 		public string Key { get; set; }
@@ -22,12 +24,19 @@ namespace ForgedSoftware.Measurement {
 		public string Inherits { get; set; }
 
 		// Calculated Properties
-		public MeasurementSystem Parent { get; set; }
-		public List<MeasurementSystem> Children { get; private set; }
 		public List<Unit> Units { get; private set; }
 
-		public bool IsRootSystem() {
+		#endregion
+
+		#region Measurement System Tree
+
+		public MeasurementSystem Parent { get; set; }
+		public List<MeasurementSystem> Children { get; private set; }
+
+		public bool IsRoot() {
 			return (Parent == null);
 		}
+
+		#endregion
 	}
 }

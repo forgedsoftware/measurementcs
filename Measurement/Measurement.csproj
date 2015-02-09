@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Dimension.cs" />
+    <Compile Include="ITree.cs" />
     <Compile Include="MeasurementSystem.cs" />
     <Compile Include="Number\DoubleWrapper.cs" />
     <Compile Include="Extensions.cs" />
