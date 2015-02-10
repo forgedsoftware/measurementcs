@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace ForgedSoftware.Measurement {
@@ -63,21 +64,126 @@ namespace ForgedSoftware.Measurement {
 
 		#region Find
 
-		public static Unit FindBaseUnit(string systemName) {
-			DimensionDefinition system = Dimensions.FirstOrDefault(s => s.Key == systemName);
-			return (system != null) ? system.BaseUnit : null;
+		#region Dimensions & Units
+
+		public static DimensionDefinition FindDimension(string dimensionName) {
+			if (string.IsNullOrWhiteSpace(dimensionName)) {
+				throw new ArgumentException("dimensionName must be a string at least one character of non-whitespace");
+			}
+			return Match(Dimensions, dimensionName, u => u.Key)
+					?? Match(Dimensions, dimensionName, u => u.Name)
+					?? Match(Dimensions, dimensionName, u => u.Symbol)
+					?? MatchList(Dimensions, dimensionName, u => u.OtherNames)
+					?? MatchList(Dimensions, dimensionName, u => u.OtherSymbols);
 		}
 
-		public static Unit FindUnit(string unitName) {
-			return Dimensions.SelectMany(s => s.Units).FirstOrDefault(u => u.Name == unitName);
+		public static DimensionDefinition FindDimensionPartial(string dimensionName) {
+			return FindDimension(dimensionName)
+					?? MatchPartial(Dimensions, dimensionName, u => u.Key)
+					?? MatchPartial(Dimensions, dimensionName, u => u.Name)
+					?? MatchPartial(Dimensions, dimensionName, u => u.Symbol)
+					?? MatchListPartial(Dimensions, dimensionName, u => u.OtherNames)
+					?? MatchListPartial(Dimensions, dimensionName, u => u.OtherSymbols);
 		}
 
-		public static Unit FindUnit(string unitName, string systemName) {
-			return Dimensions.First(s => s.Key == systemName).Units.FirstOrDefault(u => u.Name == unitName);
+		public static Unit FindBaseUnit(string dimensionName) {
+			DimensionDefinition dimension = FindDimension(dimensionName);
+			return (dimension != null) ? dimension.BaseUnit : null;
 		}
+
+		public static Unit FindBaseUnitPartial(string dimensionName) {
+			DimensionDefinition dimension = FindDimensionPartial(dimensionName);
+			return (dimension != null) ? dimension.BaseUnit : null;
+		}
+
+		public static Unit FindUnit(string unitName, DimensionDefinition dimension = null) {
+			if (string.IsNullOrWhiteSpace(unitName)) {
+				throw new ArgumentException("unitName must be a string at least one character of non-whitespace");
+			}
+			List<Unit> allUnits = (dimension == null) ? Dimensions.SelectMany(s => s.Units).ToList() : dimension.Units;
+			return Match(allUnits, unitName, u => u.Key)
+					?? Match(allUnits, unitName, u => u.Name)
+					?? Match(allUnits, unitName, u => u.Plural)
+					?? Match(allUnits, unitName, u => u.Symbol)
+					?? MatchList(allUnits, unitName, u => u.OtherNames)
+					?? MatchList(allUnits, unitName, u => u.OtherSymbols);
+		}
+
+		public static Unit FindUnitPartial(string unitName, DimensionDefinition dimension = null) {
+			List<Unit> allUnits = (dimension == null) ? Dimensions.SelectMany(s => s.Units).ToList() : dimension.Units;
+			return FindUnit(unitName, dimension)
+					?? MatchPartial(allUnits, unitName, u => u.Key)
+					?? MatchPartial(allUnits, unitName, u => u.Name)
+					?? MatchPartial(allUnits, unitName, u => u.Plural)
+					?? MatchPartial(allUnits, unitName, u => u.Symbol)
+					?? MatchListPartial(allUnits, unitName, u => u.OtherNames)
+					?? MatchListPartial(allUnits, unitName, u => u.OtherSymbols);
+		}
+
+		public static Unit FindUnit(string unitName, string dimensionName) {
+			return FindUnit(unitName, FindDimension(dimensionName));
+		}
+
+		public static Unit FindUnitPartial(string unitName, string dimensionName) {
+			return FindUnitPartial(unitName, FindDimensionPartial(dimensionName));
+		}
+
+		#endregion
+
+		#region Prefixes
 
 		public static Prefix FindPrefix(string prefixName) {
-			return Prefixes.FirstOrDefault(p => p.Name == prefixName);
+			if (string.IsNullOrWhiteSpace(prefixName)) {
+				throw new ArgumentException("prefixName must be a string at least one character of non-whitespace");
+			}
+			return Match(Prefixes, prefixName, p => p.Name)
+					?? Match(Prefixes, prefixName, p => p.Symbol);
+		}
+
+		public static Prefix FindPrefixPartial(string prefixName) {
+			return FindPrefix(prefixName)
+					?? MatchPartial(Prefixes, prefixName, p => p.Name)
+					?? MatchPartial(Prefixes, prefixName, p => p.Symbol);
+		}
+
+		#endregion
+
+		#region Systems
+
+		public static MeasurementSystem FindSystem(string systemName) {
+			if (string.IsNullOrWhiteSpace(systemName)) {
+				throw new ArgumentException("systemName must be a string at least one character of non-whitespace");
+			}
+			return Match(AllSystems, systemName, p => p.Key)
+					?? Match(AllSystems, systemName, p => p.Name);
+		}
+
+		public static MeasurementSystem FindSystemPartial(string systemName) {
+			return FindSystem(systemName)
+					?? MatchPartial(AllSystems, systemName, p => p.Key)
+					?? MatchPartial(AllSystems, systemName, p => p.Name);
+		}
+
+		#endregion
+
+		#endregion
+
+		#region Helper Functions
+
+		private static T Match<T>(IEnumerable<T> items, string itemName, Func<T, string> accessor) {
+			return items.FirstOrDefault(u => (!string.IsNullOrWhiteSpace(accessor(u))) && accessor(u).Equals(itemName, StringComparison.OrdinalIgnoreCase));
+		}
+
+		private static T MatchPartial<T>(IEnumerable<T> items, string itemName, Func<T, string> accessor) {
+			return items.FirstOrDefault(u => (!string.IsNullOrWhiteSpace(accessor(u))) && accessor(u).IndexOf(itemName, StringComparison.OrdinalIgnoreCase) >= 0);
+		}
+
+		private static T MatchList<T>(IEnumerable<T> items, string itemName, Func<T, List<string>> accessor) {
+			return items.FirstOrDefault(u => accessor(u).Any(y => y.Equals(itemName, StringComparison.OrdinalIgnoreCase)));
+		}
+
+		private static T MatchListPartial<T>(IEnumerable<T> items, string itemName, Func<T, List<string>> accessor) {
+			return items.FirstOrDefault(u => accessor(u).Any(y => y.IndexOf(itemName, StringComparison.OrdinalIgnoreCase) >= 0));
 		}
 
 		#endregion

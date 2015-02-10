@@ -57,7 +57,7 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="prefixName">The optional name of the prefix</param>
 		public Dimension(string unitName, int power, string prefixName = null)
 			: this(MeasurementCorpus.FindUnit(unitName), power,
-				MeasurementCorpus.FindPrefix(prefixName)) {
+				(prefixName == null) ? null : MeasurementCorpus.FindPrefix(prefixName)) {
 		}
 
 		/// <summary>
@@ -409,7 +409,7 @@ namespace ForgedSoftware.Measurement {
 			return new Dimension {
 				Unit = MeasurementCorpus.FindUnit(_unitName, _systemName),
 				Power = _power ?? DEFAULT_POWER,
-				Prefix = MeasurementCorpus.FindPrefix(_prefixName)
+				Prefix = (_prefixName == null) ? null : MeasurementCorpus.FindPrefix(_prefixName)
 			};
 		}
 
