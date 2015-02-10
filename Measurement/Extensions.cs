@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Text.RegularExpressions;
+using ForgedSoftware.Measurement.Entities;
 using ForgedSoftware.Measurement.Interfaces;
 
 namespace ForgedSoftware.Measurement {

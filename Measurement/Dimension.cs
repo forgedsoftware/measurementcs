@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.Serialization;
+using ForgedSoftware.Measurement.Entities;
 using ForgedSoftware.Measurement.Interfaces;
 using IFormatter = ForgedSoftware.Measurement.Interfaces.IFormatter;
 using ISerializable = ForgedSoftware.Measurement.Interfaces.ISerializable;
@@ -338,7 +339,7 @@ namespace ForgedSoftware.Measurement {
 			}
 			// If a unit has a prefix applied by default, we should apply that prefix if possible.
 			// This deals with the edge case of preferring kilogramme over gramme.
-			if (prefix != null && prefix.Name == Unit.PrefixName) {
+			if (prefix != null && prefix.Key == Unit.PrefixName) {
 				score = 0;
 			}
 			return score;
@@ -440,7 +441,7 @@ namespace ForgedSoftware.Measurement {
 
 		[DataMember(Name = "prefix", IsRequired = false, EmitDefaultValue = false)]
 		public string PrefixName {
-			get { return (Prefix != null) ? Prefix.Name : null; }
+			get { return (Prefix != null) ? Prefix.Key : null; }
 			private set { _prefixName = value; }
 		}
 
@@ -476,7 +477,7 @@ namespace ForgedSoftware.Measurement {
 				}
 				string name = Unit.Name;
 				if (Prefix != null) {
-					name = Prefix.Name + name;
+					name = Prefix.Key + name;
 				}
 				dimParts.Add(name); // TODO - plurals??
 				int absPower = Math.Abs(Power);

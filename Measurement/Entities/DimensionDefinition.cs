@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using ForgedSoftware.Measurement.Number;
 
-namespace ForgedSoftware.Measurement {
+namespace ForgedSoftware.Measurement.Entities {
 
 	/// <summary>
 	/// A dimension definition is the definition of a dimensioned,
@@ -16,7 +16,7 @@ namespace ForgedSoftware.Measurement {
 	/// <example>
 	/// Examples of dimensions are: length, mass, acceleration, time
 	/// </example>
-	public class DimensionDefinition {
+	public class DimensionDefinition : Entity {
 
 		public DimensionDefinition() {
 			Units = new List<Unit>();
@@ -26,7 +26,6 @@ namespace ForgedSoftware.Measurement {
 		}
 
 		// Basic Properties
-		public string Key { get; set; }
 		public string Name { get; set; }
 		public List<string> OtherNames { get; private set; }
 		public string Symbol { get; set; }

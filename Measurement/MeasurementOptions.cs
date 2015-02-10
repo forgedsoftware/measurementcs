@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
+using ForgedSoftware.Measurement.Entities;
 
 namespace ForgedSoftware.Measurement {
 

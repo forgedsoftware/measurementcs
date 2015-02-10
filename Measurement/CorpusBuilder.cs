@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Web.Script.Serialization;
+using ForgedSoftware.Measurement.Entities;
 
 namespace ForgedSoftware.Measurement {
 
@@ -127,7 +128,7 @@ namespace ForgedSoftware.Measurement {
 			foreach (KeyValuePair<string, object> prefixKeyValuePair in prefixesJson) {
 				var prefixJson = (Dictionary<string, object>)prefixKeyValuePair.Value;
 				var prefix = new Prefix {
-					Name = prefixKeyValuePair.Key,
+					Key = prefixKeyValuePair.Key,
 					Symbol = Parse<string>(prefixJson, "symbol"),
 					Type = Parse<PrefixType>(prefixJson, "type"),
 					IsRare = Parse<bool>(prefixJson, "rare"),

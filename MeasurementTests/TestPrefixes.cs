@@ -9,7 +9,7 @@ namespace ForgedSoftware.MeasurementTests {
 		[TestMethod]
 		public void TestCreatingQuantityWithPrefix() {
 			var q = new Quantity(5, new Dimension("metre", "kilo"));
-			Assert.AreEqual("kilo", q.Dimensions[0].Prefix.Name);
+			Assert.AreEqual("kilo", q.Dimensions[0].Prefix.Key);
 		}
 
 		#region Tidy Prefixes

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.Serialization;
+using ForgedSoftware.Measurement.Entities;
 using ForgedSoftware.Measurement.Interfaces;
 using ForgedSoftware.Measurement.Number;
 using ISerializable = ForgedSoftware.Measurement.Interfaces.ISerializable;

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace ForgedSoftware.Measurement {
+namespace ForgedSoftware.Measurement.Entities {
 
 	/// <summary>
 	/// A unit represents a unit of measurement within a specific
@@ -10,7 +10,7 @@ namespace ForgedSoftware.Measurement {
 	/// <example>
 	/// Examples of a unit are: metre, second, Newton, inch, foot
 	/// </example>
-	public class Unit {
+	public class Unit : Entity {
 
 		/// <summary>
 		/// Main constructor for a unit
@@ -24,7 +24,6 @@ namespace ForgedSoftware.Measurement {
 			MeasurementSystems = new List<MeasurementSystem>();
 		}
 
-		public string Key { get; set; }
 		public string Name { get; set; }
 		public string Plural { get; set; }
 		public UnitType Type { get; set; }

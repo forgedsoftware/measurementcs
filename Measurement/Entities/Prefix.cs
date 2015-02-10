@@ -1,7 +1,7 @@
 ﻿using System;
 using ForgedSoftware.Measurement.Interfaces;
 
-namespace ForgedSoftware.Measurement {
+namespace ForgedSoftware.Measurement.Entities {
 
 	/// <summary>
 	/// A prefix is a scale modifier used in certain systems of measurement,
@@ -10,9 +10,8 @@ namespace ForgedSoftware.Measurement {
 	/// <example>
 	/// kilo-, centi-, kili-, tera-, pico- are all examples of prefixes.
 	/// </example>
-	public class Prefix {
+	public class Prefix : Entity {
 
-		public string Name { get; set; }
 		public string Symbol { get; set; }
 		public PrefixType Type { get; set; }
 		public bool IsRare { get; set; }

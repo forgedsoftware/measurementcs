@@ -43,10 +43,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Comparers\DimensionDefinitionComparer.cs" />
+    <Compile Include="Comparers\EntityComparer.cs" />
+    <Compile Include="Comparers\MeasurementSystemComparer.cs" />
+    <Compile Include="Comparers\PrefixComparer.cs" />
+    <Compile Include="Comparers\UnitComparer.cs" />
     <Compile Include="Dimension.cs" />
+    <Compile Include="Entities\Entity.cs" />
     <Compile Include="Interfaces\ITreeNode.cs" />
     <Compile Include="CorpusBuilder.cs" />
-    <Compile Include="MeasurementSystem.cs" />
+    <Compile Include="Entities\MeasurementSystem.cs" />
     <Compile Include="Number\DoubleWrapper.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="FormatOptions.cs" />
@@ -61,12 +67,12 @@
     <Compile Include="Interfaces\IVector.cs" />
     <Compile Include="MeasurementCorpus.cs" />
     <Compile Include="MeasurementOptions.cs" />
-    <Compile Include="Prefix.cs" />
+    <Compile Include="Entities\Prefix.cs" />
     <Compile Include="Quantity.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="DimensionDefinition.cs" />
+    <Compile Include="Entities\DimensionDefinition.cs" />
     <Compile Include="Number\Uncertainty.cs" />
-    <Compile Include="Unit.cs" />
+    <Compile Include="Entities\Unit.cs" />
     <Compile Include="Number\Vector2.cs" />
     <Compile Include="Number\Vector3.cs" />
     <Compile Include="Number\Vector4.cs" />
