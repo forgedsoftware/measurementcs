@@ -14,17 +14,20 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		public MeasurementOptions() {
 			// Defaults - General
-			CanReorderDimensions = true;
+			AllowReorderingDimensions = true;
 
-			// Defaults - Systems & Units
-			IgnoreDerivedSystems = false;
-			AllowedUnitSystems = new List<string> { "imperial", "usCustomary", "metric" };
-			// TODO - Need to tidy this up!!
-			// Others: nautical, cgi, traditional Chinese, historical, [no system], oldImperial, astronomicalUnits, avoirdupois, jewellery, cgs, si
-			IgnoredMeasurementSystems = new List<DimensionDefinition>();
+			// Defaults - Dimensions
+			AllowDerivedDimensions = true;
+			AllowVectorDimensions = false;
+			IgnoredDimensions = new List<DimensionDefinition>();
+
+			// Defaults - Units
 			UseEstimatedUnits = false;
 			UseRareUnits = false;
-			UseHistoricalUnits = false;
+
+			// Defaults - Measurement Systems
+			AllowedSystemsForUnits = new List<MeasurementSystem>();
+			IgnoredSystemsForUnits = new List<MeasurementSystem>();
 
 			// Defaults - Prefixes
 			UseAutomaticPrefixManagement = true;
@@ -45,49 +48,100 @@ namespace ForgedSoftware.Measurement {
 
 		#region General
 
-		public bool CanReorderDimensions { get; set; }
+		/// <summary>
+		/// Dimensions are usually kept in the same order where possible, however changes
+		/// in powers, additions of other dimensions or changing prefixes can lead dimensions
+		/// to benefit from reordering.
+		/// Default: true
+		/// </summary>
+		public bool AllowReorderingDimensions { get; set; }
 
 		#endregion
 
-		#region Systems & Units
+		#region Dimensions
 
-		public bool IgnoreDerivedSystems { get; set; }
+		/// <summary>
+		/// Whether dimensions derived from other dimensions are allowed for find and simplifications.
+		/// Default: true
+		/// </summary>
+		public bool AllowDerivedDimensions { get; set; }
 
-		// TODO - Documentation
-		// TODO - Use it!
-		public List<string> AllowedUnitSystems { get; private set; }
+		/// <summary>
+		/// Whether dimensions that are vectors are allowed for find and simplifications.
+		/// Default: false
+		/// </summary>
+		public bool AllowVectorDimensions { get; set; }
 
-		// TODO - Documentation
-		// TODO - Use it!
-		public List<DimensionDefinition> IgnoredMeasurementSystems { get; private set; }
+		/// <summary>
+		/// A list of dimension defintions that are ignored by find and for simplifications.
+		/// Default: empty
+		/// </summary>
+		public List<DimensionDefinition> IgnoredDimensions { get; private set; }
 
-		// TODO - Documentation
-		// TODO - Use it!
+		#endregion
+
+		#region Units
+
+		/// <summary>
+		/// Whether units that have estimated factors to the base unit are allowed for find.
+		/// Default: false
+		/// </summary>
 		public bool UseEstimatedUnits { get; set; }
 
-		// TODO - Documentation
-		// TODO - Use it!
+		/// <summary>
+		/// Whether units that are rarely used are allowed for find.
+		/// Default: false
+		/// </summary>
 		public bool UseRareUnits { get; set; }
 
-		// TODO - Documentation
-		// TODO - Use it!
-		public bool UseHistoricalUnits { get; set; } // TODO - Should historical be its own field on a unit?
+		#endregion
+
+		#region Measurement Systems
+
+		/// <summary>
+		/// Provides a list of all available systems (and their ancestors) that can be used in find and unit find.
+		/// If empty, all systems are available. By default each ancestor higher in the tree to a specified
+		/// allowed system is available as well, except if restricted by IgnoredSystemsForUnits.
+		/// Default: empty, all systems allowed
+		/// </summary>
+		public List<MeasurementSystem> AllowedSystemsForUnits { get; private set; }
+
+		/// <summary>
+		/// Provides a list of systems (and their ancestors) that may not be used even if their
+		/// children are available (see AllowedSystemsForUnits). Note this also excludes ancestors
+		/// that may ancestors of speicifically allowed systems. You may need to include that ancestor
+		/// as a specifically allowed system.
+		/// Default: empty
+		/// </summary>
+		/// <example>
+		/// With rules:
+		/// Allow A, F, E. Ignore B.
+		/// 
+		/// Resulting SubTree (a = allow, i = ignore):
+		/// A(a)--> B(i)-->C(i)-->D(i)-->E(a)
+		///         F(a)--> G(a)--/
+		/// </example>
+		public List<MeasurementSystem> IgnoredSystemsForUnits { get; private set; }
 
 		#endregion
 
 		#region Prefixes
 
+		/// <summary>
+		/// Allows prefixes that are rarely used in find results.
+		/// Default: false
+		/// </summary>
+		public bool UseRarePrefixes { get; set; }
+
+		/// <summary>
+		/// Allows prefixes in find with SiUnofficial type.
+		/// Default: false
+		/// </summary>
+		public bool UseUnofficalPrefixes { get; set; }
+
 		// TODO - Documentation
 		// TODO - Use it!
 		public bool UseAutomaticPrefixManagement { get; set; }
-
-		// TODO - Documentation
-		// TODO - Use it!
-		public bool UseRarePrefixes { get; set; }
-
-		// TODO - Documentation
-		// TODO - Use it!
-		public bool UseUnofficalPrefixes { get; set; }
 
 		// TODO - Documentation
 		// TODO - Use it!

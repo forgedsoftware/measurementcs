@@ -250,7 +250,7 @@ namespace ForgedSoftware.Measurement {
 
 			// Move prefixed dimension to start
 			// Assumption: There is a max of one dimension with a prefix
-			if (MeasurementCorpus.Options.CanReorderDimensions) {
+			if (MeasurementCorpus.Options.AllowReorderingDimensions) {
 				int index = quantity.Dimensions.FindIndex(d => d.Prefix != null);
 				if (index > 0) {
 					Dimension prefixedDimension = quantity.Dimensions[index];

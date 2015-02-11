@@ -27,6 +27,24 @@ namespace ForgedSoftware.Measurement {
 		}
 
 		/// <summary>
+		/// Simple IsEmpty extension method that checks if a collection has any members.
+		/// Throws an ArgumentNullException if provided collection is null.
+		/// </summary>
+		/// <typeparam name="T">The type of the collection</typeparam>
+		/// <param name="source">The collection to be tested</param>
+		/// <returns>True if empty, else false</returns>
+		public static bool IsEmpty<T>(this IEnumerable<T> source) {
+			if (source == null) {
+				throw new ArgumentNullException("Collection must not be null");
+			}
+			var collection = source as ICollection<T>;
+			if (collection != null) {
+				return (collection.Count == 0);
+			}
+			return !source.Any();
+		}
+
+		/// <summary>
 		/// A generic extension method for simplifying a list of dimensions, maintaining
 		/// the order of the dimensions where possible.
 		/// Simplification is done by combining dimensions that have units of the same system
@@ -72,7 +90,7 @@ namespace ForgedSoftware.Measurement {
 			List<Dimension> basicSimplifiedDimensions = list.SimpleSimplify(ref copy);
 			// keep copy of simplified dimensions
 			dimensionLists.Add(new SimplifiedDimensions<TNumber>(basicSimplifiedDimensions, copy));
-			if (!MeasurementCorpus.Options.IgnoreDerivedSystems) {
+			if (MeasurementCorpus.Options.AllowDerivedDimensions) {
 				// convert dimensions to base systems
 				TNumber copy2 = value.Copy();
 				List<Dimension> baseSystemDimensions = basicSimplifiedDimensions
@@ -97,7 +115,7 @@ namespace ForgedSoftware.Measurement {
 				where TNumber : INumber<TNumber> {
 			var simplifiedDimensions = new List<SimplifiedDimensions<TNumber>>();
 			// for each derived system
-			foreach (DimensionDefinition dimDef in MeasurementCorpus.Dimensions.Where(s => s.IsDerived())) {
+			foreach (DimensionDefinition dimDef in MeasurementCorpus.Dimensions.Where(d => d.IsDerived())) {
 				List<Dimension> neededDimensions = dimDef.Derived.CopyList();
 				// for each existing dimension
 				List<Dimension> currentDimensions = dimensions.CopyList();
@@ -120,7 +138,7 @@ namespace ForgedSoftware.Measurement {
 					// save dimensions as a new set
 					simplifiedDimensions.Add(new SimplifiedDimensions<TNumber>(currentDimensions, value.Copy())); // Do wee need to simple simplify again here??
 					// repeat for each derived system until no more matches are found - recursive?
-					simplifiedDimensions.AddRange(FindDerivedDimensions(currentDimensions, value.Copy()));
+					simplifiedDimensions.AddRange(FindDerivedDimensions(currentDimensions, value.Copy())); // TODO - Causing infinite loop!!!
 				}
 			}
 			return simplifiedDimensions;

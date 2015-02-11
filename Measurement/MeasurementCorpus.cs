@@ -70,11 +70,14 @@ namespace ForgedSoftware.Measurement {
 			Dimensions = new List<DimensionDefinition>();
 			Prefixes = new List<Prefix>();
 
+			// Create Default Options
+			ResetToDefaultOptions();
+
 			// Load Data
 			new CorpusBuilder().PrepareMeasurement();
 
-			// Create Default Options
-			Options = new MeasurementOptions();
+			// Reload Default Options After Loading Data
+			ResetToDefaultOptions();
 		}
 
 		#endregion
@@ -168,13 +171,16 @@ namespace ForgedSoftware.Measurement {
 				.OrderBy(x => x, DimensionDefinitionComparer.Comparer).ToList();
 		}
 
-		private static bool DimensionFilter(DimensionDefinition arg) {
-			//if (!Options.AllowVectorDimensions && arg.Vector) {
-			//	return false;
-			//}
-			//if (!Options.AllowDerivedDimensions && arg.IsDerived()) {
-			//	return false;
-			//}
+		public static bool DimensionFilter(DimensionDefinition arg) {
+			if (!Options.AllowVectorDimensions && arg.Vector) {
+				return false;
+			}
+			if (!Options.AllowDerivedDimensions && arg.IsDerived()) {
+				return false;
+			}
+			if (Options.IgnoredDimensions.Contains(arg)) {
+				return false;
+			}
 			return true;
 		}
 
@@ -233,8 +239,15 @@ namespace ForgedSoftware.Measurement {
 		}
 
 		private static bool UnitFilter(Unit arg) {
-			// TODO
-			// Add any filters here - exclude historical etc...
+			if (!Options.UseRareUnits && arg.IsRare) {
+				return false;
+			}
+			if (!Options.UseEstimatedUnits && arg.IsEstimation) {
+				return false;
+			}
+			if (!arg.MeasurementSystems.Any(SystemsFilter)) {
+				return false;
+			}
 			return true;
 		}
 
@@ -271,7 +284,12 @@ namespace ForgedSoftware.Measurement {
 		}
 
 		private static bool PrefixFilter(Prefix arg) {
-			// TODO - populate - remove rare if necessary
+			if (!Options.UseRarePrefixes && arg.IsRare) {
+				return false;
+			}
+			if (!Options.UseUnofficalPrefixes && arg.Type == PrefixType.SiUnofficial) {
+				return false;
+			}
 			return true;
 		}
 
@@ -308,8 +326,30 @@ namespace ForgedSoftware.Measurement {
 		}
 
 		private static bool SystemsFilter(MeasurementSystem arg) {
-			// TODO - populate
-			return true;
+			return FindAllowedSystems().Contains(arg);
+		}
+
+		private static List<MeasurementSystem> FindAllowedSystems() {
+			var allowedSystems = new List<MeasurementSystem>(
+				Options.AllowedSystemsForUnits.IsEmpty() ? AllSystems : Options.AllowedSystemsForUnits.SelectMany(s => s.Ancestors).Distinct());
+			var toRemove = new List<MeasurementSystem>();
+			foreach (MeasurementSystem ignore in Options.IgnoredSystemsForUnits) {
+				if (allowedSystems.Contains(ignore)) {
+					toRemove.Add(ignore);
+					CheckRemoveParent(ref toRemove, ignore.Parent);
+				}
+			}
+			toRemove.ForEach(r => allowedSystems.Remove(r));
+			return allowedSystems;
+		}
+
+		private static void CheckRemoveParent(ref List<MeasurementSystem> toRemove, MeasurementSystem parent) {
+			if (parent != null) {
+				if (!Options.AllowedSystemsForUnits.Contains(parent)) {
+					toRemove.Add(parent);
+					CheckRemoveParent(ref toRemove, parent.Parent);
+				}
+			}
 		}
 
 		#endregion

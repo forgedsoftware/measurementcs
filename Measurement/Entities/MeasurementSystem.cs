@@ -37,6 +37,14 @@ namespace ForgedSoftware.Measurement.Entities {
 			return (Parent == null);
 		}
 
+		public List<MeasurementSystem> Ancestors {
+			get {
+				List<MeasurementSystem> list = (Parent == null) ? new List<MeasurementSystem>() : Parent.Ancestors;
+				list.Add(this);
+				return list;
+			}
+		}
+
 		#endregion
 	}
 }

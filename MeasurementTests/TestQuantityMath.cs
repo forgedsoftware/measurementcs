@@ -66,7 +66,7 @@ namespace ForgedSoftware.MeasurementTests {
 
 		[TestMethod]
 		public void TestMultiplyComplexCommensurableQuantities() {
-			MeasurementCorpus.Options.IgnoreDerivedSystems = true;
+			MeasurementCorpus.Options.AllowDerivedDimensions = false;
 			Quantity result = new Quantity(3.2, new[] { "minute", "metre", "coulomb" })
 				.Multiply(new Quantity(3, new[] { "second", "mile", "coulomb" }));
 			MeasurementCorpus.ResetToDefaultOptions();
