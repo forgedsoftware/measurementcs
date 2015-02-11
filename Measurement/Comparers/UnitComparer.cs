@@ -12,7 +12,15 @@ namespace ForgedSoftware.Measurement.Comparers {
 
 		protected override int CalculatePoints(Unit val) {
 			int points = 0;
-			// TODO
+			if (!val.IsBaseUnit()) {
+				points += 10000;
+			}
+			if (!val.IsRare) {
+				points += 1000;
+			}
+			if (!val.IsEstimation) {
+				points += 100;
+			}
 			return points;
 		}
 	}

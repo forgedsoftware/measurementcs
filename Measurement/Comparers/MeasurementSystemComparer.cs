@@ -12,7 +12,10 @@ namespace ForgedSoftware.Measurement.Comparers {
 
 		protected override int CalculatePoints(MeasurementSystem val) {
 			int points = 0;
-			// TODO
+			if (!val.IsRoot()) {
+				points += 1000;
+			}
+			points -= (10 * val.Ancestors.Count);
 			return points;
 		}
 	}

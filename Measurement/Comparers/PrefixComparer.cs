@@ -12,7 +12,15 @@ namespace ForgedSoftware.Measurement.Comparers {
 
 		protected override int CalculatePoints(Prefix val) {
 			int points = 0;
-			// TODO
+			if (val.Type != PrefixType.SiUnofficial) {
+				points += 1000;
+			}
+			if (!val.IsRare) {
+				points += 100;
+			}
+			if (val.Type != PrefixType.SiBinary) {
+				points += 10;
+			}
 			return points;
 		}
 	}
