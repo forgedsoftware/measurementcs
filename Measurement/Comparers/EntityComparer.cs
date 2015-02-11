@@ -21,13 +21,18 @@ namespace ForgedSoftware.Measurement.Comparers {
 			int yPoints = CalculatePoints(y);
 
 			// Fine sort based on key
-			if (xPoints == yPoints)
-			{
+			if (xPoints == yPoints) {
 				return string.Compare(x.Key, y.Key, StringComparison.OrdinalIgnoreCase);
 			}
 			return (xPoints > yPoints) ? 1 : -1;
 		}
 
+		/// <summary>
+		/// Rates an entity by assigning points to it. Higher points will
+		/// appear earlier in sorted results.
+		/// </summary>
+		/// <param name="val">The entity.</param>
+		/// <returns>An integer amount of points</returns>
 		protected abstract int CalculatePoints(T val);
 	}
 }
