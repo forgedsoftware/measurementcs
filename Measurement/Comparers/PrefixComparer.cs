@@ -10,7 +10,7 @@ namespace ForgedSoftware.Measurement.Comparers {
 			Comparer = new PrefixComparer();
 		}
 
-		protected override int CalculatePoints(Prefix val) {
+		internal override int CalculatePoints(Prefix val) {
 			int points = 0;
 			if (val.Type != PrefixType.SiUnofficial) {
 				points += 1000;

@@ -10,12 +10,12 @@ namespace ForgedSoftware.Measurement.Comparers {
 			Comparer = new DimensionDefinitionComparer();
 		}
 
-		protected override int CalculatePoints(DimensionDefinition dimDef) {
+		internal override int CalculatePoints(DimensionDefinition dimDef) {
 			int points = 0;
-			if (!dimDef.IsDimensionless) {
+			if (!dimDef.IsDerived()) {
 				points += 100;
 			}
-			if (!dimDef.IsDerived()) {
+			if (!dimDef.IsDimensionless) {
 				points += 1000;
 			}
 			if (!dimDef.Vector) {

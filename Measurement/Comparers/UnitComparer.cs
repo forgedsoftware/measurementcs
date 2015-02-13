@@ -10,9 +10,10 @@ namespace ForgedSoftware.Measurement.Comparers {
 			Comparer = new UnitComparer();
 		}
 
-		protected override int CalculatePoints(Unit val) {
+		internal override int CalculatePoints(Unit val) {
 			int points = 0;
-			if (!val.IsBaseUnit()) {
+			points += DimensionDefinitionComparer.Comparer.CalculatePoints(val.DimensionDefinition);
+			if (val.IsBaseUnit()) {
 				points += 10000;
 			}
 			if (!val.IsRare) {

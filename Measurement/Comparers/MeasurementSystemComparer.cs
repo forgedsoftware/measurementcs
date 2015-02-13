@@ -10,9 +10,9 @@ namespace ForgedSoftware.Measurement.Comparers {
 			Comparer = new MeasurementSystemComparer();
 		}
 
-		protected override int CalculatePoints(MeasurementSystem val) {
+		internal override int CalculatePoints(MeasurementSystem val) {
 			int points = 0;
-			if (!val.IsRoot()) {
+			if (val.IsRoot()) {
 				points += 1000;
 			}
 			points -= (10 * val.Ancestors.Count);

@@ -168,7 +168,7 @@ namespace ForgedSoftware.Measurement {
 				.Union(listMatcher(Dimensions, dimensionName, u => u.OtherNames, ignoreCase))
 				.Union(listMatcher(Dimensions, dimensionName, u => u.OtherSymbols, ignoreCase))
 				.Where(DimensionFilter)
-				.OrderBy(x => x, DimensionDefinitionComparer.Comparer).ToList();
+				.OrderByDescending(x => x, DimensionDefinitionComparer.Comparer).ToList();
 		}
 
 		public static bool DimensionFilter(DimensionDefinition arg) {
@@ -235,17 +235,17 @@ namespace ForgedSoftware.Measurement {
 				.Union(listMatcher(allUnits, unitName, u => u.OtherNames, ignoreCase))
 				.Union(listMatcher(allUnits, unitName, u => u.OtherSymbols, ignoreCase))
 				.Where(UnitFilter)
-				.OrderBy(x => x, UnitComparer.Comparer).ToList();
+				.OrderByDescending(x => x, UnitComparer.Comparer).ToList();
 		}
 
-		private static bool UnitFilter(Unit arg) {
+		public static bool UnitFilter(Unit arg) {
 			if (!Options.UseRareUnits && arg.IsRare) {
 				return false;
 			}
 			if (!Options.UseEstimatedUnits && arg.IsEstimation) {
 				return false;
 			}
-			if (!arg.MeasurementSystems.Any(SystemsFilter)) {
+			if (!arg.MeasurementSystems.Any(SystemFilter)) {
 				return false;
 			}
 			return true;
@@ -280,10 +280,10 @@ namespace ForgedSoftware.Measurement {
 				.Union(matcher(Prefixes, prefixName, p => p.Key, ignoreCase))
 				.Union(matcher(Prefixes, prefixName, p => p.Symbol, ignoreCase))
 				.Where(PrefixFilter)
-				.OrderBy(x => x, PrefixComparer.Comparer).ToList();
+				.OrderByDescending(x => x, PrefixComparer.Comparer).ToList();
 		}
 
-		private static bool PrefixFilter(Prefix arg) {
+		public static bool PrefixFilter(Prefix arg) {
 			if (!Options.UseRarePrefixes && arg.IsRare) {
 				return false;
 			}
@@ -321,11 +321,11 @@ namespace ForgedSoftware.Measurement {
 			return existingMatches
 				.Union(matcher(AllSystems, systemName, p => p.Key, ignoreCase))
 				.Union(matcher(AllSystems, systemName, p => p.Name, ignoreCase))
-				.Where(SystemsFilter)
-				.OrderBy(x => x, MeasurementSystemComparer.Comparer).ToList();
+				.Where(SystemFilter)
+				.OrderByDescending(x => x, MeasurementSystemComparer.Comparer).ToList();
 		}
 
-		private static bool SystemsFilter(MeasurementSystem arg) {
+		public static bool SystemFilter(MeasurementSystem arg) {
 			return FindAllowedSystems().Contains(arg);
 		}
 

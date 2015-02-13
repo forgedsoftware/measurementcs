@@ -22,7 +22,7 @@ namespace ForgedSoftware.Measurement.Comparers {
 
 			// Fine sort based on key
 			if (xPoints == yPoints) {
-				return string.Compare(x.Key, y.Key, StringComparison.OrdinalIgnoreCase);
+				return string.Compare(y.Key, x.Key, StringComparison.OrdinalIgnoreCase);
 			}
 			return (xPoints > yPoints) ? 1 : -1;
 		}
@@ -33,6 +33,6 @@ namespace ForgedSoftware.Measurement.Comparers {
 		/// </summary>
 		/// <param name="val">The entity.</param>
 		/// <returns>An integer amount of points</returns>
-		protected abstract int CalculatePoints(T val);
+		internal abstract int CalculatePoints(T val);
 	}
 }
