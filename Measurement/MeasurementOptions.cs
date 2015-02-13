@@ -63,6 +63,7 @@ namespace ForgedSoftware.Measurement {
 		/// <summary>
 		/// Whether dimensions derived from other dimensions are allowed for find and simplifications.
 		/// Default: true
+		/// TODO - the use in simplify should be separated out, maybe built into the simplify itself... (Remember to change documentation)
 		/// </summary>
 		public bool AllowDerivedDimensions { get; set; }
 
