@@ -6,6 +6,7 @@ namespace ForgedSoftware.Measurement {
 	/// <summary>
 	/// A set of options for formatting quantities and dimensions.
 	/// </summary>
+	[Obsolete]
 	public class FormatOptions {
 
 		#region Constructors

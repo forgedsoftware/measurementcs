@@ -84,7 +84,7 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="quantity">The quantity to copy</param>
 		public Quantity(Quantity<TNumber> quantity) {
 			Value = quantity.Value;
-			Dimensions = quantity.Dimensions.CopyList();
+			Dimensions = quantity.Dimensions.CloneList();
 		}
 
 		#endregion
@@ -167,7 +167,7 @@ namespace ForgedSoftware.Measurement {
 				if (dimension.Unit.DimensionDefinition.Units.Contains(unit)) {
 					newDimensions.Add(dimension.ConvertFromBase(ref convertedValue, unit, prefix));
 				} else {
-					newDimensions.Add(dimension.Copy());
+					newDimensions.Add(dimension.Clone());
 				}
 			}
 			return new Quantity<TNumber>(convertedValue, newDimensions);
@@ -208,7 +208,7 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <returns>A quantity with tidied prefixes</returns>
 		public Quantity<TNumber> TidyPrefixes() {
-			Quantity<TNumber> quantity = Copy();
+			Quantity<TNumber> quantity = Clone();
 			if (IsDimensionless()) {
 				return quantity;
 			}
@@ -321,7 +321,7 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="value">The value that is the multiplier</param>
 		/// <returns>A new quantity that is the product of the two original values</returns>
 		public Quantity<TNumber> Multiply(TNumber value) {
-			return new Quantity<TNumber>(Value.Multiply(value), Dimensions.CopyList());
+			return new Quantity<TNumber>(Value.Multiply(value), Dimensions.CloneList());
 		}
 
 		/// <summary>
@@ -330,7 +330,7 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="value">The value that is the divisor</param>
 		/// <returns>A new quantity that is the quotient</returns>
 		public Quantity<TNumber> Divide(TNumber value) {
-			return new Quantity<TNumber>(Value.Divide(value), Dimensions.CopyList());
+			return new Quantity<TNumber>(Value.Divide(value), Dimensions.CloneList());
 		}
 
 		/// <summary>
@@ -340,7 +340,7 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="value">The value to be added</param>
 		/// <returns>A new quantity with the sum of the values</returns>
 		public Quantity<TNumber> Add(TNumber value) {
-			return new Quantity<TNumber>(Value.Add(value), Dimensions.CopyList());
+			return new Quantity<TNumber>(Value.Add(value), Dimensions.CloneList());
 		}
 
 		/// <summary>
@@ -350,7 +350,7 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="value">The value to be subtracted</param>
 		/// <returns>A new quantity with the difference of the values</returns>
 		public Quantity<TNumber> Subtract(TNumber value) {
-			return new Quantity<TNumber>(Value.Subtract(value), Dimensions.CopyList());
+			return new Quantity<TNumber>(Value.Subtract(value), Dimensions.CloneList());
 		}
 
 		#endregion
@@ -364,8 +364,8 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="q">The quantity being multiplied by</param>
 		/// <returns>A resulting quantity that is the product of the two quantities</returns>
 		public Quantity<TNumber> Multiply(Quantity<TNumber> q) {
-			List<Dimension> clonedDimensions = Dimensions.CopyList();
-			clonedDimensions.AddRange(q.Dimensions.CopyList());
+			List<Dimension> clonedDimensions = Dimensions.CloneList();
+			clonedDimensions.AddRange(q.Dimensions.CloneList());
 			var newQuantity = new Quantity<TNumber>(Value.Multiply(q.Value), clonedDimensions);
 			return newQuantity.Simplify();
 		}
@@ -378,8 +378,8 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="q">The quantity that is the divisor</param>
 		/// <returns>A resulting quantity that is the quotient of the two quantities</returns>
 		public Quantity<TNumber> Divide(Quantity<TNumber> q) {
-			List<Dimension> clonedDimensions = Dimensions.CopyList();
-			clonedDimensions.AddRange(q.Dimensions.CopyList().Select(d => d.Invert()));
+			List<Dimension> clonedDimensions = Dimensions.CloneList();
+			clonedDimensions.AddRange(q.Dimensions.CloneList().Select(d => d.Invert()));
 			var newQuantity = new Quantity<TNumber>(Value.Divide(q.Value), clonedDimensions);
 			return newQuantity.Simplify();
 		}
@@ -393,7 +393,7 @@ namespace ForgedSoftware.Measurement {
 		public Quantity<TNumber> Add(Quantity<TNumber> q) {
 			// Convert value into same units
 			Quantity<TNumber> convertedQuantity = q.Convert(this);
-			return new Quantity<TNumber>(Value.Add(convertedQuantity.Value), Dimensions.CopyList());
+			return new Quantity<TNumber>(Value.Add(convertedQuantity.Value), Dimensions.CloneList());
 		}
 
 		/// <summary>
@@ -405,7 +405,7 @@ namespace ForgedSoftware.Measurement {
 		public Quantity<TNumber> Subtract(Quantity<TNumber> q) {
 			// Convert value into same units
 			Quantity<TNumber> convertedQuantity = q.Convert(this);
-			return new Quantity<TNumber>(Value.Subtract(convertedQuantity.Value), Dimensions.CopyList());
+			return new Quantity<TNumber>(Value.Subtract(convertedQuantity.Value), Dimensions.CloneList());
 		}
 
 		/// <summary>
@@ -414,7 +414,7 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <returns>A resulting quantity that is the negation of the original one</returns>
 		public Quantity<TNumber> Negate() {
-			return new Quantity<TNumber>(Value.Negate(), Dimensions.CopyList().Select(d => d.Invert()));
+			return new Quantity<TNumber>(Value.Negate(), Dimensions.CloneList().Select(d => d.Invert()));
 		}
 
 		#endregion
@@ -422,27 +422,27 @@ namespace ForgedSoftware.Measurement {
 		#region Extended Math
 
 		public Quantity<TNumber> Abs() {
-			return new Quantity<TNumber>(Value.Abs(), Dimensions.CopyList());
+			return new Quantity<TNumber>(Value.Abs(), Dimensions.CloneList());
 		}
 
 		public Quantity<TNumber> Ceiling() {
-			return new Quantity<TNumber>(Value.Ceiling(), Dimensions.CopyList());
+			return new Quantity<TNumber>(Value.Ceiling(), Dimensions.CloneList());
 		}
 
 		public Quantity<TNumber> Floor() {
-			return new Quantity<TNumber>(Value.Floor(), Dimensions.CopyList());
+			return new Quantity<TNumber>(Value.Floor(), Dimensions.CloneList());
 		}
 
 		public Quantity<TNumber> Pow(double power) {
-			return new Quantity<TNumber>(Value.Pow(power), Dimensions.CopyList());
+			return new Quantity<TNumber>(Value.Pow(power), Dimensions.CloneList());
 		}
 
 		public Quantity<TNumber> Round() {
-			return new Quantity<TNumber>(Value.Round(), Dimensions.CopyList());
+			return new Quantity<TNumber>(Value.Round(), Dimensions.CloneList());
 		}
 
 		public Quantity<TNumber> Sqrt() {
-			return new Quantity<TNumber>(Value.Sqrt(), Dimensions.CopyList());
+			return new Quantity<TNumber>(Value.Sqrt(), Dimensions.CloneList());
 		}
 
 		public Quantity<TNumber> Max(Quantity<TNumber> other) {
@@ -465,13 +465,21 @@ namespace ForgedSoftware.Measurement {
 
 		#endregion
 
-		#region Copyable
+		#region Cloneable
+		
+		/// <summary>
+		/// A simple clone of the quantity.
+		/// </summary>
+		/// <returns>A clone of this quantity</returns>
+		object ICloneable.Clone() {
+			return Clone();
+		}
 
 		/// <summary>
-		/// Utilizes the copy constructor to make a copy of this quantity.
+		/// Utilizes the copy constructor to make a clone of this quantity.
 		/// </summary>
-		/// <returns>A copy of this quantity</returns>
-		public Quantity<TNumber> Copy() {
+		/// <returns>A clone of this quantity</returns>
+		public Quantity<TNumber> Clone() {
 			return new Quantity<TNumber>(this);
 		}
 
@@ -513,57 +521,56 @@ namespace ForgedSoftware.Measurement {
 
 		/// <summary>
 		/// A simple format function that formats the quantity
-		/// with the default options and the current culture.
+		/// with the default options and the current format settings.
 		/// </summary>
 		/// <returns>The formatted string</returns>
 		public string Format() {
-			return Format(new FormatOptions(CultureInfo.CurrentCulture));
+			return Format(QuantityFormatInfo.CurrentInfo);
 		}
 
 		/// <summary>
 		/// Formats the quantity based on a series of options to provide
 		/// various human readable alternatives.
-		/// TODO - Too Long!! Separate into smaller methods
 		/// </summary>
-		/// <seealso cref="ForgedSoftware.Measurement.FormatOptions"/>
-		/// <param name="options">An object detailing the different format options</param>
+		/// <seealso cref="ForgedSoftware.Measurement.QuantityFormatInfo"/>
+		/// <param name="info">An object detailing the different format options</param>
 		/// <returns>The formatted string.</returns>
-		public string Format(FormatOptions options) {
-			IFormatProvider formatProvider = null; // TODO Fix me!
+		public string Format(QuantityFormatInfo info) {
+			info = info ?? QuantityFormatInfo.CurrentInfo;
 
-			string formatType = "Q";
-			if (options.ExpandExponent) {
-				formatType += (options.Ascii) ? "T" : "S";
-			} else {
-				formatType += "G";
+			string formatType = (info.FormatParts == QuantityFormatInfo.QuantityParts.All) ? "Q" : "";
+			if (info.ScientificExponent) {
+				formatType += (info.AsciiOnly) ? "T" : "S";
 			}
+			formatType += info.DefaultDoubleFormat;
+
+			string precision = (info.Precision < 0) ? "" : info.Precision.ToString();
+
 			// Value
-			string valueStr = Value.ToString("Q" + formatType + options.Precision, formatProvider); // TODO Fix me!
+			string valueStr = Value.ToString(formatType + precision, info.NumberFormat);
 
 			// Dimensions
-			string dimStr = FormatDimensions(options);
+			bool isPlural = (Math.Abs(Value.EquivalentValue - 1) > Double.Epsilon);
+			string dimStr = FormatDimensions(info, isPlural);
 
 			// Returning
-			if (options.Show == FormatOptions.QuantityParts.DimensionsOnly) {
+			if (info.FormatParts == QuantityFormatInfo.QuantityParts.Dimensions) {
 				return dimStr;
 			}
-			if (options.Show == FormatOptions.QuantityParts.ValueOnly) {
+			if (info.FormatParts == QuantityFormatInfo.QuantityParts.Value) {
 				return valueStr;
 			}
-			if (dimStr.Length > 0) {
-				valueStr += " ";
-			}
-			return valueStr + dimStr;
+			return string.Format(valueStr, dimStr);
 		}
 
-		private string FormatDimensions(FormatOptions options) {
-			List<Dimension> clonedDimensions = Dimensions.CopyList();
-			if (options.Sort) {
+		private string FormatDimensions(QuantityFormatInfo info, bool isPlural) {
+			List<Dimension> clonedDimensions = Dimensions.CloneList();
+			if (info.SortDimensions) {
 				clonedDimensions = clonedDimensions.OrderBy(d => -d.Power).ToList();
 			}
-			IEnumerable<string> dimensionStrings = clonedDimensions.Select(d => d.Format(options));
+			IEnumerable<string> dimensionStrings = clonedDimensions.Select(d => d.Format(info, isPlural));
 
-			string joiner = (options.FullName) ? " " : options.UnitSeparator;
+			string joiner = (info.TextualDescription) ? " " : info.UnitSeparator;
 			return dimensionStrings.Aggregate((current, next) => current + joiner + next);
 		}
 
@@ -600,25 +607,23 @@ namespace ForgedSoftware.Measurement {
 			}
 			format = format.Trim().ToUpperInvariant();
 
-			if (provider == null) {
-				provider = CultureInfo.CurrentCulture;
-			}
-
-			FormatOptions options;
+			QuantityFormatInfo options = QuantityFormatInfo.GetInstance(provider).Clone();
 
 			switch (format) {
 				case "G":
+					break;
 				case "S":
-					options = FormatOptions.Default(provider);
+					options.FormatParts = QuantityFormatInfo.QuantityParts.All;
 					break;
 				case "R":
-					options = FormatOptions.Raw(provider);
+					options.AsciiOnly = true;
+					options.ScientificExponent = false;
 					break;
 				case "N":
-					options = FormatOptions.ValueOnly(provider);
+					options.FormatParts = QuantityFormatInfo.QuantityParts.Value;
 					break;
 				case "U":
-					options = FormatOptions.DimensionsOnly(provider);
+					options.FormatParts = QuantityFormatInfo.QuantityParts.Dimensions;
 					break;
 				default:
 					throw new ArgumentException("Provided format string is not recognized");
@@ -878,47 +883,47 @@ namespace ForgedSoftware.Measurement {
 
 		/// <seealso cref="System.Math.Acos(double)"/>
 		public Quantity Acos() {
-			return new Quantity(Math.Acos(Value), Dimensions.CopyList());
+			return new Quantity(Math.Acos(Value), Dimensions.CloneList());
 		}
 
 		/// <seealso cref="System.Math.Asin(double)"/>
 		public Quantity Asin() {
-			return new Quantity(Math.Asin(Value), Dimensions.CopyList());
+			return new Quantity(Math.Asin(Value), Dimensions.CloneList());
 		}
 
 		/// <seealso cref="System.Math.Atan(double)"/>
 		public Quantity Atan() {
-			return new Quantity(Math.Atan(Value), Dimensions.CopyList());
+			return new Quantity(Math.Atan(Value), Dimensions.CloneList());
 		}
 
 		/// <seealso cref="System.Math.Cos(double)"/>
 		public Quantity Cos() {
-			return new Quantity(Math.Cos(Value), Dimensions.CopyList());
+			return new Quantity(Math.Cos(Value), Dimensions.CloneList());
 		}
 
 		/// <seealso cref="System.Math.Exp(double)"/>
 		public Quantity Exp() {
-			return new Quantity(Math.Exp(Value), Dimensions.CopyList());
+			return new Quantity(Math.Exp(Value), Dimensions.CloneList());
 		}
 
 		/// <seealso cref="System.Math.Log(double)"/>
 		public Quantity Log() {
-			return new Quantity(Math.Log(Value), Dimensions.CopyList());
+			return new Quantity(Math.Log(Value), Dimensions.CloneList());
 		}
 
 		/// <seealso cref="System.Math.Log10(double)"/>
 		public Quantity Log10() {
-			return new Quantity(Math.Log10(Value), Dimensions.CopyList());
+			return new Quantity(Math.Log10(Value), Dimensions.CloneList());
 		}
 
 		/// <seealso cref="System.Math.Sin(double)"/>
 		public Quantity Sin() {
-			return new Quantity(Math.Sin(Value), Dimensions.CopyList());
+			return new Quantity(Math.Sin(Value), Dimensions.CloneList());
 		}
 
 		/// <seealso cref="System.Math.Tan(double)"/>
 		public Quantity Tan() {
-			return new Quantity(Math.Tan(Value), Dimensions.CopyList());
+			return new Quantity(Math.Tan(Value), Dimensions.CloneList());
 		}
 
 		// Functions requiring a parameter
@@ -931,7 +936,7 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="y">A raw y value for the atan2 function</param>
 		/// <returns>The atan2 result</returns>
 		public Quantity Atan2(double y) {
-			return new Quantity(Math.Atan2(y, Value), Dimensions.CopyList());
+			return new Quantity(Math.Atan2(y, Value), Dimensions.CloneList());
 		}
 
 		/// <summary>
@@ -949,17 +954,17 @@ namespace ForgedSoftware.Measurement {
 
 		/// <seealso cref="System.Math.Cosh(double)"/>
 		public Quantity Cosh() {
-			return new Quantity(Math.Cosh(Value), Dimensions.CopyList());
+			return new Quantity(Math.Cosh(Value), Dimensions.CloneList());
 		}
 
 		/// <seealso cref="System.Math.Sinh(double)"/>
 		public Quantity Sinh() {
-			return new Quantity(Math.Sinh(Value), Dimensions.CopyList());
+			return new Quantity(Math.Sinh(Value), Dimensions.CloneList());
 		}
 
 		/// <seealso cref="System.Math.Tanh(double)"/>
 		public Quantity Tanh() {
-			return new Quantity(Math.Tanh(Value), Dimensions.CopyList());
+			return new Quantity(Math.Tanh(Value), Dimensions.CloneList());
 		}
 
 		#endregion
@@ -1064,13 +1069,21 @@ namespace ForgedSoftware.Measurement {
 
 		#endregion
 
-		#region Copyable
+		#region Cloneable
+		
+		/// <summary>
+		/// A simple clone of the quantity.
+		/// </summary>
+		/// <returns>A clone of this quantity</returns>
+		object ICloneable.Clone() {
+			return Clone();
+		}
 
 		/// <summary>
-		/// Utilizes the copy constructor to make a copy of this quantity.
+		/// Utilizes the copy constructor to make a clone of this quantity.
 		/// </summary>
-		/// <returns>A copy of this quantity</returns>
-		public Quantity Copy() {
+		/// <returns>A clone of this quantity</returns>
+		public Quantity Clone() {
 			return new Quantity(this);
 		}
 
@@ -1119,10 +1132,10 @@ namespace ForgedSoftware.Measurement {
 
 
 		/// <summary>
-		/// A wrapper for <see cref="Quantity{DoubleWrapper}.Format(FormatOptions)"/>
+		/// A wrapper for <see cref="Quantity{DoubleWrapper}.Format(QuantityFormatInfo)"/>
 		/// </summary>
-		public string Format(FormatOptions options) {
-			return _q.Format(options);
+		public string Format(QuantityFormatInfo info) {
+			return _q.Format(info);
 		}
 
 		#endregion

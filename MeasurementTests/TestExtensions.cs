@@ -42,8 +42,8 @@ namespace ForgedSoftware.MeasurementTests {
 		[TestMethod]
 		public void TestDoubleExtendedToString() {
 			var d1 = 434324235.32243E15;
-			Assert.AreEqual("4.34 x 10^23", d1.ExtendedToString("T3", CultureInfo.CurrentCulture));
-			Assert.AreEqual("4.34 x 10^23 {0}", d1.ExtendedToString("QT3", CultureInfo.CurrentCulture));
+			Assert.AreEqual("4.34 x 10^23", d1.ExtendedToString("TG3", CultureInfo.CurrentCulture));
+			Assert.AreEqual("4.34 x 10^23 {0}", d1.ExtendedToString("QTG3", CultureInfo.CurrentCulture));
 		}
 
 		#endregion

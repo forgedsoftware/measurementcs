@@ -17,13 +17,13 @@ namespace ForgedSoftware.Measurement {
 	public static class Extensions {
 
 		/// <summary>
-		/// Deep copies a list of where the members extend ICopyable
+		/// Deep copies a list of where the members extend ICloneable<T>
 		/// </summary>
 		/// <typeparam name="T">Type of the list members</typeparam>
-		/// <param name="list">The list to copy</param>
-		/// <returns>The copied list</returns>
-		public static List<T> CopyList<T>(this List<T> list) where T : ICopyable<T> {
-			return list.Select(item => item.Copy()).ToList();
+		/// <param name="list">The list to clone</param>
+		/// <returns>The cloned list</returns>
+		public static List<T> CloneList<T>(this List<T> list) where T : ICloneable<T> {
+			return list.Select(item => item.Clone()).ToList();
 		}
 
 		/// <summary>
@@ -116,9 +116,9 @@ namespace ForgedSoftware.Measurement {
 			var simplifiedDimensions = new List<SimplifiedDimensions<TNumber>>();
 			// for each derived system
 			foreach (DimensionDefinition dimDef in MeasurementCorpus.Dimensions.Where(d => d.IsDerived())) {
-				List<Dimension> neededDimensions = dimDef.Derived.CopyList();
+				List<Dimension> neededDimensions = dimDef.Derived.CloneList();
 				// for each existing dimension
-				List<Dimension> currentDimensions = dimensions.CopyList();
+				List<Dimension> currentDimensions = dimensions.CloneList();
 				var currentDimensionsToRemove = new List<Dimension>();
 				foreach (Dimension dimension in currentDimensions) {
 					if (dimension.Unit.DimensionDefinition.IsDerived()) {
@@ -252,9 +252,7 @@ namespace ForgedSoftware.Measurement {
 		}
 
 		private static string ScientificFormat(double value, string format, IFormatProvider formatProvider, bool asciiOnly) {
-			//int sigFig = int.Parse(format);
-
-			string valueStr = value.ToString("G" + format, formatProvider);
+			string valueStr = value.ToString(format, formatProvider);
 
 			// Exponents
 			int eIndex = valueStr.IndexOf("E", StringComparison.InvariantCulture);

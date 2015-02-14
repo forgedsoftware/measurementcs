@@ -67,25 +67,25 @@ namespace ForgedSoftware.MeasurementTests
 
 		[TestMethod]
 		public void TestFormattingWithNoCulture() {
-			string result = MeasurementCorpus.CreateQuantity(2, "hour").Format(new FormatOptions());
+			string result = MeasurementCorpus.CreateQuantity(2, "hour").Format(QuantityFormatInfo.CurrentInfo);
 			Assert.AreEqual("2 h", result);
 		}
 
 		[TestMethod]
 		public void TestFormattingWithInvariantCulture() {
-			string result = MeasurementCorpus.CreateQuantity(2, "hour").Format(FormatOptions.Default(CultureInfo.InvariantCulture));
-			Assert.AreEqual("2.00 h", result);
+			string result = MeasurementCorpus.CreateQuantity(2, "hour").Format(new QuantityFormatInfo(CultureInfo.InvariantCulture.NumberFormat));
+			Assert.AreEqual("2 h", result);
 		}
 
 		[TestMethod]
 		public void TestFormattingExpandingExponent() {
-			string result = MeasurementCorpus.CreateQuantity(2.04567e32, "hour").Format(new FormatOptions());
+			string result = MeasurementCorpus.CreateQuantity(2.04567e32, "hour").Format(QuantityFormatInfo.CurrentInfo);
 			Assert.AreEqual("2.04567 x 10³² h", result);
 		}
 
 		[TestMethod]
 		public void TestFormattingMulitpleDimensions() {
-			string result = MeasurementCorpus.CreateQuantity(2, new List<string> {"hour", "metre"}).Format(new FormatOptions());
+			string result = MeasurementCorpus.CreateQuantity(2, new List<string> { "hour", "metre" }).Format(new QuantityFormatInfo());
 			Assert.AreEqual("2 h·m", result);
 		}
 
@@ -93,45 +93,47 @@ namespace ForgedSoftware.MeasurementTests
 		public void TestFormattingMulitpleDimensionsWithDifferentPowers() {
 			string result = MeasurementCorpus.CreateQuantity(2, new List<Dimension> {
 				new Dimension("hour", 2), new Dimension("metre", -3)
-			}).Format(new FormatOptions());
+			}).Format(new QuantityFormatInfo());
 			Assert.AreEqual("2 h²·m⁻³", result);
 		}
 
 		[TestMethod]
 		public void TestFormattingValueOnly() {
-			string result = MeasurementCorpus.CreateQuantity(2, "hour").Format(new FormatOptions {
-				Show = FormatOptions.QuantityParts.ValueOnly
+			string result = MeasurementCorpus.CreateQuantity(2, "hour").Format(new QuantityFormatInfo {
+				FormatParts = QuantityFormatInfo.QuantityParts.Value
 			});
 			Assert.AreEqual("2", result);
 		}
 
 		[TestMethod]
 		public void TestFormattingDimensionsOnly() {
-			string result = MeasurementCorpus.CreateQuantity(2, "hour").Format(new FormatOptions {
-				Show = FormatOptions.QuantityParts.DimensionsOnly
+			string result = MeasurementCorpus.CreateQuantity(2, "hour").Format(new QuantityFormatInfo {
+				FormatParts = QuantityFormatInfo.QuantityParts.Dimensions
 			});
 			Assert.AreEqual("h", result);
 		}
 
 		[TestMethod]
 		public void TestFormattingNewDefaults() {
-			string result = MeasurementCorpus.CreateQuantity(231223423.23, "hour").Format(new FormatOptions {
-				GroupSize = 2,
-				GroupSeparator = "..",
-				DecimalSeparator = "*"
+			var info = (NumberFormatInfo)CultureInfo.CurrentCulture.NumberFormat.Clone();
+			info.NumberDecimalSeparator = "*";
+			info.NumberGroupSeparator = "..";
+			info.NumberGroupSizes = new[] { 2 };
+			string result = MeasurementCorpus.CreateQuantity(231223423.23, "hour").Format(new QuantityFormatInfo(info) {
+				DefaultDoubleFormat = "N"
 			});
 			Assert.AreEqual("2..31..22..34..23*23 h", result);
 		}
 
 		[TestMethod]
 		public void TestFormattingInfinity() {
-			string result = MeasurementCorpus.CreateQuantity(double.NegativeInfinity, "hour").Format(new FormatOptions());
+			string result = MeasurementCorpus.CreateQuantity(double.NegativeInfinity, "hour").Format(new QuantityFormatInfo());
 			Assert.AreEqual("-Infinity h", result);
 		}
 
 		[TestMethod]
 		public void TestFormattingNaN() {
-			string result = MeasurementCorpus.CreateQuantity(double.NaN, "hour").Format(new FormatOptions());
+			string result = MeasurementCorpus.CreateQuantity(double.NaN, "hour").Format(new QuantityFormatInfo());
 			Assert.AreEqual("NaN h", result);
 		}
 

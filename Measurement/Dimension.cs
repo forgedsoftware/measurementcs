@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Runtime.Serialization;
 using ForgedSoftware.Measurement.Entities;
@@ -20,7 +19,7 @@ namespace ForgedSoftware.Measurement {
 	/// Such a dimension has the unit "metre", the prefix "kilo", and a power of 2.
 	/// </example>
 	[DataContract]
-	public class Dimension : ISerializable, IFormatter, IFormattable, ICopyable<Dimension>, IObjectReference {
+	public class Dimension : ISerializable, IFormatter, IFormattable, ICloneable<Dimension>, IObjectReference {
 
 		private const int DEFAULT_POWER = 1;
 		private const double EPSILON = 1E-15;
@@ -135,7 +134,7 @@ namespace ForgedSoftware.Measurement {
 		/// <returns>The dimension with the base unit and no prefix</returns>
 		public Dimension ConvertToBase<TNumber>(ref TNumber value) where TNumber : INumber<TNumber> {
 			if (Unit.IsBaseUnit() && Prefix == null) {
-				return Copy();
+				return Clone();
 			}
 
 			Unit baseUnit = Unit.DimensionDefinition.BaseUnit;
@@ -237,9 +236,9 @@ namespace ForgedSoftware.Measurement {
 				where TNumber : INumber<TNumber> {
 			// TODO this currently assumes the derived dimension has base units...
 			if (!Unit.DimensionDefinition.IsDerived()) {
-				return new List<Dimension> { Copy() };
+				return new List<Dimension> { Clone() };
 			}
-			List<Dimension> baseSystems = Unit.DimensionDefinition.Derived.CopyList();
+			List<Dimension> baseSystems = Unit.DimensionDefinition.Derived.CloneList();
 			baseSystems.ForEach(d => d.Power = d.Power * Power);
 			return baseSystems;
 		}
@@ -286,7 +285,7 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="value">The value that the addition of the prefix should be applied to</param>
 		/// <returns>A copy of the dimension with the found prefix applied, if a useful prefix could be found</returns>
 		public Dimension ApplyPrefix<TNumber>(ref TNumber value) where TNumber : INumber<TNumber> {
-			Dimension d = Copy();
+			Dimension d = Clone();
 			if (d.Prefix != null) {
 				d = RemovePrefix(ref value);
 			}
@@ -351,7 +350,7 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="value">The value that the removal of the prefix should be applied to</param>
 		/// <returns>A copy of the dimension with the prefix removed</returns>
 		public Dimension RemovePrefix<TNumber>(ref TNumber value) where TNumber : INumber<TNumber> {
-			Dimension d = Copy();
+			Dimension d = Clone();
 			if (d.Prefix != null) {
 				value = d.Prefix.Remove(value);
 				d.Prefix = null;
@@ -361,13 +360,21 @@ namespace ForgedSoftware.Measurement {
 
 		#endregion
 
-		#region Copyable
+		#region Cloneable
+
+		/// <summary>
+		/// Direct implementation of ICloneable interface.
+		/// </summary>
+		/// <returns>Clone of Dimension as object</returns>
+		object ICloneable.Clone() {
+			return Clone();
+		}
 
 		/// <summary>
 		/// A helper method that provides a copy of the dimension
 		/// </summary>
 		/// <returns>The copy of the dimension</returns>
-		public Dimension Copy() {
+		public Dimension Clone() {
 			return new Dimension(this);
 		}
 
@@ -376,7 +383,7 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <returns>An inverted copy of the dimension</returns>
 		public Dimension Invert() {
-			Dimension d = Copy();
+			Dimension d = Clone();
 			d.Power = -d.Power;
 			return d;
 		}
@@ -457,49 +464,64 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <returns>The formatted string</returns>
 		public string Format() {
-			return Format(new FormatOptions(CultureInfo.CurrentCulture));
+			return Format(QuantityFormatInfo.CurrentInfo);
+		}
+
+		/// <summary>
+		/// A format method for formatting dimensions in a non-plural context.
+		/// </summary>
+		/// <param name="info">The format options</param>
+		/// <returns>The formatted string</returns>
+		public string Format(QuantityFormatInfo info) {
+			return Format(info, false);
 		}
 
 		/// <summary>
 		/// Provides a formatted version of the dimension given a provided
 		/// set of format options.
 		/// </summary>
-		/// <seealso cref="ForgedSoftware.Measurement.FormatOptions"/>
-		/// <param name="options">The format options</param>
+		/// <seealso cref="ForgedSoftware.Measurement.QuantityFormatInfo"/>
+		/// <param name="info">The format options</param>
+		/// <param name="isPlural">Whether the dimension should be plural</param>
 		/// <returns>The formatted string</returns>
-		public string Format(FormatOptions options) {
+		public string Format(QuantityFormatInfo info, bool isPlural) {
+			info = info ?? QuantityFormatInfo.CurrentInfo;
 			string dimensionString = "";
 
-			if (options.FullName) {
+			if (info.TextualDescription) {
 				var dimParts = new List<string>();
 				if (Power < 0) {
-					dimParts.Add("per");
+					dimParts.Add("per"); // TODO - i18n
 				}
-				string name = Unit.Name;
+				string name = PluralizedName(isPlural);
 				if (Prefix != null) {
 					name = Prefix.Key + name;
 				}
-				dimParts.Add(name); // TODO - plurals??
+				dimParts.Add(name);
 				int absPower = Math.Abs(Power);
 				if (absPower == 2) {
-					dimParts.Add("squared");
+					dimParts.Add("squared"); // TODO - i18n
 				} else if (absPower == 3) {
-					dimParts.Add("cubed");
+					dimParts.Add("cubed"); // TODO - i18n
 				} else if (absPower > 3 || absPower == 0) {
-					dimParts.Add("to the power of " + absPower);
+					dimParts.Add("to the power of " + absPower); // TODO - i18n
 				}
 				dimensionString = dimParts.Aggregate((current, next) => current + " " + next);
 			} else {
 				if (Prefix != null) {
 					dimensionString += Prefix.Symbol;
 				}
-				dimensionString += Unit.Symbol;
-				if (options.ShowAllPowers || Power != DEFAULT_POWER) {
-					string powerStr = (options.Ascii) ? "^" + Power : Power.ToSuperScript();
+				dimensionString += (!string.IsNullOrWhiteSpace(Unit.Symbol)) ? Unit.Symbol : PluralizedName(isPlural);
+				if (info.ShowAllPowers || Power != DEFAULT_POWER) {
+					string powerStr = (info.AsciiOnly) ? "^" + Power : Power.ToSuperScript();
 					dimensionString += powerStr;
 				}
 			}
 			return dimensionString;
+		}
+
+		private string PluralizedName(bool isPlural) {
+			return (isPlural && !string.IsNullOrWhiteSpace(Unit.Plural)) ? Unit.Plural : Unit.Name;
 		}
 
 		#endregion
@@ -512,7 +534,7 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		/// <returns>The formatted string</returns>
 		public override string ToString() {
-			return ToString("G", CultureInfo.CurrentCulture);
+			return ToString("G", QuantityFormatInfo.CurrentInfo);
 		}
 
 		/// <summary>
@@ -533,19 +555,15 @@ namespace ForgedSoftware.Measurement {
 			}
 			format = format.Trim().ToUpperInvariant();
 
-			if (provider == null) {
-				provider = CultureInfo.CurrentCulture;
-			}
-
-			FormatOptions options;
+			QuantityFormatInfo options = QuantityFormatInfo.GetInstance(provider).Clone();
 
 			switch (format) {
 				case "G":
 				case "S":
-					options = FormatOptions.Default(provider);
 					break;
 				case "R":
-					options = FormatOptions.Raw(provider);
+					options.AsciiOnly = true;
+					options.ScientificExponent = false;
 					break;
 				default:
 					throw new ArgumentException("Provided format string is not recognized");

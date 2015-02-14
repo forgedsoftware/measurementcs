@@ -16,7 +16,7 @@ namespace ForgedSoftware.Measurement.Interfaces {
 	/// and a single Dimension with a power of 1 which is a distance with a Unit of metres.
 	/// </example>
 	public interface IQuantity<TNumber, TNumberImpl, TQuantity> : IValueExtended<TQuantity, TNumber>,
-		ISerializable, IFormatter, IFormattable, ICopyable<TQuantity>, IObjectReference
+		ISerializable, IFormatter, IFormattable, ICloneable<TQuantity>, IObjectReference
 			where TQuantity : IQuantity<TNumber, TNumberImpl, TQuantity>
 			where TNumberImpl : INumber<TNumberImpl> {
 
