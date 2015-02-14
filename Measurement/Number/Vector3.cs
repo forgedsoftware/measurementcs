@@ -14,7 +14,7 @@ namespace ForgedSoftware.Measurement.Number {
 	/// </summary>
 	[DataContract]
 	public struct Vector3 : INumber<Vector3>, IEquatable<Vector3>,
-		IComparable, IComparable<Vector3>, ICopyable<Vector3>, IVector<Vector3> {
+		IComparable, IComparable<Vector3>, ICloneable<Vector3>, IVector<Vector3> {
 
 		private const int NUM_AXIS = 3;
 
@@ -392,7 +392,7 @@ namespace ForgedSoftware.Measurement.Number {
 		/// </summary>
 		/// <seealso cref="Copy()"/>
 		public static Vector3 operator +(Vector3 vector1) {
-			return vector1.Copy();
+			return vector1.Clone();
 		}
 
 		/// <summary>
@@ -567,13 +567,17 @@ namespace ForgedSoftware.Measurement.Number {
 
 		#endregion
 
-		#region Copyable
+		#region Cloneable
+
+		object ICloneable.Clone() {
+			return Clone();
+		}
 
 		/// <summary>
 		/// Copies the current vector using the copy constructor.
 		/// </summary>
 		/// <returns>The copy of the vector</returns>
-		public Vector3 Copy() {
+		public Vector3 Clone() {
 			return new Vector3(this);
 		}
 

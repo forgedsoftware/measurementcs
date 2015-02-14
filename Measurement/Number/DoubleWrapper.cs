@@ -172,9 +172,17 @@ namespace ForgedSoftware.Measurement.Number {
 
 		#endregion
 
-		public DoubleWrapper Copy() {
+		#region Cloneable
+
+		object ICloneable.Clone() {
+			return Clone();
+		}
+
+		public DoubleWrapper Clone() {
 			return new DoubleWrapper(Value);
 		}
+
+		#endregion
 
 		public override string ToString() {
 			return ToString("G", CultureInfo.CurrentCulture);

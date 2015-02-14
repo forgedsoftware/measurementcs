@@ -18,7 +18,7 @@ namespace ForgedSoftware.Measurement.Number {
 	/// </remarks>
 	[DataContract]
 	public struct Fraction : INumber<Fraction>, IEquatable<Fraction>,
-		IComparable, IComparable<Fraction>, ICopyable<Fraction> {
+		IComparable, IComparable<Fraction>, ICloneable<Fraction> {
 
 		#region Constants
 
@@ -856,9 +856,13 @@ namespace ForgedSoftware.Measurement.Number {
 
 		#endregion
 
-		#region Copyable
+		#region Cloneable
 
-		public Fraction Copy() {
+		object ICloneable.Clone() {
+			return Clone();
+		}
+
+		public Fraction Clone() {
 			return new Fraction(this);
 		}
 

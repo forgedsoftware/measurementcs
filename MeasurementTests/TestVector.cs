@@ -248,7 +248,7 @@ namespace ForgedSoftware.MeasurementTests {
 		[TestMethod]
 		public void TestVectorCopy() {
 			var v1 = new Vector3(23, 122, -2323.2);
-			Assert.AreEqual(v1, v1.Copy());
+			Assert.AreEqual(v1, v1.Clone());
 		}
 
 		#endregion

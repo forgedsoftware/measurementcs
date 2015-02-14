@@ -44,8 +44,6 @@ namespace ForgedSoftware.Measurement {
 
 			// Defaults - Formatting
 			QuantityFormat = new QuantityFormatInfo();
-
-			DefaultFormatOptions = new FormatOptions(CultureInfo.CurrentCulture); // TODO - Remove - Deprecated!
 		}
 
 		#region General
@@ -174,9 +172,6 @@ namespace ForgedSoftware.Measurement {
 		/// A set of format options to be used by default when formatting quantities.
 		/// </summary>
 		public QuantityFormatInfo QuantityFormat { get; set; }
-		
-		// Deprecated!!!
-		public FormatOptions DefaultFormatOptions { get; set; } // TODO - Remove - Deprecated!
 
 		#endregion
 	}

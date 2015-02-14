@@ -286,7 +286,7 @@ namespace ForgedSoftware.MeasurementTests {
 
 			Assert.IsFalse(u4 == u1);
 			Assert.IsFalse(u3 == u2);
-			Assert.IsTrue(u3 == u3.Copy());
+			Assert.IsTrue(u3 == u3.Clone());
 		}
 
 		[TestMethod]
@@ -294,7 +294,7 @@ namespace ForgedSoftware.MeasurementTests {
 			var u1 = new Uncertainty(0.6, 0.1, 0.2);
 			var u2 = new Uncertainty(0.3, 0.1, 0.2);
 			Assert.IsTrue(u1.Equals(u1));
-			Assert.IsTrue(u1.Equals(u1.Copy()));
+			Assert.IsTrue(u1.Equals(u1.Clone()));
 			Assert.IsFalse(u1.Equals(u2));
 		}
 
@@ -303,14 +303,14 @@ namespace ForgedSoftware.MeasurementTests {
 			var u1 = new Uncertainty(0.8, 0.1, 0.2);
 			var u2 = new Uncertainty(0.8, 0.2, 0.1);
 			Assert.AreNotEqual(u1.GetHashCode(), u2.GetHashCode());
-			Assert.AreEqual(u1.GetHashCode(), u1.Copy().GetHashCode());
+			Assert.AreEqual(u1.GetHashCode(), u1.Clone().GetHashCode());
 		}
 
 		[TestMethod]
 		public void TestUncertaintyCompare() {
 			var u1 = new Uncertainty(0.8, 0.2, 0.1);
 			var u2 = new Uncertainty(0.9, 0.2, 0.1);
-			Assert.AreEqual(0, u1.CompareTo(u1.Copy()));
+			Assert.AreEqual(0, u1.CompareTo(u1.Clone()));
 			Assert.AreEqual(-1, u1.CompareTo(u2));
 			Assert.AreEqual(1, u2.CompareTo(u1));
 		}

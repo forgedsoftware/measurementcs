@@ -12,7 +12,7 @@ namespace ForgedSoftware.Measurement.Number {
 	/// </summary>
 	[DataContract]
 	public struct Uncertainty : INumber<Uncertainty>, IFormattable, IEquatable<Uncertainty>,
-		IComparable, IComparable<Uncertainty>, ICopyable<Uncertainty> {
+		IComparable, IComparable<Uncertainty>, ICloneable<Uncertainty> {
 
 		private const double SQRT_POWER = 0.5;
 
@@ -430,7 +430,7 @@ namespace ForgedSoftware.Measurement.Number {
 		/// </summary>
 		/// <seealso cref="Copy()"/>
 		public static Uncertainty operator +(Uncertainty u1) {
-			return u1.Copy();
+			return u1.Clone();
 		}
 
 		/// <summary>
@@ -615,13 +615,13 @@ namespace ForgedSoftware.Measurement.Number {
 
 		#endregion
 
-		#region Copyable
+		#region Cloneable
 
-		/// <summary>
-		/// Copies the uncertainty using the copy constructor
-		/// </summary>
-		/// <returns>The copied uncertainty</returns>
-		public Uncertainty Copy() {
+		object ICloneable.Clone() {
+			return Clone();
+		}
+
+		public Uncertainty Clone() {
 			return new Uncertainty(this);
 		}
 

@@ -86,13 +86,13 @@ namespace ForgedSoftware.Measurement {
 				// prefer base systems?
 			var dimensionLists = new List<SimplifiedDimensions<TNumber>>();
 			// simple simplify
-			TNumber copy = value.Copy();
+			TNumber copy = value.Clone();
 			List<Dimension> basicSimplifiedDimensions = list.SimpleSimplify(ref copy);
 			// keep copy of simplified dimensions
 			dimensionLists.Add(new SimplifiedDimensions<TNumber>(basicSimplifiedDimensions, copy));
 			if (MeasurementCorpus.Options.AllowDerivedDimensions) {
 				// convert dimensions to base systems
-				TNumber copy2 = value.Copy();
+				TNumber copy2 = value.Clone();
 				List<Dimension> baseSystemDimensions = basicSimplifiedDimensions
 					.SelectMany(d => d.ToBaseSystems(ref copy2)).ToList();
 				// simple simplify
@@ -136,9 +136,9 @@ namespace ForgedSoftware.Measurement {
 					// add derived system to dimensions
 					currentDimensions.Add(new Dimension(dimDef.BaseUnit, 1));
 					// save dimensions as a new set
-					simplifiedDimensions.Add(new SimplifiedDimensions<TNumber>(currentDimensions, value.Copy())); // Do wee need to simple simplify again here??
+					simplifiedDimensions.Add(new SimplifiedDimensions<TNumber>(currentDimensions, value.Clone())); // Do wee need to simple simplify again here??
 					// repeat for each derived system until no more matches are found - recursive?
-					simplifiedDimensions.AddRange(FindDerivedDimensions(currentDimensions, value.Copy())); // TODO - Causing infinite loop!!!
+					simplifiedDimensions.AddRange(FindDerivedDimensions(currentDimensions, value.Clone())); // TODO - Causing infinite loop!!!
 				}
 			}
 			return simplifiedDimensions;
