@@ -230,6 +230,7 @@ namespace ForgedSoftware.Measurement {
 			List<Unit> allUnits = (dimension == null) ? AllUnits : dimension.Units;
 			return existingMatches
 				.Union(matcher(allUnits, unitName, u => u.Key, ignoreCase))
+				.Union(matcher(allUnits, unitName, u => u.Name, ignoreCase))
 				.Union(matcher(allUnits, unitName, u => u.Plural, ignoreCase))
 				.Union(matcher(allUnits, unitName, u => u.Symbol, ignoreCase))
 				.Union(listMatcher(allUnits, unitName, u => u.OtherNames, ignoreCase))
