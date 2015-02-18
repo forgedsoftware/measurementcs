@@ -64,23 +64,16 @@ namespace ForgedSoftware.Measurement.Entities {
 						type = "*";
 						systemName = match.Groups[1].Value;
 					}
-					Unit baseUnit = MeasurementCorpus.FindBaseUnit(systemName);
-					if (baseUnit != null) {
-						switch (type) {
-							case "*": {
-								Derived.Add(new Dimension(baseUnit, 1));
-								break;
-							}
-							case "/": {
-								Derived.Add(new Dimension(baseUnit, -1));
-								break;
-							}
-							default: {
-								throw new Exception("Derived divider is not valid - must be either '*' or '/'");
-							}
+					if (systemName != "1") {
+						Unit baseUnit = MeasurementCorpus.FindBaseUnit(systemName);
+						if (baseUnit == null) {
+							throw new Exception("All derived entries must be the name of a dimension or the '1' placeholder");
 						}
-					} else if (systemName != "1") {
-						throw new Exception("All derived entries must be the name of a system or the '1' placeholder");
+						if (type != "*" && type != "/") {
+							throw new Exception("Derived divider is not valid - must be either '*' or '/'");
+						}
+						int power = (type == "*") ? 1 : -1;
+						Derived.Add(new Dimension(baseUnit, power));
 					}
 				}
 			}

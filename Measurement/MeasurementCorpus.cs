@@ -199,11 +199,11 @@ namespace ForgedSoftware.Measurement {
 		}
 
 		public static Unit FindUnit(string unitName, string dimensionName, bool ignoreCase = true) {
-			return FindUnits(unitName, FindDimension(dimensionName), ignoreCase).FirstOrDefault();
+			return FindUnits(unitName, FindDimension(dimensionName, ignoreCase), ignoreCase).FirstOrDefault();
 		}
 
 		public static Unit FindUnitPartial(string unitName, string dimensionName, bool ignoreCase = true) {
-			return FindUnitsPartial(unitName, FindDimensionPartial(dimensionName), ignoreCase).FirstOrDefault();
+			return FindUnitsPartial(unitName, FindDimensionPartial(dimensionName, ignoreCase), ignoreCase).FirstOrDefault();
 		}
 
 		public static Unit FindUnit(string unitName,DimensionDefinition dimension = null, bool ignoreCase = true) {
