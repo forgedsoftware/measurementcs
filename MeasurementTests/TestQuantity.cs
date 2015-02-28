@@ -1,17 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 using ForgedSoftware.Measurement;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 
 // Could do this...
 using M = ForgedSoftware.Measurement.MeasurementCorpus;
 
 namespace ForgedSoftware.MeasurementTests
 {
-	[TestClass]
+	[TestFixture]
 	public class TestQuantity
 	{
-		[TestMethod]
+		[Test]
 		public void SimpleConversion() {
 			Quantity converted = MeasurementCorpus.CreateQuantity(2, "hour").Convert("minute");
 			Assert.AreEqual(120, converted.Value);
@@ -19,13 +19,13 @@ namespace ForgedSoftware.MeasurementTests
 
 		#region Serialization
 
-		[TestMethod]
+		[Test]
 		public void TestSerialization() {
 			string json = MeasurementCorpus.CreateQuantity(2, "hour").ToJson();
 			Assert.AreEqual("{\"dimensions\":[{\"dimensionName\":\"time\",\"unitName\":\"hour\"}],\"value\":2}", json);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestSerializationWithPrefixAndPower()
 		{
 			string json = new Quantity(42.42, new[] { new Dimension("metre", -2, "kilo"), new Dimension("second") }).ToJson();
@@ -33,7 +33,7 @@ namespace ForgedSoftware.MeasurementTests
 				"{\"dimensionName\":\"time\",\"unitName\":\"second\"}],\"value\":42.42}", json);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestDeserialization() {
 			Quantity q = Quantity.FromJson("{\"dimensions\":[{\"dimensionName\":\"time\",\"unitName\":\"hour\"}],\"value\":8.594}");
 			Assert.IsNotNull(q);
@@ -44,7 +44,7 @@ namespace ForgedSoftware.MeasurementTests
 			Assert.AreEqual("hour", q.Dimensions[0].Unit.Name);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestDimensionlessDeserialization() {
 			Quantity q = Quantity.FromJson("{\"value\":3.2}");
 			Assert.IsNotNull(q);
@@ -52,7 +52,7 @@ namespace ForgedSoftware.MeasurementTests
 			Assert.IsTrue(q.IsDimensionless());
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestSerializationAndDeserialization() {
 			var q1 = new Quantity(123.945345, new[] { "metre", "hour", "newton" });
 			Quantity q2 = Quantity.FromJson(q1.ToJson());
@@ -65,31 +65,31 @@ namespace ForgedSoftware.MeasurementTests
 
 		#region Formatting
 
-		[TestMethod]
+		[Test]
 		public void TestFormattingWithNoCulture() {
 			string result = MeasurementCorpus.CreateQuantity(2, "hour").Format(QuantityFormatInfo.CurrentInfo);
 			Assert.AreEqual("2 h", result);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestFormattingWithInvariantCulture() {
 			string result = MeasurementCorpus.CreateQuantity(2, "hour").Format(new QuantityFormatInfo(CultureInfo.InvariantCulture.NumberFormat));
 			Assert.AreEqual("2 h", result);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestFormattingExpandingExponent() {
 			string result = MeasurementCorpus.CreateQuantity(2.04567e32, "hour").Format(QuantityFormatInfo.CurrentInfo);
 			Assert.AreEqual("2.04567 x 10³² h", result);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestFormattingMulitpleDimensions() {
 			string result = MeasurementCorpus.CreateQuantity(2, new List<string> { "hour", "metre" }).Format(new QuantityFormatInfo());
 			Assert.AreEqual("2 h·m", result);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestFormattingMulitpleDimensionsWithDifferentPowers() {
 			string result = MeasurementCorpus.CreateQuantity(2, new List<Dimension> {
 				new Dimension("hour", 2), new Dimension("metre", -3)
@@ -97,7 +97,7 @@ namespace ForgedSoftware.MeasurementTests
 			Assert.AreEqual("2 h²·m⁻³", result);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestFormattingValueOnly() {
 			string result = MeasurementCorpus.CreateQuantity(2, "hour").Format(new QuantityFormatInfo {
 				FormatParts = QuantityFormatInfo.QuantityParts.Value
@@ -105,7 +105,7 @@ namespace ForgedSoftware.MeasurementTests
 			Assert.AreEqual("2", result);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestFormattingDimensionsOnly() {
 			string result = MeasurementCorpus.CreateQuantity(2, "hour").Format(new QuantityFormatInfo {
 				FormatParts = QuantityFormatInfo.QuantityParts.Dimensions
@@ -113,7 +113,7 @@ namespace ForgedSoftware.MeasurementTests
 			Assert.AreEqual("h", result);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestFormattingNewDefaults() {
 			var info = (NumberFormatInfo)CultureInfo.CurrentCulture.NumberFormat.Clone();
 			info.NumberDecimalSeparator = "*";
@@ -125,13 +125,13 @@ namespace ForgedSoftware.MeasurementTests
 			Assert.AreEqual("2..31..22..34..23*23 h", result);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestFormattingInfinity() {
 			string result = MeasurementCorpus.CreateQuantity(double.NegativeInfinity, "hour").Format(new QuantityFormatInfo());
 			Assert.AreEqual("-Infinity h", result);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestFormattingNaN() {
 			string result = MeasurementCorpus.CreateQuantity(double.NaN, "hour").Format(new QuantityFormatInfo());
 			Assert.AreEqual("NaN h", result);
@@ -141,7 +141,7 @@ namespace ForgedSoftware.MeasurementTests
 
 		#region Simplify
 
-		[TestMethod]
+		[Test]
 		public void TestSimplify() {
 			//m^2.in.ft^-1.s^-1
 			var q = new Quantity(30, new List<Dimension> {

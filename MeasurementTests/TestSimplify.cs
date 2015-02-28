@@ -1,14 +1,14 @@
 ﻿using System.Collections.Generic;
 using ForgedSoftware.Measurement;
 using ForgedSoftware.Measurement.Number;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 
 namespace ForgedSoftware.MeasurementTests
 {
-	[TestClass]
+	[TestFixture]
 	public class TestSimplify {
 
-		[TestMethod]
+		[Test]
 		public void TestBasicSimplify() {
 			var dims = new List<Dimension> {new Dimension("metre"), new Dimension("metre")};
 			var value = new DoubleWrapper(10);
@@ -20,7 +20,7 @@ namespace ForgedSoftware.MeasurementTests
 			Assert.AreEqual("metre", newDims[0].Unit.Name);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestDerivedSystemSimplify() {
 			var dims = new List<Dimension> {new Dimension("metre"), new Dimension("second", -1)};
 			var value = new DoubleWrapper(10);
@@ -32,7 +32,7 @@ namespace ForgedSoftware.MeasurementTests
 			Assert.AreEqual("metrePerSecond", newDims[0].Unit.Key);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestDerivedSystemSimplifyRecursive() {
 			var dims = new List<Dimension> { new Dimension("metre"),
 				new Dimension("second", -1), new Dimension("metre"), new Dimension("second", -1) };

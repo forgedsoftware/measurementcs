@@ -1,0 +1,8 @@
+language: csharp
+solution: Measurement.sln
+install:
+  - nuget restore Measurement.sln
+  - nuget install NUnit.Runners -Version 2.6.4 -OutputDirectory testrunner
+script:
+  - xbuild /p:Configuration=Release Measurement.sln
+  - mono ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe ./MeasurementTests/bin/Release/MeasurementTests.dll

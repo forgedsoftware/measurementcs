@@ -1,12 +1,12 @@
 ﻿using ForgedSoftware.Measurement;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 
 namespace ForgedSoftware.MeasurementTests {
 
-	[TestClass]
+	[TestFixture]
 	public class TestPrefixes {
 
-		[TestMethod]
+		[Test]
 		public void TestCreatingQuantityWithPrefix() {
 			var q = new Quantity(5, new Dimension("metre", "kilo"));
 			Assert.AreEqual("kilo", q.Dimensions[0].Prefix.Key);
@@ -14,7 +14,7 @@ namespace ForgedSoftware.MeasurementTests {
 
 		#region Tidy Prefixes
 
-		[TestMethod]
+		[Test]
 		public void TestAddingPrefix() {
 			var q = new Quantity(5123, "metre");
 			Assert.IsNull(q.Dimensions[0].Prefix);

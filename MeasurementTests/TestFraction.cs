@@ -1,14 +1,14 @@
 ﻿using ForgedSoftware.Measurement.Number;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 
 namespace ForgedSoftware.MeasurementTests {
 
-	[TestClass]
+	[TestFixture]
 	public class TestFraction {
 
 		#region Instantiation
 
-		[TestMethod]
+		[Test]
 		public void TestCreatingFraction() {
 			var frac1 = new Fraction(1, 4);
 			Assert.AreEqual(1, frac1.Numerator);
@@ -21,7 +21,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreEqual(frac1, new Fraction("1/4"));
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestCreatingFractionFromDouble() {
 			var frac1 = new Fraction(0.6);
 			Assert.AreEqual(3, frac1.Numerator);
@@ -39,20 +39,20 @@ namespace ForgedSoftware.MeasurementTests {
 
 		#region Fraction Specific Functionality
 
-		[TestMethod]
+		[Test]
 		public void TestImproperFraction() {
 			var frac1 = new Fraction(33, 11);
 			Assert.AreEqual(3, frac1.Numerator);
 			Assert.AreEqual(1, frac1.Denominator);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestConvertingBetweenDoubleAndFraction() {
 			var double1 = new Fraction(1, 3).ToDouble();
 			Assert.AreEqual("1/3", Fraction.ToFraction(double1).ToString());
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestFractionModulus() {
 			var frac1 = new Fraction(-78, 24);
 			Assert.AreEqual("-13/4", frac1.ToString());
@@ -62,7 +62,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreEqual("-13/4", frac1.Modulus(new Fraction(5)).ToString());
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestUnitFraction() {
 			Assert.IsTrue(new Fraction(1, 2).IsUnitFraction());
 			Assert.IsTrue(new Fraction(1, 4565).IsUnitFraction());
@@ -72,7 +72,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.IsFalse(new Fraction(324325, 2343424534).IsUnitFraction());
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestProperFraction() {
 			Assert.IsTrue(new Fraction(1, 2).IsProperFraction());
 			Assert.IsTrue(new Fraction(1, 4565).IsProperFraction());
@@ -89,7 +89,7 @@ namespace ForgedSoftware.MeasurementTests {
 
 		#region Basic Math
 
-		[TestMethod]
+		[Test]
 		public void TestAddingFractions() {
 			var frac1 = new Fraction(-1, 8);
 			var result1 = frac1.Add(new Fraction(5, 8));
@@ -100,7 +100,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreEqual("-7/4", result3.ToString());
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestSubtractingFractions() {
 			var frac1 = new Fraction(-1, 8);
 			var result1 = frac1.Subtract(new Fraction(5, 8));
@@ -111,7 +111,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreEqual("3/2", result3.ToString());
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestMultiplyingFractions() {
 			var frac1 = new Fraction(-1, 8);
 			var result1 = frac1.Multiply(new Fraction(5, 8));
@@ -122,7 +122,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreEqual("13/64", result3.ToString());
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestDividingFractions() {
 			var frac1 = new Fraction(-1, 8);
 			var result1 = frac1.Divide(new Fraction(5, 8));
@@ -133,14 +133,14 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreEqual("1/13", result3.ToString());
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestFractionInverse() {
 			var frac1 = new Fraction(-78, 24);
 			Assert.AreEqual("-13/4", frac1.ToString());
 			Assert.AreEqual("-4/13", frac1.Inverse().ToString());
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestFractionNegation() {
 			var frac1 = new Fraction(-78, 24);
 			Assert.AreEqual("-13/4", frac1.ToString());
@@ -151,7 +151,7 @@ namespace ForgedSoftware.MeasurementTests {
 
 		#region Extended Math
 
-		[TestMethod]
+		[Test]
 		public void TestAbsFraction() {
 			Assert.AreEqual(new Fraction(1, 10), new Fraction(1, 10).Abs());
 			Assert.AreEqual(Fraction.PositiveInfinity, Fraction.NegativeInfinity.Abs());
@@ -159,14 +159,14 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreEqual(Fraction.Zero, new Fraction(0).Abs());
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestPowFraction() {
 			Assert.AreEqual(new Fraction(1, 100), new Fraction(1, 10).Pow(2));
 			Assert.AreEqual(new Fraction(-8, 125), new Fraction(-2, 5).Pow(3));
 			Assert.AreEqual(new Fraction(4, 25), new Fraction(-2, 5).Pow(2));
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestSqrtFraction() {
 			Assert.AreEqual(Fraction.NaN, Fraction.NaN.Sqrt());
 			Assert.AreEqual(new Fraction(2), new Fraction(4).Sqrt());
@@ -177,7 +177,7 @@ namespace ForgedSoftware.MeasurementTests {
 
 		#region Compare
 
-		[TestMethod]
+		[Test]
 		public void TestCompareFractions() {
 			Assert.AreEqual(-1, new Fraction(2, 3).CompareTo(0.7));
 			Assert.AreEqual(1, new Fraction(-1, 8).CompareTo(-2));
@@ -188,7 +188,7 @@ namespace ForgedSoftware.MeasurementTests {
 
 		#region Indeterminates
 
-		[TestMethod]
+		[Test]
 		public void TestIndeterminateFraction() {
 			Assert.IsTrue(Fraction.NaN.IsNaN());
 			Assert.IsFalse(Fraction.NaN.IsInfinity());
@@ -201,7 +201,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.IsFalse(Fraction.PositiveInfinity.IsNaN());
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestIndeterminateFractionValues() {
 			Assert.AreEqual(0, Fraction.NaN.Denominator);
 			Assert.AreEqual(0, Fraction.PositiveInfinity.Denominator);
@@ -216,7 +216,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreEqual(Fraction.NaN, new Fraction(0, 0));
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestIndeterminateFractionToString() {
 			Assert.AreEqual("NaN", Fraction.NaN.ToString());
 			Assert.AreEqual("Infinity", Fraction.PositiveInfinity.ToString());
@@ -227,18 +227,18 @@ namespace ForgedSoftware.MeasurementTests {
 
 		#region ToString
 
-		[TestMethod]
+		[Test]
 		public void TestGeneralFractionToString() {
 			Assert.AreEqual("-2/3", new Fraction(-2, 3).ToString("G", null));
 			Assert.AreEqual("-2.000/3.000", new Fraction(-2, 3).ToString("GF3", null));
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestRatioFractionToString() {
 			Assert.AreEqual("-2:3", new Fraction(-2, 3).ToString("R", null));
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestMixedFractionToString() {
 			Assert.AreEqual("1", new Fraction(3, 3).ToString("M", null));
 			Assert.AreEqual("7 1/3", new Fraction(22, 3).ToString("M", null));

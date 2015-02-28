@@ -1,12 +1,12 @@
 ﻿using ForgedSoftware.Measurement;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 
 namespace ForgedSoftware.MeasurementTests {
 
-	[TestClass]
+	[TestFixture]
 	public class TestDimension {
 
-		[TestMethod]
+		[Test]
 		public void TestCreatingDimension() {
 			var dim = new Dimension("hour", 2);
 			Assert.AreEqual(2, dim.Power);
@@ -15,21 +15,21 @@ namespace ForgedSoftware.MeasurementTests {
 
 		#region Formatting
 
-		[TestMethod]
+		[Test]
 		public void TestFormattingDimension() {
 			var dim = new Dimension("hour", -32);
 			string result = dim.Format(QuantityFormatInfo.CurrentInfo);
 			Assert.AreEqual("h⁻³²", result);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestFormattingDimensionWithPowerOfOne() {
 			var dim = new Dimension("hour", 1);
 			string result = dim.Format(QuantityFormatInfo.CurrentInfo);
 			Assert.AreEqual("h", result);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestFormattingDimensionWithPowerOfOneShowAllPowers() {
 			var dim = new Dimension("hour", 1);
 			string result = dim.Format(new QuantityFormatInfo {
@@ -38,7 +38,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreEqual("h¹", result);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestFormattingDimensionSimpleFullName() {
 			var dim = new Dimension("second", 2);
 			string result = dim.Format(new QuantityFormatInfo {
@@ -47,7 +47,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreEqual("second squared", result);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestFormattingDimensionWithPowerOfZeroFullName() {
 			var dim = new Dimension("hour", 0);
 			string result = dim.Format(new QuantityFormatInfo {
@@ -56,7 +56,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreEqual("hour to the power of 0", result);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestFormattingDimensionComplexFullName() {
 			var dim = new Dimension("minute", -4);
 			string result = dim.Format(new QuantityFormatInfo {
@@ -65,7 +65,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreEqual("per minute to the power of 4", result);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestFormattingDimensionInAscii() {
 			var dim = new Dimension("minute", 5);
 			string result = dim.Format(new QuantityFormatInfo {
@@ -74,14 +74,14 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreEqual("min^5", result);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestFormattingWithPrefix() {
 			var dim = new Dimension("second", "mega");
 			string result = dim.Format(QuantityFormatInfo.CurrentInfo);
 			Assert.AreEqual("Ms", result);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestFormattingWithPrefixFullName() {
 			var dim = new Dimension("metre", "pico");
 			string result = dim.Format(new QuantityFormatInfo {

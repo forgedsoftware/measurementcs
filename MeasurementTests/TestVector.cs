@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Globalization;
 using ForgedSoftware.Measurement.Number;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 
 namespace ForgedSoftware.MeasurementTests {
 
-	[TestClass]
+	[TestFixture]
 	public class TestVector {
 
 		#region General
 
-		[TestMethod]
+		[Test]
 		public void TestVectorCreateWithArray() {
 			var v1 = new Vector3(new[] {2.3, 4.5, 2.1});
 			Assert.AreEqual(2.3, v1.X);
@@ -18,8 +18,8 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreEqual(2.1, v1.Z);
 		}
 
-		[TestMethod]
-		[ExpectedException(typeof (ArgumentException), "Should throw error if less than 3 elements are supplied in the array")]
+		[Test]
+		[ExpectedException(typeof (ArgumentException))]
 		public void TestVectorCreateWithArrayNotEnoughValues() {
 			var v1 = new Vector3(new[] {2.1});
 		}
@@ -28,19 +28,19 @@ namespace ForgedSoftware.MeasurementTests {
 
 		#region Vector Specific Functions
 
-		[TestMethod]
+		[Test]
 		public void TestVectorMagnitude() {
 			Assert.AreEqual(0, Vector3.Origin.Magnitude);
 			Assert.AreEqual(1, Vector3.XAxis.Magnitude);
 			Assert.AreEqual(3.7417, new Vector3(1, 2, 3).Magnitude, 0.0001);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestVectorSumComponents() {
 			Assert.AreEqual(32.5, new Vector3(-5, 36, 1.5).SumComponents);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestVectorDotProduct() {
 			var v1 = new Vector3(1, 2, 3);
 			var v2 = new Vector3(3, 2, 1);
@@ -50,7 +50,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreEqual(10, v1.DotProduct(v2));
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestVectorCrossProduct() {
 			var v1 = new Vector3(2, 3, 4);
 			var v2 = new Vector3(3, 1, 1);
@@ -59,13 +59,13 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreEqual(new Vector3(1, -10, 7), v2.CrossProduct(v1));
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestVectorAngle() {
 			Assert.AreEqual(Math.PI/2, Vector3.XAxis.Angle(Vector3.YAxis));
 			Assert.AreEqual(0, Vector3.ZAxis.Angle(Vector3.ZAxis));
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestVectorUnitVectors() {
 			Assert.IsFalse(Vector3.Origin.IsUnitVector());
 			Assert.IsTrue(Vector3.XAxis.IsUnitVector());
@@ -75,26 +75,26 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.IsTrue(new Vector3(Math.Sqrt(0.5), 0, Math.Sqrt(0.5)).IsUnitVector());
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestVectorNormalize() {
 			Assert.IsTrue(Vector3.XAxis.Normalize.IsUnitVector());
 			Assert.IsTrue(new Vector3(1, 45345, -23.656).Normalize.IsUnitVector());
 			Assert.IsTrue(new Vector3(1454534.234234, 453452.123, -2233.656123).Normalize.IsUnitVector());
 		}
 
-		[TestMethod]
-		[ExpectedException(typeof(DivideByZeroException), "If the magnitude of the vector is 0, it should throw an exception")]
+		[Test]
+		[ExpectedException(typeof(DivideByZeroException))]
 		public void TestVectorNormalizeDivideByZero() {
 			var v1 = Vector3.Origin.Normalize;
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestVectorDistance() {
 			Assert.AreEqual(Math.Sqrt(2), Vector3.XAxis.Distance(Vector3.YAxis));
 			Assert.AreEqual(1, Vector3.XAxis.Distance(Vector3.Origin));
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestVectorIsPerpendicular() {
 			Assert.IsTrue(Vector3.XAxis.IsPerpendicular(Vector3.YAxis));
 			Assert.IsTrue(Vector3.Origin.IsPerpendicular(new Vector3(233, 23, 2)));
@@ -105,19 +105,19 @@ namespace ForgedSoftware.MeasurementTests {
 
 		#region Math
 
-		[TestMethod]
+		[Test]
 		public void TestVectorAdd() {
 			Assert.AreEqual(Vector3.XAxis, Vector3.Origin.Add(Vector3.XAxis));
 			Assert.AreEqual(new Vector3(2, 3.5, 29.1), new Vector3(2, 4.5, 7).Add(new Vector3(0, -1, 22.1)));
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestVectorSubtract() {
 			Assert.AreEqual(new Vector3(-1, 0, 1), Vector3.ZAxis.Subtract(Vector3.XAxis));
 			Assert.AreEqual(new Vector3(2, 1, -4.5), new Vector3(5, 2, 3.5).Subtract(new Vector3(3, 1, 8)));
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestVectorMultiply() {
 			var v1 = new Vector3(5, 1, 2);
 			var v2 = new Vector3(1, 7, -1);
@@ -126,25 +126,25 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreEqual(new Vector3(15, -7, -34), v2.Multiply(v1));
 		}
 
-		[TestMethod]
-		[ExpectedException(typeof (InvalidOperationException), "Should have exception as invalid operation")]
+		[Test]
+		[ExpectedException(typeof (InvalidOperationException))]
 		public void TestVectorDivide() {
 			var v1 = new Vector3(1, 1, 1).Divide(new Vector3(2, 3, 4));
 		}
 
-		[TestMethod]
-		[ExpectedException(typeof (InvalidOperationException), "Should have exception as invalid operation")]
+		[Test]
+		[ExpectedException(typeof (InvalidOperationException))]
 		public void TestVectorAddScalar() {
 			var v1 = new Vector3(1, 1, 1).Add(2);
 		}
 
-		[TestMethod]
-		[ExpectedException(typeof (InvalidOperationException), "Should have exception as invalid operation")]
+		[Test]
+		[ExpectedException(typeof (InvalidOperationException))]
 		public void TestVectorSubtractScalar() {
 			var v1 = new Vector3(1, 1, 1).Subtract(2);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestVectorMultiplyScalar() {
 			var v1 = new Vector3(5, 1, 2);
 			var v2 = new Vector3(1, 7, -1);
@@ -153,7 +153,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreEqual(new Vector3(-2, -14, 2), v2.Multiply(-2));
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestVectorDivideScalar() {
 			var v1 = new Vector3(2, 82, 6);
 			var v2 = new Vector3(25, 7.5, -2.5);
@@ -162,7 +162,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreEqual(new Vector3(-5, -1.5, 0.5), v2.Divide(-5));
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestVectorNegate() {
 			Assert.AreEqual(new Vector3(0, -1, 0), Vector3.YAxis.Negate());
 			Assert.AreEqual(new Vector3(343, -23.56, -8), new Vector3(-343, 23.56, 8).Negate());
@@ -172,21 +172,21 @@ namespace ForgedSoftware.MeasurementTests {
 
 		#region Math Functions
 
-		[TestMethod]
+		[Test]
 		public void TestVectorPow() {
 			Assert.AreEqual(Vector3.Origin, Vector3.Origin.Pow(3));
 			Assert.AreEqual(Vector3.XAxis, Vector3.XAxis.Pow(5));
 			Assert.AreEqual(new Vector3(16, 144, 9), new Vector3(4, 12, 3).Pow(2));
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestVectorSqrt() {
 			Assert.AreEqual(Vector3.Origin, Vector3.Origin.Sqrt());
 			Assert.AreEqual(Vector3.XAxis, Vector3.XAxis.Sqrt());
 			Assert.AreEqual(new Vector3(4, 1, 2), new Vector3(16, 1, 4).Sqrt());
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestVectorMaxMin() {
 			var v1 = new Vector3(1, 2, 3);
 			var v2 = new Vector3(2, 3, 4);
@@ -202,7 +202,7 @@ namespace ForgedSoftware.MeasurementTests {
 
 		#region Equals, Compare, Equality
 
-		[TestMethod]
+		[Test]
 		public void TestVectorEquals() {
 			var v1 = new Vector3(1, 2, 3);
 			var v2 = new Vector3(1, 3, 2);
@@ -211,7 +211,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreNotEqual(v1, v2);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestVectorEqualsStandardVectors() {
 			Assert.AreEqual(Vector3.XAxis, Vector3.XAxis);
 			Assert.AreNotEqual(Vector3.Origin, Vector3.XAxis);
@@ -219,7 +219,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreNotEqual(Vector3.YAxis, Vector3.ZAxis);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestVectorCompare() {
 			var v1 = new Vector3(7, 8, 10);
 			var v2 = new Vector3(4.2, 7.777, 6.54);
@@ -229,14 +229,13 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreEqual(1, v1.CompareTo(v2));
 		}
 
-		[TestMethod]
-		[ExpectedException(typeof (ArgumentException),
-			"An exception should be thrown if the provided object is of the wrong type")]
+		[Test]
+		[ExpectedException(typeof (ArgumentException))]
 		public void TestVectorCompareWithWrongType() {
 			var a = new Vector3(8, 7, 6).CompareTo("8.76");
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestVectorLessThanGreaterThan() {
 			Assert.IsTrue(Vector3.XAxis > Vector3.Origin);
 			Assert.IsFalse(Vector3.XAxis > Vector3.YAxis);
@@ -245,7 +244,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.IsTrue(Vector3.XAxis <= Vector3.ZAxis);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestVectorCopy() {
 			var v1 = new Vector3(23, 122, -2323.2);
 			Assert.AreEqual(v1, v1.Clone());
@@ -255,14 +254,14 @@ namespace ForgedSoftware.MeasurementTests {
 
 		#region ToString
 
-		[TestMethod]
+		[Test]
 		public void TestVectorToString() {
 			Assert.AreEqual("(9, 3, 4)", new Vector3(9, 3, 4).ToString());
 			Assert.AreEqual("(0, 0, -2)", new Vector3(0, 0, -2).ToString());
 			Assert.AreEqual("(3.42, 8.9543, 7)", new Vector3(3.42, 8.9543, 7).ToString());
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestVectorCustomToString() {
 			var v1 = new Vector3(8324.32, 2342.34, -23.5456534);
 			Assert.AreEqual("8324.32", v1.ToString("X", CultureInfo.InvariantCulture));

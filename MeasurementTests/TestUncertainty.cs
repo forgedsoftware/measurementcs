@@ -1,15 +1,15 @@
 ﻿using System;
 using ForgedSoftware.Measurement.Number;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 
 namespace ForgedSoftware.MeasurementTests {
 
-	[TestClass]
+	[TestFixture]
 	public class TestUncertainty {
 
 		#region Constructing Object
 
-		[TestMethod]
+		[Test]
 		public void TestUncertaintyFromRange() {
 			Uncertainty u = Uncertainty.FromRange(2, 1, 4);
 			Assert.AreEqual(2, u.Value);
@@ -18,7 +18,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.IsFalse(u.IsRelative);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestUncertaintyFromPercentage() {
 			Uncertainty u = Uncertainty.FromPercentage(2, 0, 1.25);
 			Assert.AreEqual(2, u.Value);
@@ -27,7 +27,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.IsTrue(u.IsRelative);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestUncertaintyFromEvenValues() {
 			var u = new Uncertainty(4.5, 1.2);
 			Assert.AreEqual(1.2, u.LowerUncertainty);
@@ -35,14 +35,14 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.IsFalse(u.IsRelative);
 		}
 
-		[TestMethod]
-		[ExpectedException(typeof (ArgumentException), "LowerUncertainty should have error if not >= 0")]
+		[Test]
+		[ExpectedException(typeof (ArgumentException))]
 		public void TestUncertaintyLowerUncertaintyPositive() {
 			var u = new Uncertainty(1, -0.1, 0.1);
 		}
 
-		[TestMethod]
-		[ExpectedException(typeof(ArgumentException), "UpperUncertainty should have error if not >= 0")]
+		[Test]
+		[ExpectedException(typeof(ArgumentException))]
 		public void TestUncertaintyUpperUncertaintyPositive() {
 			var u = new Uncertainty(1, 0.1, -0.1);
 		}
@@ -51,7 +51,7 @@ namespace ForgedSoftware.MeasurementTests {
 
 		#region Properties & Functions
 
-		[TestMethod]
+		[Test]
 		public void TestUncertaintyProperties() {
 			var u = new Uncertainty(7.6, 1.1, 0.4);
 			Assert.AreEqual(1.5, u.TotalUncertainty);
@@ -62,7 +62,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.IsFalse(u.IsSymmetric());
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestUncertaintySymmetric() {
 			var u1 = new Uncertainty(6, 0.5);
 			var u2 = Uncertainty.FromPercentage(7, 0.10, 0.10);
@@ -74,7 +74,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreEqual(u2.LowerPercentage, u2.UpperPercentage);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestUncertaintyIsConsistent() {
 			var u1 = new Uncertainty(7, 0.6);
 			var u2 = new Uncertainty(6, 0.5);
@@ -88,7 +88,7 @@ namespace ForgedSoftware.MeasurementTests {
 
 		#region Math Functions
 
-		[TestMethod]
+		[Test]
 		public void TestUncertaintyPow() {
 			var u1 = new Uncertainty(2, 0.2);
 			Assert.AreEqual(0.1, u1.UpperPercentage);
@@ -100,7 +100,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.IsTrue(u2.IsRelative);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestUncertaintySqrt() {
 			var u1 = new Uncertainty(9, 0.4);
 			var u2 = u1.Sqrt();
@@ -109,7 +109,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.IsTrue(u2.IsRelative);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestUncertaintyMax() {
 			var u1 = new Uncertainty(2, 1, 0.5);
 			var u2 = new Uncertainty(3, 0.5, 1);
@@ -117,7 +117,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreEqual(u2, u3);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestUncertaintyMin() {
 			var u1 = new Uncertainty(4, 1, 0.5);
 			var u2 = new Uncertainty(4, 0.5, 1);
@@ -130,7 +130,7 @@ namespace ForgedSoftware.MeasurementTests {
 
 		#region Basic Math
 
-		[TestMethod]
+		[Test]
 		public void TestUncertaintyAdd() {
 			var u1 = new Uncertainty(6, 0.5, 0.2);
 			var u2 = new Uncertainty(2.1, 0.1, 0.3);
@@ -142,7 +142,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.IsFalse(u3.IsRelative);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestUncertaintySubtract() {
 			var u1 = new Uncertainty(12, 1.1, 0.8);
 			var u2 = new Uncertainty(4.3, 1, 0.2);
@@ -154,7 +154,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.IsFalse(u3.IsRelative);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestUncertaintyMultiply() {
 			var u1 = new Uncertainty(5, 0.5, 1.0);
 			var u2 = new Uncertainty(2.2, 0.1, 0.1);
@@ -166,7 +166,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.IsTrue(u3.IsRelative);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestUncertaintyDivide() {
 			var u1 = new Uncertainty(12, 0.2, 1.0);
 			var u2 = new Uncertainty(3, 0.1, 0.1);
@@ -178,7 +178,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.IsTrue(u3.IsRelative);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestUncertaintyAddConstant() {
 			var u1 = new Uncertainty(7.6, 0.2, 0.3);
 			var u2 = u1.Add(7);
@@ -190,7 +190,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.IsFalse(u2.IsRelative);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestUncertaintySubtractConstant() {
 			var u1 = new Uncertainty(7.6, 0.2, 0.3);
 			var u2 = u1.Subtract(7);
@@ -202,7 +202,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.IsFalse(u2.IsRelative);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestUncertaintyMultiplyConstant() {
 			var u1 = new Uncertainty(7, 0.2, 0.7);
 			var u2 = u1.Multiply(3);
@@ -214,7 +214,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.IsFalse(u2.IsRelative);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestUncertaintyMultiplyConstantRelative() {
 			var u1 = Uncertainty.FromPercentage(8, 0.2, 0.3);
 			var u2 = u1.Multiply(2);
@@ -228,7 +228,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.IsTrue(u2.IsRelative);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestUncertaintyDivideConstant() {
 			var u1 = new Uncertainty(6, 0.3, 0.2);
 			var u2 = u1.Divide(3);
@@ -240,7 +240,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.IsFalse(u2.IsRelative);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestUncertaintyDivideConstantRelative() {
 			var u1 = Uncertainty.FromPercentage(8, 0.1, 0.2);
 			var u2 = u1.Divide(2);
@@ -254,7 +254,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.IsTrue(u2.IsRelative);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestUncertaintyNegate() {
 			var u1 = new Uncertainty(6.2, 0.9, 0.1);
 			var u2 = u1.Negate();
@@ -270,7 +270,7 @@ namespace ForgedSoftware.MeasurementTests {
 
 		#region Equality, Comparisons
 
-		[TestMethod]
+		[Test]
 		public void TestUncertaintyEquality() {
 			var u1 = new Uncertainty(3, 0.1);
 			var u2 = new Uncertainty(4, 0.1);
@@ -289,7 +289,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.IsTrue(u3 == u3.Clone());
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestUncertaintyEquals() {
 			var u1 = new Uncertainty(0.6, 0.1, 0.2);
 			var u2 = new Uncertainty(0.3, 0.1, 0.2);
@@ -298,7 +298,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.IsFalse(u1.Equals(u2));
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestUncertaintyHashCode() {
 			var u1 = new Uncertainty(0.8, 0.1, 0.2);
 			var u2 = new Uncertainty(0.8, 0.2, 0.1);
@@ -306,7 +306,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreEqual(u1.GetHashCode(), u1.Clone().GetHashCode());
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestUncertaintyCompare() {
 			var u1 = new Uncertainty(0.8, 0.2, 0.1);
 			var u2 = new Uncertainty(0.9, 0.2, 0.1);
@@ -319,7 +319,7 @@ namespace ForgedSoftware.MeasurementTests {
 
 		#region ToString
 
-		[TestMethod]
+		[Test]
 		public void TestUncertaintyToString() {
 			var u1 = new Uncertainty(3.2, 0.5);
 			Assert.AreEqual("3.2 (±0.5)", u1.ToString());
@@ -334,7 +334,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreEqual("3.2 (±0.5) {0}", u1.ToString("F", null));
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestUncertaintyToStringRelative() {
 			var u1 = Uncertainty.FromPercentage(2, 0.05, 0.1);
 			Assert.AreEqual("2 (+5%, -10%)", u1.ToString());

@@ -3,21 +3,21 @@ using System.Collections.Generic;
 using ForgedSoftware.Measurement;
 using ForgedSoftware.Measurement.Comparers;
 using ForgedSoftware.Measurement.Entities;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 
 namespace ForgedSoftware.MeasurementTests {
 
-	[TestClass]
+	[TestFixture]
 	public class TestFind {
 
-		[TestCleanup]
+		[TearDown]
 		public void AfterTest() {
 			MeasurementCorpus.ResetToDefaultOptions();
 		}
 
 		#region Dimension Definitions
 
-		[TestMethod]
+		[Test]
 		public void TestDimensionFilter() {
 			var def = new DimensionDefinition { Key = "test" };
 			Assert.IsTrue(MeasurementCorpus.DimensionFilter(def));
@@ -36,7 +36,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.IsFalse(MeasurementCorpus.DimensionFilter(def));
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestDimensionComparer() {
 			var def1 = new DimensionDefinition { Key = "test1" };
 			var def2 = new DimensionDefinition { Key = "test1" };
@@ -66,19 +66,19 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreEqual(0, DimensionDefinitionComparer.Comparer.Compare(def1, def2));
 		}
 
-		[TestMethod]
-		[ExpectedException(typeof (ArgumentException), "An exception should be thrown if no input provided")]
+		[Test]
+		[ExpectedException(typeof (ArgumentException))]
 		public void TestDimensionFindNoInput() {
 			MeasurementCorpus.FindDimension("");
 		}
 
-		[TestMethod]
-		[ExpectedException(typeof (ArgumentException), "An exception should be thrown if no input provided")]
+		[Test]
+		[ExpectedException(typeof (ArgumentException))]
 		public void TestDimensionFindPartialNoInput() {
 			MeasurementCorpus.FindDimensionPartial("");
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestDimensionFind() {
 			Assert.IsNull(MeasurementCorpus.FindDimension("foo123"));
 			Assert.IsNull(MeasurementCorpus.FindDimension("temp"));
@@ -90,7 +90,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreEqual("planeAngle", MeasurementCorpus.FindDimension("β").Key);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestDimensionFindPartial() {
 			Assert.IsNull(MeasurementCorpus.FindDimensionPartial("foo123"));
 			Assert.AreEqual("time", MeasurementCorpus.FindDimensionPartial("IME").Key);
@@ -100,7 +100,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreEqual("planeAngle", MeasurementCorpus.FindDimensionPartial("β").Key);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestDimensionFindMultiple() {
 			List<DimensionDefinition> results = MeasurementCorpus.FindDimensionsPartial("ELECTRIC");
 			Assert.AreEqual(4, results.Count);
@@ -112,7 +112,7 @@ namespace ForgedSoftware.MeasurementTests {
 
 		#region Units
 
-		[TestMethod]
+		[Test]
 		public void TestUnitFilter() {
 			var unit = new Unit { Key = "test" };
 			unit.MeasurementSystems.Add(MeasurementCorpus.FindSystem("si"));
@@ -129,7 +129,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.IsFalse(MeasurementCorpus.UnitFilter(unit));
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestUnitComparer() {
 			var unit1 = new Unit { Key = "test1", DimensionDefinition = MeasurementCorpus.FindDimension("time") };
 			unit1.MeasurementSystems.Add(MeasurementCorpus.FindSystem("si"));
@@ -154,19 +154,19 @@ namespace ForgedSoftware.MeasurementTests {
 			unit2.IsEstimation = false;
 		}
 
-		[TestMethod]
-		[ExpectedException(typeof (ArgumentException), "An exception should be thrown if no input provided")]
+		[Test]
+		[ExpectedException(typeof (ArgumentException))]
 		public void TestUnitFindNoInput() {
 			MeasurementCorpus.FindUnit("");
 		}
 
-		[TestMethod]
-		[ExpectedException(typeof (ArgumentException), "An exception should be thrown if no input provided")]
+		[Test]
+		[ExpectedException(typeof (ArgumentException))]
 		public void TestUnitFindPartialNoInput() {
 			MeasurementCorpus.FindUnitPartial("");
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestUnitFind() {
 			Assert.IsNull(MeasurementCorpus.FindUnit("xyz"));
 			Assert.IsNull(MeasurementCorpus.FindUnit("seco"));
@@ -178,14 +178,14 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreEqual("squareYard", MeasurementCorpus.FindUnit("sq yd").Key);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestUnitFindPartial() {
 			Assert.IsNull(MeasurementCorpus.FindUnitPartial("xyz"));
 			Assert.AreEqual("second", MeasurementCorpus.FindUnitPartial("seco").Key);
 			Assert.AreEqual("\"", MeasurementCorpus.FindUnitPartial("seco", "plane").Symbol);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestUnitFindMultiple() {
 			List<Unit> results = MeasurementCorpus.FindUnitsPartial("sq");
 			Assert.AreEqual(28, results.Count);
@@ -196,7 +196,7 @@ namespace ForgedSoftware.MeasurementTests {
 
 		#region Measurement Systems
 
-		[TestMethod]
+		[Test]
 		public void TestSystemFilterAsRoot() {
 			// Setup
 			var sys = new MeasurementSystem { Key = "test" };
@@ -217,7 +217,7 @@ namespace ForgedSoftware.MeasurementTests {
 			MeasurementCorpus.RootSystems.Remove(sys);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestSystemFilterAsLeaf() {
 			// Setup
 			var sys = new MeasurementSystem {
@@ -245,7 +245,7 @@ namespace ForgedSoftware.MeasurementTests {
 			MeasurementCorpus.AllSystems.Remove(sys);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestSystemComparer() {
 			var sys1 = new MeasurementSystem { Key = "test1" };
 			var sys2 = new MeasurementSystem { Key = "test1" };
@@ -267,19 +267,19 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreEqual(1, MeasurementSystemComparer.Comparer.Compare(sys1, sys2));
 		}
 
-		[TestMethod]
-		[ExpectedException(typeof (ArgumentException), "An exception should be thrown if no input provided")]
+		[Test]
+		[ExpectedException(typeof (ArgumentException))]
 		public void TestSystemFindNoInput() {
 			MeasurementCorpus.FindSystem("");
 		}
 
-		[TestMethod]
-		[ExpectedException(typeof (ArgumentException), "An exception should be thrown if no input provided")]
+		[Test]
+		[ExpectedException(typeof (ArgumentException))]
 		public void TestSystemFindPartialNoInput() {
 			MeasurementCorpus.FindSystemPartial("");
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestSystemFind() {
 			Assert.IsNull(MeasurementCorpus.FindSystem("xyz"));
 			Assert.IsNull(MeasurementCorpus.FindSystem("siC"));
@@ -287,7 +287,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreEqual("australia", MeasurementCorpus.FindSystem("Common Australian Metric (SI)").Key);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestSystemFindPartial() {
 			Assert.IsNull(MeasurementCorpus.FindSystemPartial("xyz"));
 			Assert.AreEqual("si", MeasurementCorpus.FindSystemPartial("si").Key);
@@ -296,7 +296,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreEqual("qcd", MeasurementCorpus.FindSystemPartial("Chromo").Key);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestSystemFindMultiple() {
 			List<MeasurementSystem> results = MeasurementCorpus.FindSystemsPartial("Metric");
 			Assert.AreEqual(6, results.Count);
@@ -308,7 +308,7 @@ namespace ForgedSoftware.MeasurementTests {
 
 		#region Prefixes
 
-		[TestMethod]
+		[Test]
 		public void TestPrefixFilter() {
 			var prefix = new Prefix { Key = "test", Type = PrefixType.Si};
 
@@ -323,7 +323,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.IsTrue(MeasurementCorpus.PrefixFilter(prefix));
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestPrefixComparer() {
 			var prefix1 = new Prefix { Key = "test1" };
 			var prefix2 = new Prefix { Key = "test1" };
@@ -350,19 +350,19 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreEqual(0, PrefixComparer.Comparer.Compare(prefix1, prefix2));
 		}
 
-		[TestMethod]
-		[ExpectedException(typeof (ArgumentException), "An exception should be thrown if no input provided")]
+		[Test]
+		[ExpectedException(typeof (ArgumentException))]
 		public void TestPrefixFindNoInput() {
 			MeasurementCorpus.FindPrefix("");
 		}
 
-		[TestMethod]
-		[ExpectedException(typeof (ArgumentException), "An exception should be thrown if no input provided")]
+		[Test]
+		[ExpectedException(typeof (ArgumentException))]
 		public void TestPrefixFindPartialNoInput() {
 			MeasurementCorpus.FindPrefixPartial("");
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestPrefixFind() {
 			MeasurementCorpus.Options.UseRarePrefixes = true;
 			Assert.IsNull(MeasurementCorpus.FindPrefix("xyz"));
@@ -371,7 +371,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreEqual("mega", MeasurementCorpus.FindPrefix("M").Key);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestPrefixFindPartial() {
 			MeasurementCorpus.Options.UseRarePrefixes = true;
 			Assert.IsNull(MeasurementCorpus.FindPrefixPartial("xyz"));
@@ -382,7 +382,7 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreEqual("mebi", MeasurementCorpus.FindPrefixPartial("Mi", false).Key);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestPrefixFindMultiple() {
 			List<Prefix> results = MeasurementCorpus.FindPrefixesPartial("to");
 			Assert.AreEqual(4, results.Count);
