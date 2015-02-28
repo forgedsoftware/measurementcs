@@ -204,7 +204,7 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="dimension">The dimension to check against</param>
 		/// <returns>True if they are commensurable, else false</returns>
 		public bool IsCommensurableMatch(Dimension dimension) {
-			return Unit.DimensionDefinition.Name == dimension.Unit.DimensionDefinition.Name && Power == dimension.Power;
+			return Unit.DimensionDefinition.Key == dimension.Unit.DimensionDefinition.Key && Power == dimension.Power;
 		}
 
 		/// <summary>
@@ -216,13 +216,13 @@ namespace ForgedSoftware.Measurement {
 		public Dimension Combine<TNumber>(ref TNumber value, Dimension dimension)
 				where TNumber : INumber<TNumber> {
 			// Some validation
-			if (Unit.DimensionDefinition.Name != dimension.Unit.DimensionDefinition.Name) {
+			if (Unit.DimensionDefinition.Key != dimension.Unit.DimensionDefinition.Key) {
 				throw new Exception("Dimensions must have the same system to combine");
 			}
 
 			// Do conversion if necessary
 			int aggregatePower;
-			if (Unit.Name != dimension.Unit.Name) {
+			if (Unit.Key != dimension.Unit.Key) {
 				Dimension dim = dimension.Convert(ref value, Unit, Prefix);
 				aggregatePower = Power + dim.Power;
 			} else {
@@ -232,15 +232,15 @@ namespace ForgedSoftware.Measurement {
 			return new Dimension(Unit, aggregatePower);
 		}
 
-		public List<Dimension> ToBaseSystems<TNumber>(ref TNumber copy2)
+		public List<Dimension> ToBaseDimensionDefinitions<TNumber>(ref TNumber copy2)
 				where TNumber : INumber<TNumber> {
 			// TODO this currently assumes the derived dimension has base units...
 			if (!Unit.DimensionDefinition.IsDerived()) {
 				return new List<Dimension> { Clone() };
 			}
-			List<Dimension> baseSystems = Unit.DimensionDefinition.Derived.CloneList();
-			baseSystems.ForEach(d => d.Power = d.Power * Power);
-			return baseSystems;
+			List<Dimension> baseDimensions = Unit.DimensionDefinition.Derived.CloneList();
+			baseDimensions.ForEach(d => d.Power = d.Power * Power);
+			return baseDimensions;
 		}
 
 		public bool MatchDimensions(List<Dimension> neededSystems) {
@@ -434,8 +434,8 @@ namespace ForgedSoftware.Measurement {
 			private set { _unitName = value; }
 		}
 
-		[DataMember(Name = "systemName")]
-		public string SystemName {
+		[DataMember(Name = "dimensionName")]
+		public string DimensionName {
 			get { return Unit.DimensionDefinition.Name; }
 			private set { _systemName = value; }
 		}

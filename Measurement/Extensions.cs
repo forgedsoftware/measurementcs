@@ -94,7 +94,7 @@ namespace ForgedSoftware.Measurement {
 				// convert dimensions to base systems
 				TNumber copy2 = value.Clone();
 				List<Dimension> baseSystemDimensions = basicSimplifiedDimensions
-					.SelectMany(d => d.ToBaseSystems(ref copy2)).ToList();
+					.SelectMany(d => d.ToBaseDimensionDefinitions(ref copy2)).ToList();
 				// simple simplify
 				baseSystemDimensions = baseSystemDimensions.SimpleSimplify(ref copy2);
 				// keep copy of dimensions in base systems

@@ -22,20 +22,20 @@ namespace ForgedSoftware.MeasurementTests
 		[TestMethod]
 		public void TestSerialization() {
 			string json = MeasurementCorpus.CreateQuantity(2, "hour").ToJson();
-			Assert.AreEqual("{\"dimensions\":[{\"systemName\":\"time\",\"unitName\":\"hour\"}],\"value\":2}", json);
+			Assert.AreEqual("{\"dimensions\":[{\"dimensionName\":\"time\",\"unitName\":\"hour\"}],\"value\":2}", json);
 		}
 
 		[TestMethod]
 		public void TestSerializationWithPrefixAndPower()
 		{
 			string json = new Quantity(42.42, new[] { new Dimension("metre", -2, "kilo"), new Dimension("second") }).ToJson();
-			Assert.AreEqual("{\"dimensions\":[{\"power\":-2,\"prefix\":\"kilo\",\"systemName\":\"length\",\"unitName\":\"metre\"}," +
-				"{\"systemName\":\"time\",\"unitName\":\"second\"}],\"value\":42.42}", json);
+			Assert.AreEqual("{\"dimensions\":[{\"dimensionName\":\"length\",\"power\":-2,\"prefix\":\"kilo\",\"unitName\":\"metre\"}," +
+				"{\"dimensionName\":\"time\",\"unitName\":\"second\"}],\"value\":42.42}", json);
 		}
 
 		[TestMethod]
 		public void TestDeserialization() {
-			Quantity q = Quantity.FromJson("{\"dimensions\":[{\"systemName\":\"time\",\"unitName\":\"hour\"}],\"value\":8.594}");
+			Quantity q = Quantity.FromJson("{\"dimensions\":[{\"dimensionName\":\"time\",\"unitName\":\"hour\"}],\"value\":8.594}");
 			Assert.IsNotNull(q);
 			Assert.AreEqual(8.594, q.Value);
 			Assert.IsFalse(q.IsDimensionless());
