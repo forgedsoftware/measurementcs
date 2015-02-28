@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using ForgedSoftware.Measurement;
 using NUnit.Framework;
@@ -6,11 +7,11 @@ using NUnit.Framework;
 // Could do this...
 using M = ForgedSoftware.Measurement.MeasurementCorpus;
 
-namespace ForgedSoftware.MeasurementTests
-{
+namespace ForgedSoftware.MeasurementTests {
+
 	[TestFixture]
-	public class TestQuantity
-	{
+	public class TestQuantity {
+
 		[Test]
 		public void SimpleConversion() {
 			Quantity converted = MeasurementCorpus.CreateQuantity(2, "hour").Convert("minute");
@@ -19,15 +20,22 @@ namespace ForgedSoftware.MeasurementTests
 
 		#region Serialization
 
+		private void TestIfOnMono() {
+			if (Extensions.IsRunningOnMono()) {
+				Assert.Inconclusive("Test is running on mono and DataContracts on mono are not fully implemented.");
+			}
+		}
+
 		[Test]
 		public void TestSerialization() {
+			TestIfOnMono();
 			string json = MeasurementCorpus.CreateQuantity(2, "hour").ToJson();
 			Assert.AreEqual("{\"dimensions\":[{\"dimensionName\":\"time\",\"unitName\":\"hour\"}],\"value\":2}", json);
 		}
 
 		[Test]
-		public void TestSerializationWithPrefixAndPower()
-		{
+		public void TestSerializationWithPrefixAndPower() {
+			TestIfOnMono();
 			string json = new Quantity(42.42, new[] { new Dimension("metre", -2, "kilo"), new Dimension("second") }).ToJson();
 			Assert.AreEqual("{\"dimensions\":[{\"dimensionName\":\"length\",\"power\":-2,\"prefix\":\"kilo\",\"unitName\":\"metre\"}," +
 				"{\"dimensionName\":\"time\",\"unitName\":\"second\"}],\"value\":42.42}", json);
@@ -35,6 +43,7 @@ namespace ForgedSoftware.MeasurementTests
 
 		[Test]
 		public void TestDeserialization() {
+			TestIfOnMono();
 			Quantity q = Quantity.FromJson("{\"dimensions\":[{\"dimensionName\":\"time\",\"unitName\":\"hour\"}],\"value\":8.594}");
 			Assert.IsNotNull(q);
 			Assert.AreEqual(8.594, q.Value);
@@ -46,6 +55,7 @@ namespace ForgedSoftware.MeasurementTests
 
 		[Test]
 		public void TestDimensionlessDeserialization() {
+			TestIfOnMono();
 			Quantity q = Quantity.FromJson("{\"value\":3.2}");
 			Assert.IsNotNull(q);
 			Assert.AreEqual(3.2, q.Value);
@@ -54,6 +64,7 @@ namespace ForgedSoftware.MeasurementTests
 
 		[Test]
 		public void TestSerializationAndDeserialization() {
+			TestIfOnMono();
 			var q1 = new Quantity(123.945345, new[] { "metre", "hour", "newton" });
 			Quantity q2 = Quantity.FromJson(q1.ToJson());
 			Assert.AreEqual(q1.Value, q2.Value);
@@ -152,6 +163,5 @@ namespace ForgedSoftware.MeasurementTests
 		}
 
 		#endregion
-
 	}
 }

@@ -3,8 +3,8 @@ using ForgedSoftware.Measurement;
 using ForgedSoftware.Measurement.Number;
 using NUnit.Framework;
 
-namespace ForgedSoftware.MeasurementTests
-{
+namespace ForgedSoftware.MeasurementTests {
+
 	[TestFixture]
 	public class TestSimplify {
 

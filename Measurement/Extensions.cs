@@ -265,5 +265,13 @@ namespace ForgedSoftware.Measurement {
 
 			return valueStr;
 		}
+
+		/// <summary>
+		/// Tests if the dll is being run on mono.
+		/// </summary>
+		/// <returns>True if mono, else false</returns>
+		public static bool IsRunningOnMono() {
+			return (Type.GetType("Mono.Runtime") != null);
+		}
 	}
 }
