@@ -26,7 +26,7 @@ namespace ForgedSoftware.Measurement.Interfaces {
 		/// Returns the normalized form of the vector. A normalized vector is a vector
 		/// scaled to the size of a unit vector.
 		/// </summary>
-		TVector Normalize { get; }
+		TVector Normalize();
 
 		/// <summary>
 		/// Returns the dot product or scalar product of two vectors. This is equivalent to the

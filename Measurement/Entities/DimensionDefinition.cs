@@ -27,9 +27,9 @@ namespace ForgedSoftware.Measurement.Entities {
 
 		// Basic Properties
 		public string Name { get; set; }
-		public List<string> OtherNames { get; private set; }
+		public List<string> OtherNames { get; set; }
 		public string Symbol { get; set; }
-		public List<string> OtherSymbols { get; private set; }
+		public List<string> OtherSymbols { get; set; }
 		public string BaseUnitName { get; set; }
 		public bool Vector { get; set; }
 		public bool IsDimensionless { get; set; }
@@ -48,7 +48,7 @@ namespace ForgedSoftware.Measurement.Entities {
 			return Derived.Count > 0;
 		}
 
-		public void UpdateDerived() {
+		public void UpdateDerived(MeasurementCorpus corpus) {
 			Derived.Clear();
 			if (string.IsNullOrEmpty(DerivedString)) {
 				return;
@@ -65,7 +65,7 @@ namespace ForgedSoftware.Measurement.Entities {
 						systemName = match.Groups[1].Value;
 					}
 					if (systemName != "1") {
-						Unit baseUnit = MeasurementCorpus.FindBaseUnit(systemName);
+						Unit baseUnit = corpus.FindBaseUnit(systemName);
 						if (baseUnit == null) {
 							throw new Exception("All derived entries must be the name of a dimension or the '1' placeholder");
 						}

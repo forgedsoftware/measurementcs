@@ -12,7 +12,7 @@ namespace ForgedSoftware.Measurement {
 		/// <summary>
 		/// Parameterless constructor that sets up all the default values of the options
 		/// </summary>
-		public MeasurementOptions() {
+		public MeasurementOptions(MeasurementCorpus corpus) {
 			// Defaults - General
 			AllowReorderingDimensions = true;
 
@@ -34,8 +34,7 @@ namespace ForgedSoftware.Measurement {
 			UseRarePrefixes = false;
 			UseUnofficalPrefixes = false;
 			AllowedRarePrefixCombinations = new List<KeyValuePair<Unit, Prefix>> {
-				new KeyValuePair<Unit, Prefix>(
-					MeasurementCorpus.FindUnit("metre"), MeasurementCorpus.FindPrefix("centi"))
+				new(corpus.FindUnit("metre"), corpus.FindPrefix("centi"))
 			};
 			PreferBinaryPrefixes = true;
 			UpperPrefixValue = 1000;

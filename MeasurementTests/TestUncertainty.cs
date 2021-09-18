@@ -36,15 +36,13 @@ namespace ForgedSoftware.MeasurementTests {
 		}
 
 		[Test]
-		[ExpectedException(typeof (ArgumentException))]
 		public void TestUncertaintyLowerUncertaintyPositive() {
-			var u = new Uncertainty(1, -0.1, 0.1);
+			Assert.Throws<ArgumentException>(() => new Uncertainty(1, -0.1, 0.1));
 		}
 
 		[Test]
-		[ExpectedException(typeof(ArgumentException))]
 		public void TestUncertaintyUpperUncertaintyPositive() {
-			var u = new Uncertainty(1, 0.1, -0.1);
+			Assert.Throws<ArgumentException>(() => new Uncertainty(1, 0.1, -0.1));
 		}
 
 		#endregion

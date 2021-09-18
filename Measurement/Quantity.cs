@@ -114,7 +114,7 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="unitName">The name of the unit to convert</param>
 		/// <returns>The converted quantity</returns>
 		public Quantity<TNumber> Convert(string unitName) {
-			return Convert(MeasurementCorpus.FindUnit(unitName));
+			return Convert(MeasurementCorpus.Corpus.FindUnit(unitName));
 		}
 
 		/// <summary>
@@ -192,7 +192,7 @@ namespace ForgedSoftware.Measurement {
 			List<Dimension> simplifiedDimensions = Dimensions.Simplify(ref computedValue);
 			var resultingQuantity = new Quantity<TNumber>(computedValue, simplifiedDimensions);
 
-			if (MeasurementCorpus.Options.UseAutomaticPrefixManagement) {
+			if (MeasurementCorpus.Corpus.Options.UseAutomaticPrefixManagement) {
 				resultingQuantity = resultingQuantity.TidyPrefixes();
 			}
 			return resultingQuantity;
@@ -250,7 +250,7 @@ namespace ForgedSoftware.Measurement {
 
 			// Move prefixed dimension to start
 			// Assumption: There is a max of one dimension with a prefix
-			if (MeasurementCorpus.Options.AllowReorderingDimensions) {
+			if (MeasurementCorpus.Corpus.Options.AllowReorderingDimensions) {
 				int index = quantity.Dimensions.FindIndex(d => d.Prefix != null);
 				if (index > 0) {
 					Dimension prefixedDimension = quantity.Dimensions[index];
@@ -881,47 +881,47 @@ namespace ForgedSoftware.Measurement {
 
 		#region Scalar Math Functions (Extensions of System.Math Functions)
 
-		/// <seealso cref="System.Math.Acos(double)"/>
+		/// <seealso cref="SourceMeasurementSystem.Math.Acos(double)"/>
 		public Quantity Acos() {
 			return new Quantity(Math.Acos(Value), Dimensions.CloneList());
 		}
 
-		/// <seealso cref="System.Math.Asin(double)"/>
+		/// <seealso cref="SourceMeasurementSystem.Math.Asin(double)"/>
 		public Quantity Asin() {
 			return new Quantity(Math.Asin(Value), Dimensions.CloneList());
 		}
 
-		/// <seealso cref="System.Math.Atan(double)"/>
+		/// <seealso cref="SourceMeasurementSystem.Math.Atan(double)"/>
 		public Quantity Atan() {
 			return new Quantity(Math.Atan(Value), Dimensions.CloneList());
 		}
 
-		/// <seealso cref="System.Math.Cos(double)"/>
+		/// <seealso cref="SourceMeasurementSystem.Math.Cos(double)"/>
 		public Quantity Cos() {
 			return new Quantity(Math.Cos(Value), Dimensions.CloneList());
 		}
 
-		/// <seealso cref="System.Math.Exp(double)"/>
+		/// <seealso cref="SourceMeasurementSystem.Math.Exp(double)"/>
 		public Quantity Exp() {
 			return new Quantity(Math.Exp(Value), Dimensions.CloneList());
 		}
 
-		/// <seealso cref="System.Math.Log(double)"/>
+		/// <seealso cref="SourceMeasurementSystem.Math.Log(double)"/>
 		public Quantity Log() {
 			return new Quantity(Math.Log(Value), Dimensions.CloneList());
 		}
 
-		/// <seealso cref="System.Math.Log10(double)"/>
+		/// <seealso cref="SourceMeasurementSystem.Math.Log10(double)"/>
 		public Quantity Log10() {
 			return new Quantity(Math.Log10(Value), Dimensions.CloneList());
 		}
 
-		/// <seealso cref="System.Math.Sin(double)"/>
+		/// <seealso cref="SourceMeasurementSystem.Math.Sin(double)"/>
 		public Quantity Sin() {
 			return new Quantity(Math.Sin(Value), Dimensions.CloneList());
 		}
 
-		/// <seealso cref="System.Math.Tan(double)"/>
+		/// <seealso cref="SourceMeasurementSystem.Math.Tan(double)"/>
 		public Quantity Tan() {
 			return new Quantity(Math.Tan(Value), Dimensions.CloneList());
 		}
@@ -932,7 +932,7 @@ namespace ForgedSoftware.Measurement {
 		/// A standard atan2 function where this provides the x coordinate and a provided value provides the y.
 		/// It's assumed that any value has the same dimensions as the original quantity.
 		/// </summary>
-		/// <seealso cref="System.Math.Atan2(double, double)"/>
+		/// <seealso cref="SourceMeasurementSystem.Math.Atan2(double, double)"/>
 		/// <param name="y">A raw y value for the atan2 function</param>
 		/// <returns>The atan2 result</returns>
 		public Quantity Atan2(double y) {
@@ -943,7 +943,7 @@ namespace ForgedSoftware.Measurement {
 		/// A standard atan2 function where this provides the y coordinate and the provided quantity provides the y.
 		/// Both quantities must be commensurable. The parameter quantity is converted to make sure the coordinates are equivalent.
 		/// </summary>
-		/// <seealso cref="System.Math.Atan2(double, double)"/>
+		/// <seealso cref="SourceMeasurementSystem.Math.Atan2(double, double)"/>
 		/// <param name="y">A quantity that describes the y coordinate</param>
 		/// <returns>The atan2 result with the dimensions of the x value</returns>
 		public Quantity Atan2(Quantity y) {
@@ -952,17 +952,17 @@ namespace ForgedSoftware.Measurement {
 
 		#region Extra Functionality (Not Available in JS Version)
 
-		/// <seealso cref="System.Math.Cosh(double)"/>
+		/// <seealso cref="SourceMeasurementSystem.Math.Cosh(double)"/>
 		public Quantity Cosh() {
 			return new Quantity(Math.Cosh(Value), Dimensions.CloneList());
 		}
 
-		/// <seealso cref="System.Math.Sinh(double)"/>
+		/// <seealso cref="SourceMeasurementSystem.Math.Sinh(double)"/>
 		public Quantity Sinh() {
 			return new Quantity(Math.Sinh(Value), Dimensions.CloneList());
 		}
 
-		/// <seealso cref="System.Math.Tanh(double)"/>
+		/// <seealso cref="SourceMeasurementSystem.Math.Tanh(double)"/>
 		public Quantity Tanh() {
 			return new Quantity(Math.Tanh(Value), Dimensions.CloneList());
 		}
@@ -988,7 +988,7 @@ namespace ForgedSoftware.Measurement {
 		/// <summary>
 		/// A basic power function where this acts as the base value.
 		/// </summary>
-		/// <seealso cref="System.Math.Pow(double, double)"/>
+		/// <seealso cref="SourceMeasurementSystem.Math.Pow(double, double)"/>
 		/// <param name="y">The raw power value</param>
 		/// <returns>The base raised to the provided power</returns>
 		public Quantity Pow(double y) {
@@ -999,8 +999,8 @@ namespace ForgedSoftware.Measurement {
 		/// A basic power function taking in the power value as a quantity.
 		/// The power parameter must be dimensionless.
 		/// </summary>
-		/// <seealso cref="System.Math.Pow(double, double)"/>
-		/// <exception cref="System.Exception">Thrown when the power parameter is not dimensionless</exception>
+		/// <seealso cref="SourceMeasurementSystem.Math.Pow(double, double)"/>
+		/// <exception cref="SourceMeasurementSystem.Exception">Thrown when the power parameter is not dimensionless</exception>
 		/// <param name="y">The dimensionless quantity</param>
 		/// <returns>The base raised to the provided power</returns>
 		public Quantity Pow(Quantity y) {
@@ -1024,7 +1024,7 @@ namespace ForgedSoftware.Measurement {
 			return new Quantity(_q.Max(y._q));
 		}
 
-		/// <seealso cref="System.Math.Max(double, double)"/>
+		/// <seealso cref="SourceMeasurementSystem.Math.Max(double, double)"/>
 		public Quantity Max(double y) {
 			return new Quantity(_q.Max(new Quantity(y)._q));
 		}
@@ -1033,7 +1033,7 @@ namespace ForgedSoftware.Measurement {
 		/// A varargs function for calculating the largest quantity of a set of quantities including this.
 		/// All quantities must be commensurable. The dimensions of the first quantity are preserved.
 		/// </summary>
-		/// <exception cref="System.Exception">Thrown when one or more quantities are not commensurable</exception>
+		/// <exception cref="SourceMeasurementSystem.Exception">Thrown when one or more quantities are not commensurable</exception>
 		/// <param name="values">The varargs of quantities to test</param>
 		/// <returns>The largest value as a quantity</returns>
 		public Quantity Max(params Quantity[] values) {
@@ -1044,12 +1044,12 @@ namespace ForgedSoftware.Measurement {
 
 		#region Min
 
-		/// <seealso cref="System.Math.Min(double, double)"/>
+		/// <seealso cref="SourceMeasurementSystem.Math.Min(double, double)"/>
 		public Quantity Min(Quantity y) {
 			return new Quantity(_q.Min(y._q));
 		}
 
-		/// <seealso cref="System.Math.Min(double, double)"/>
+		/// <seealso cref="SourceMeasurementSystem.Math.Min(double, double)"/>
 		public Quantity Min(double y) {
 			return new Quantity(_q.Min(new Quantity(y)._q));
 		}
@@ -1058,7 +1058,7 @@ namespace ForgedSoftware.Measurement {
 		/// A varargs function for calculating the smallest quantity of a set of quantities including this.
 		/// All quantities must be commensurable. The dimensions of the first quantity are preserved.
 		/// </summary>
-		/// <exception cref="System.Exception">Thrown when one or more quantities are not commensurable</exception>
+		/// <exception cref="SourceMeasurementSystem.Exception">Thrown when one or more quantities are not commensurable</exception>
 		/// <param name="values">The varargs of quantities to test</param>
 		/// <returns>The smallest value as a quantity</returns>
 		public Quantity Min(params Quantity[] values) {

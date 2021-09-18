@@ -12,12 +12,12 @@ namespace ForgedSoftware.Measurement.Entities {
 	/// </example>
 	public class Prefix : Entity {
 
-		public string Symbol { get; set; }
-		public PrefixType Type { get; set; }
-		public bool IsRare { get; set; }
-		public double Multiplier { get; set; }
-		public double Power { get; set; }
-		public double Base { get; set; }
+		public string Symbol { get; init; }
+		public PrefixType Type { get; set; } // TODO - fix tests so can use init;
+		public bool IsRare { get; set; } // TODO - fix tests so can use init;
+		public double Multiplier { get; init; }
+		public double Power { get; init; }
+		public double Base { get; init; }
 
 		/// <summary>
 		/// Applies a prefix to a value

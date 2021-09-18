@@ -52,7 +52,7 @@ namespace ForgedSoftware.Measurement {
 
 		public static QuantityFormatInfo CurrentInfo {
 			get {
-				return MeasurementCorpus.Options.QuantityFormat;
+				return MeasurementCorpus.Corpus.Options.QuantityFormat;
 			}
 		}
 

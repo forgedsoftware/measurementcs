@@ -46,5 +46,6 @@ namespace ForgedSoftware.Measurement.Entities {
 		}
 
 		#endregion
+		
 	}
 }

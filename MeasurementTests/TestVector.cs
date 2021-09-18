@@ -19,9 +19,8 @@ namespace ForgedSoftware.MeasurementTests {
 		}
 
 		[Test]
-		[ExpectedException(typeof (ArgumentException))]
 		public void TestVectorCreateWithArrayNotEnoughValues() {
-			var v1 = new Vector3(new[] {2.1});
+			Assert.Throws<ArgumentException>(() => new Vector3(new[] {2.1}));
 		}
 
 		#endregion
@@ -77,15 +76,15 @@ namespace ForgedSoftware.MeasurementTests {
 
 		[Test]
 		public void TestVectorNormalize() {
-			Assert.IsTrue(Vector3.XAxis.Normalize.IsUnitVector());
-			Assert.IsTrue(new Vector3(1, 45345, -23.656).Normalize.IsUnitVector());
-			Assert.IsTrue(new Vector3(1454534.234234, 453452.123, -2233.656123).Normalize.IsUnitVector());
+			Assert.IsTrue(Vector3.XAxis.Normalize().IsUnitVector());
+			Assert.IsTrue(new Vector3(1, 45345, -23.656).Normalize().IsUnitVector());
+			Assert.IsTrue(new Vector3(1454534.234234, 453452.123, -2233.656123).Normalize().IsUnitVector());
 		}
 
 		[Test]
-		[ExpectedException(typeof(DivideByZeroException))]
-		public void TestVectorNormalizeDivideByZero() {
-			var v1 = Vector3.Origin.Normalize;
+		public void TestVectorNormalizeDivideByZero()
+		{
+			Assert.Throws<DivideByZeroException>(() => Vector3.Origin.Normalize());
 		}
 
 		[Test]
@@ -127,21 +126,22 @@ namespace ForgedSoftware.MeasurementTests {
 		}
 
 		[Test]
-		[ExpectedException(typeof (InvalidOperationException))]
 		public void TestVectorDivide() {
-			var v1 = new Vector3(1, 1, 1).Divide(new Vector3(2, 3, 4));
+			
+			var vector = new Vector3(1, 1, 1);
+			Assert.Throws<InvalidOperationException>(() => vector.Divide(new Vector3(2, 3, 4)));
 		}
 
 		[Test]
-		[ExpectedException(typeof (InvalidOperationException))]
 		public void TestVectorAddScalar() {
-			var v1 = new Vector3(1, 1, 1).Add(2);
+			var vector = new Vector3(1, 1, 1);
+			Assert.Throws<InvalidOperationException>(() => vector.Add(2));
 		}
 
 		[Test]
-		[ExpectedException(typeof (InvalidOperationException))]
 		public void TestVectorSubtractScalar() {
-			var v1 = new Vector3(1, 1, 1).Subtract(2);
+			var vector = new Vector3(1, 1, 1);
+			Assert.Throws<InvalidOperationException>(() => vector.Subtract(2));
 		}
 
 		[Test]
@@ -230,9 +230,9 @@ namespace ForgedSoftware.MeasurementTests {
 		}
 
 		[Test]
-		[ExpectedException(typeof (ArgumentException))]
 		public void TestVectorCompareWithWrongType() {
-			var a = new Vector3(8, 7, 6).CompareTo("8.76");
+			var vector = new Vector3(8, 7, 6);
+			Assert.Throws<ArgumentException>(() => vector.CompareTo("8.76"));
 		}
 
 		[Test]

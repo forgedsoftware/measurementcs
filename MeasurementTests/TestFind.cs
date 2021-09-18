@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ForgedSoftware.Measurement;
 using ForgedSoftware.Measurement.Comparers;
 using ForgedSoftware.Measurement.Entities;
@@ -12,7 +13,7 @@ namespace ForgedSoftware.MeasurementTests {
 
 		[TearDown]
 		public void AfterTest() {
-			MeasurementCorpus.ResetToDefaultOptions();
+			MeasurementCorpus.Corpus.ResetToDefaultOptions();
 		}
 
 		#region Dimension Definitions
@@ -20,20 +21,20 @@ namespace ForgedSoftware.MeasurementTests {
 		[Test]
 		public void TestDimensionFilter() {
 			var def = new DimensionDefinition { Key = "test" };
-			Assert.IsTrue(MeasurementCorpus.DimensionFilter(def));
+			Assert.IsTrue(MeasurementCorpus.Corpus.DimensionFilter(def));
 			def.Vector = true;
-			Assert.IsFalse(MeasurementCorpus.DimensionFilter(def));
-			MeasurementCorpus.Options.AllowVectorDimensions = true;
-			Assert.IsTrue(MeasurementCorpus.DimensionFilter(def));
+			Assert.IsFalse(MeasurementCorpus.Corpus.DimensionFilter(def));
+			MeasurementCorpus.Corpus.Options.AllowVectorDimensions = true;
+			Assert.IsTrue(MeasurementCorpus.Corpus.DimensionFilter(def));
 			def.DerivedString = "temperature/time";
-			def.UpdateDerived();
-			Assert.IsTrue(MeasurementCorpus.DimensionFilter(def));
-			MeasurementCorpus.Options.AllowDerivedDimensions = false;
-			Assert.IsFalse(MeasurementCorpus.DimensionFilter(def));
-			MeasurementCorpus.Options.AllowDerivedDimensions = true;
-			Assert.IsTrue(MeasurementCorpus.DimensionFilter(def));
-			MeasurementCorpus.Options.IgnoredDimensions.Add(def);
-			Assert.IsFalse(MeasurementCorpus.DimensionFilter(def));
+			def.UpdateDerived(MeasurementCorpus.Corpus);
+			Assert.IsTrue(MeasurementCorpus.Corpus.DimensionFilter(def));
+			MeasurementCorpus.Corpus.Options.AllowDerivedDimensions = false;
+			Assert.IsFalse(MeasurementCorpus.Corpus.DimensionFilter(def));
+			MeasurementCorpus.Corpus.Options.AllowDerivedDimensions = true;
+			Assert.IsTrue(MeasurementCorpus.Corpus.DimensionFilter(def));
+			MeasurementCorpus.Corpus.Options.IgnoredDimensions.Add(def);
+			Assert.IsFalse(MeasurementCorpus.Corpus.DimensionFilter(def));
 		}
 
 		[Test]
@@ -59,53 +60,51 @@ namespace ForgedSoftware.MeasurementTests {
 			def2.Vector = true;
 			Assert.AreEqual(0, DimensionDefinitionComparer.Comparer.Compare(def1, def2));
 			def2.DerivedString = "temperature";
-			def2.UpdateDerived();
+			def2.UpdateDerived(MeasurementCorpus.Corpus);
 			Assert.AreEqual(1, DimensionDefinitionComparer.Comparer.Compare(def1, def2));
 			def1.DerivedString = "time*time";
-			def1.UpdateDerived();
+			def1.UpdateDerived(MeasurementCorpus.Corpus);
 			Assert.AreEqual(0, DimensionDefinitionComparer.Comparer.Compare(def1, def2));
 		}
 
 		[Test]
-		[ExpectedException(typeof (ArgumentException))]
 		public void TestDimensionFindNoInput() {
-			MeasurementCorpus.FindDimension("");
+			Assert.Throws<ArgumentException>(() => MeasurementCorpus.Corpus.FindDimension(""));
 		}
 
 		[Test]
-		[ExpectedException(typeof (ArgumentException))]
 		public void TestDimensionFindPartialNoInput() {
-			MeasurementCorpus.FindDimensionPartial("");
+			Assert.Throws<ArgumentException>(() => MeasurementCorpus.Corpus.FindDimensionPartial(""));
 		}
 
 		[Test]
 		public void TestDimensionFind() {
-			Assert.IsNull(MeasurementCorpus.FindDimension("foo123"));
-			Assert.IsNull(MeasurementCorpus.FindDimension("temp"));
-			Assert.AreEqual("time", MeasurementCorpus.FindDimension("TIME").Key);
-			Assert.AreEqual("electricCurrent", MeasurementCorpus.FindDimension("electric current").Key);
-			Assert.AreEqual("electricResistance", MeasurementCorpus.FindDimension("R").Key);
-			Assert.AreEqual("area", MeasurementCorpus.FindDimension("a").Key);
-			Assert.AreEqual("length", MeasurementCorpus.FindDimension("radius").Key);
-			Assert.AreEqual("planeAngle", MeasurementCorpus.FindDimension("β").Key);
+			Assert.IsNull(MeasurementCorpus.Corpus.FindDimension("foo123"));
+			Assert.IsNull(MeasurementCorpus.Corpus.FindDimension("temp"));
+			Assert.AreEqual("time", MeasurementCorpus.Corpus.FindDimension("TIME").Key);
+			Assert.AreEqual("electricCurrent", MeasurementCorpus.Corpus.FindDimension("electric current").Key);
+			Assert.AreEqual("electricResistance", MeasurementCorpus.Corpus.FindDimension("R").Key);
+			Assert.AreEqual("area", MeasurementCorpus.Corpus.FindDimension("a").Key);
+			Assert.AreEqual("length", MeasurementCorpus.Corpus.FindDimension("radius").Key);
+			Assert.AreEqual("planeAngle", MeasurementCorpus.Corpus.FindDimension("β").Key);
 		}
 
 		[Test]
 		public void TestDimensionFindPartial() {
-			Assert.IsNull(MeasurementCorpus.FindDimensionPartial("foo123"));
-			Assert.AreEqual("time", MeasurementCorpus.FindDimensionPartial("IME").Key);
-			Assert.AreEqual("time", MeasurementCorpus.FindDimensionPartial("dur").Key);
-			Assert.AreEqual("electricCurrent", MeasurementCorpus.FindDimensionPartial("current").Key);
-			Assert.AreEqual("electricPotential", MeasurementCorpus.FindDimensionPartial("electricPot").Key);
-			Assert.AreEqual("planeAngle", MeasurementCorpus.FindDimensionPartial("β").Key);
+			Assert.IsNull(MeasurementCorpus.Corpus.FindDimensionPartial("foo123"));
+			Assert.AreEqual("time", MeasurementCorpus.Corpus.FindDimensionPartial("IME").Key);
+			Assert.AreEqual("time", MeasurementCorpus.Corpus.FindDimensionPartial("dur").Key);
+			Assert.AreEqual("electricCurrent", MeasurementCorpus.Corpus.FindDimensionPartial("current").Key);
+			Assert.AreEqual("electricPotential", MeasurementCorpus.Corpus.FindDimensionPartial("electricPot").Key);
+			Assert.AreEqual("planeAngle", MeasurementCorpus.Corpus.FindDimensionPartial("β").Key);
 		}
 
 		[Test]
 		public void TestDimensionFindMultiple() {
-			List<DimensionDefinition> results = MeasurementCorpus.FindDimensionsPartial("ELECTRIC");
+			var results = MeasurementCorpus.Corpus.FindDimensionsPartial("ELECTRIC");
 			Assert.AreEqual(4, results.Count);
-			Assert.AreEqual("electricCurrent", results[0].Key);
-			Assert.AreEqual("electricResistance", results[3].Key);
+			Assert.Contains("electricCurrent", results.Select(result => result.Key).ToList());
+			Assert.Contains("electricResistance", results.Select(result => result.Key).ToList());
 		}
 
 		#endregion
@@ -115,26 +114,26 @@ namespace ForgedSoftware.MeasurementTests {
 		[Test]
 		public void TestUnitFilter() {
 			var unit = new Unit { Key = "test" };
-			unit.MeasurementSystems.Add(MeasurementCorpus.FindSystem("si"));
-			Assert.IsTrue(MeasurementCorpus.UnitFilter(unit));
+			unit.MeasurementSystems.Add(MeasurementCorpus.Corpus.FindSystem("si"));
+			Assert.IsTrue(MeasurementCorpus.Corpus.UnitFilter(unit));
 			unit.IsRare = true;
-			Assert.IsFalse(MeasurementCorpus.UnitFilter(unit));
-			MeasurementCorpus.Options.UseRareUnits = true;
-			Assert.IsTrue(MeasurementCorpus.UnitFilter(unit));
+			Assert.IsFalse(MeasurementCorpus.Corpus.UnitFilter(unit));
+			MeasurementCorpus.Corpus.Options.UseRareUnits = true;
+			Assert.IsTrue(MeasurementCorpus.Corpus.UnitFilter(unit));
 			unit.IsEstimation = true;
-			Assert.IsFalse(MeasurementCorpus.UnitFilter(unit));
-			MeasurementCorpus.Options.UseEstimatedUnits = true;
-			Assert.IsTrue(MeasurementCorpus.UnitFilter(unit));
-			MeasurementCorpus.Options.IgnoredSystemsForUnits.Add(unit.MeasurementSystems[0]);
-			Assert.IsFalse(MeasurementCorpus.UnitFilter(unit));
+			Assert.IsFalse(MeasurementCorpus.Corpus.UnitFilter(unit));
+			MeasurementCorpus.Corpus.Options.UseEstimatedUnits = true;
+			Assert.IsTrue(MeasurementCorpus.Corpus.UnitFilter(unit));
+			MeasurementCorpus.Corpus.Options.IgnoredSystemsForUnits.Add(unit.MeasurementSystems[0]);
+			Assert.IsFalse(MeasurementCorpus.Corpus.UnitFilter(unit));
 		}
 
 		[Test]
 		public void TestUnitComparer() {
-			var unit1 = new Unit { Key = "test1", DimensionDefinition = MeasurementCorpus.FindDimension("time") };
-			unit1.MeasurementSystems.Add(MeasurementCorpus.FindSystem("si"));
-			var unit2 = new Unit { Key = "test1", DimensionDefinition = MeasurementCorpus.FindDimension("time") };
-			unit2.MeasurementSystems.Add(MeasurementCorpus.FindSystem("si"));
+			var unit1 = new Unit { Key = "test1", DimensionDefinition = MeasurementCorpus.Corpus.FindDimension("time") };
+			unit1.MeasurementSystems.Add(MeasurementCorpus.Corpus.FindSystem("si"));
+			var unit2 = new Unit { Key = "test1", DimensionDefinition = MeasurementCorpus.Corpus.FindDimension("time") };
+			unit2.MeasurementSystems.Add(MeasurementCorpus.Corpus.FindSystem("si"));
 
 			Assert.AreEqual(0, UnitComparer.Comparer.Compare(null, null));
 			Assert.AreEqual(1, UnitComparer.Comparer.Compare(unit1, null));
@@ -155,39 +154,37 @@ namespace ForgedSoftware.MeasurementTests {
 		}
 
 		[Test]
-		[ExpectedException(typeof (ArgumentException))]
 		public void TestUnitFindNoInput() {
-			MeasurementCorpus.FindUnit("");
+			Assert.Throws<ArgumentException>(() => MeasurementCorpus.Corpus.FindUnit(""));
 		}
 
 		[Test]
-		[ExpectedException(typeof (ArgumentException))]
 		public void TestUnitFindPartialNoInput() {
-			MeasurementCorpus.FindUnitPartial("");
+			Assert.Throws<ArgumentException>(() => MeasurementCorpus.Corpus.FindUnitPartial(""));
 		}
 
 		[Test]
 		public void TestUnitFind() {
-			Assert.IsNull(MeasurementCorpus.FindUnit("xyz"));
-			Assert.IsNull(MeasurementCorpus.FindUnit("seco"));
-			Assert.AreEqual("second", MeasurementCorpus.FindUnit("seconds").Key);
-			Assert.AreEqual("time", MeasurementCorpus.FindUnit("seconds").DimensionDefinition.Key);
-			Assert.AreEqual("second", MeasurementCorpus.FindUnit("s").Key);
-			Assert.AreEqual("metre", MeasurementCorpus.FindUnit("meter").Key);
-			Assert.AreEqual("acreFoot", MeasurementCorpus.FindUnit("acre feet").Key);
-			Assert.AreEqual("squareYard", MeasurementCorpus.FindUnit("sq yd").Key);
+			Assert.IsNull(MeasurementCorpus.Corpus.FindUnit("xyz"));
+			Assert.IsNull(MeasurementCorpus.Corpus.FindUnit("seco"));
+			Assert.AreEqual("second", MeasurementCorpus.Corpus.FindUnit("seconds").Key);
+			Assert.AreEqual("time", MeasurementCorpus.Corpus.FindUnit("seconds").DimensionDefinition.Key);
+			Assert.AreEqual("second", MeasurementCorpus.Corpus.FindUnit("s").Key);
+			Assert.AreEqual("metre", MeasurementCorpus.Corpus.FindUnit("meter").Key);
+			Assert.AreEqual("acreFoot", MeasurementCorpus.Corpus.FindUnit("acre feet").Key);
+			Assert.AreEqual("squareYard", MeasurementCorpus.Corpus.FindUnit("sq yd").Key);
 		}
 
 		[Test]
 		public void TestUnitFindPartial() {
-			Assert.IsNull(MeasurementCorpus.FindUnitPartial("xyz"));
-			Assert.AreEqual("second", MeasurementCorpus.FindUnitPartial("seco").Key);
-			Assert.AreEqual("\"", MeasurementCorpus.FindUnitPartial("seco", "plane").Symbol);
+			Assert.IsNull(MeasurementCorpus.Corpus.FindUnitPartial("xyz"));
+			Assert.AreEqual("second", MeasurementCorpus.Corpus.FindUnitPartial("seco").Key);
+			Assert.AreEqual("\"", MeasurementCorpus.Corpus.FindUnitPartial("seco", "plane").Symbol);
 		}
 
 		[Test]
 		public void TestUnitFindMultiple() {
-			List<Unit> results = MeasurementCorpus.FindUnitsPartial("sq");
+			List<Unit> results = MeasurementCorpus.Corpus.FindUnitsPartial("sq");
 			Assert.AreEqual(28, results.Count);
 			Assert.AreEqual("squareMetre", results[0].Key);
 		}
@@ -200,21 +197,21 @@ namespace ForgedSoftware.MeasurementTests {
 		public void TestSystemFilterAsRoot() {
 			// Setup
 			var sys = new MeasurementSystem { Key = "test" };
-			MeasurementCorpus.AllSystems.Add(sys);
-			MeasurementCorpus.RootSystems.Add(sys);
+			MeasurementCorpus.Corpus.AllSystems.Add(sys);
+			MeasurementCorpus.Corpus.RootSystems.Add(sys);
 
 			// Test
-			Assert.IsTrue(MeasurementCorpus.SystemFilter(sys));
-			MeasurementCorpus.Options.IgnoredSystemsForUnits.Add(sys);
-			Assert.IsFalse(MeasurementCorpus.SystemFilter(sys));
-			MeasurementCorpus.Options.AllowedSystemsForUnits.Add(sys);
-			Assert.IsFalse(MeasurementCorpus.SystemFilter(sys)); // Ignored Overrides Allowed
-			MeasurementCorpus.Options.IgnoredSystemsForUnits.Clear();
-			Assert.IsTrue(MeasurementCorpus.SystemFilter(sys));
+			Assert.IsTrue(MeasurementCorpus.Corpus.SystemFilter(sys));
+			MeasurementCorpus.Corpus.Options.IgnoredSystemsForUnits.Add(sys);
+			Assert.IsFalse(MeasurementCorpus.Corpus.SystemFilter(sys));
+			MeasurementCorpus.Corpus.Options.AllowedSystemsForUnits.Add(sys);
+			Assert.IsFalse(MeasurementCorpus.Corpus.SystemFilter(sys)); // Ignored Overrides Allowed
+			MeasurementCorpus.Corpus.Options.IgnoredSystemsForUnits.Clear();
+			Assert.IsTrue(MeasurementCorpus.Corpus.SystemFilter(sys));
 
 			// Cleanup
-			MeasurementCorpus.AllSystems.Remove(sys);
-			MeasurementCorpus.RootSystems.Remove(sys);
+			MeasurementCorpus.Corpus.AllSystems.Remove(sys);
+			MeasurementCorpus.Corpus.RootSystems.Remove(sys);
 		}
 
 		[Test]
@@ -222,27 +219,27 @@ namespace ForgedSoftware.MeasurementTests {
 			// Setup
 			var sys = new MeasurementSystem {
 				Key = "test",
-				Parent = MeasurementCorpus.FindSystem("siCommon")
+				Parent = MeasurementCorpus.Corpus.FindSystem("siCommon")
 			};
-			MeasurementCorpus.AllSystems.Add(sys);
+			MeasurementCorpus.Corpus.AllSystems.Add(sys);
 
 			// Test
-			Assert.IsTrue(MeasurementCorpus.SystemFilter(sys));
-			MeasurementCorpus.Options.IgnoredSystemsForUnits.Add(sys);
-			Assert.IsFalse(MeasurementCorpus.SystemFilter(sys));
-			MeasurementCorpus.Options.IgnoredSystemsForUnits.Clear();
-			Assert.IsTrue(MeasurementCorpus.SystemFilter(sys));
+			Assert.IsTrue(MeasurementCorpus.Corpus.SystemFilter(sys));
+			MeasurementCorpus.Corpus.Options.IgnoredSystemsForUnits.Add(sys);
+			Assert.IsFalse(MeasurementCorpus.Corpus.SystemFilter(sys));
+			MeasurementCorpus.Corpus.Options.IgnoredSystemsForUnits.Clear();
+			Assert.IsTrue(MeasurementCorpus.Corpus.SystemFilter(sys));
 
-			MeasurementCorpus.Options.IgnoredSystemsForUnits.Add(sys.Parent);
-			Assert.IsTrue(MeasurementCorpus.SystemFilter(sys));
-			Assert.IsFalse(MeasurementCorpus.SystemFilter(sys.Parent));
-			Assert.IsFalse(MeasurementCorpus.SystemFilter(sys.Parent.Parent));
-			MeasurementCorpus.Options.AllowedSystemsForUnits.Add(sys.Parent.Parent);
-			Assert.IsTrue(MeasurementCorpus.SystemFilter(sys.Parent.Parent));
-			Assert.IsTrue(MeasurementCorpus.SystemFilter(sys.Parent.Parent.Parent));
+			MeasurementCorpus.Corpus.Options.IgnoredSystemsForUnits.Add(sys.Parent);
+			Assert.IsTrue(MeasurementCorpus.Corpus.SystemFilter(sys));
+			Assert.IsFalse(MeasurementCorpus.Corpus.SystemFilter(sys.Parent));
+			Assert.IsFalse(MeasurementCorpus.Corpus.SystemFilter(sys.Parent.Parent));
+			MeasurementCorpus.Corpus.Options.AllowedSystemsForUnits.Add(sys.Parent.Parent);
+			Assert.IsTrue(MeasurementCorpus.Corpus.SystemFilter(sys.Parent.Parent));
+			Assert.IsTrue(MeasurementCorpus.Corpus.SystemFilter(sys.Parent.Parent.Parent));
 
 			// Cleanup
-			MeasurementCorpus.AllSystems.Remove(sys);
+			MeasurementCorpus.Corpus.AllSystems.Remove(sys);
 		}
 
 		[Test]
@@ -259,46 +256,44 @@ namespace ForgedSoftware.MeasurementTests {
 			Assert.AreEqual(1, MeasurementSystemComparer.Comparer.Compare(sys1, sys2));
 			sys1.Key = "test1";
 
-			sys1.Parent = MeasurementCorpus.FindSystem("siCommon");
+			sys1.Parent = MeasurementCorpus.Corpus.FindSystem("siCommon");
 			Assert.AreEqual(-1, MeasurementSystemComparer.Comparer.Compare(sys1, sys2));
-			sys2.Parent = MeasurementCorpus.FindSystem("siCommon");
+			sys2.Parent = MeasurementCorpus.Corpus.FindSystem("siCommon");
 			Assert.AreEqual(0, MeasurementSystemComparer.Comparer.Compare(sys1, sys2));
-			sys1.Parent = MeasurementCorpus.FindSystem("si");
+			sys1.Parent = MeasurementCorpus.Corpus.FindSystem("si");
 			Assert.AreEqual(1, MeasurementSystemComparer.Comparer.Compare(sys1, sys2));
 		}
 
 		[Test]
-		[ExpectedException(typeof (ArgumentException))]
 		public void TestSystemFindNoInput() {
-			MeasurementCorpus.FindSystem("");
+			Assert.Throws<ArgumentException>(() => MeasurementCorpus.Corpus.FindSystem(""));
 		}
 
 		[Test]
-		[ExpectedException(typeof (ArgumentException))]
 		public void TestSystemFindPartialNoInput() {
-			MeasurementCorpus.FindSystemPartial("");
+			Assert.Throws<ArgumentException>(() => MeasurementCorpus.Corpus.FindSystemPartial(""));
 		}
 
 		[Test]
 		public void TestSystemFind() {
-			Assert.IsNull(MeasurementCorpus.FindSystem("xyz"));
-			Assert.IsNull(MeasurementCorpus.FindSystem("siC"));
-			Assert.AreEqual("si", MeasurementCorpus.FindSystem("si").Key);
-			Assert.AreEqual("australia", MeasurementCorpus.FindSystem("Common Australian Metric (SI)").Key);
+			Assert.IsNull(MeasurementCorpus.Corpus.FindSystem("xyz"));
+			Assert.IsNull(MeasurementCorpus.Corpus.FindSystem("siC"));
+			Assert.AreEqual("si", MeasurementCorpus.Corpus.FindSystem("si").Key);
+			Assert.AreEqual("australia", MeasurementCorpus.Corpus.FindSystem("Common Australian Metric (SI)").Key);
 		}
 
 		[Test]
 		public void TestSystemFindPartial() {
-			Assert.IsNull(MeasurementCorpus.FindSystemPartial("xyz"));
-			Assert.AreEqual("si", MeasurementCorpus.FindSystemPartial("si").Key);
-			Assert.AreEqual("siCommon", MeasurementCorpus.FindSystemPartial("siC").Key);
-			Assert.AreEqual("natural", MeasurementCorpus.FindSystemPartial("Natural Units").Key);
-			Assert.AreEqual("qcd", MeasurementCorpus.FindSystemPartial("Chromo").Key);
+			Assert.IsNull(MeasurementCorpus.Corpus.FindSystemPartial("xyz"));
+			Assert.AreEqual("si", MeasurementCorpus.Corpus.FindSystemPartial("si").Key);
+			Assert.AreEqual("siCommon", MeasurementCorpus.Corpus.FindSystemPartial("siC").Key);
+			Assert.AreEqual("natural", MeasurementCorpus.Corpus.FindSystemPartial("Natural Units").Key);
+			Assert.AreEqual("qcd", MeasurementCorpus.Corpus.FindSystemPartial("Chromo").Key);
 		}
 
 		[Test]
 		public void TestSystemFindMultiple() {
-			List<MeasurementSystem> results = MeasurementCorpus.FindSystemsPartial("Metric");
+			List<MeasurementSystem> results = MeasurementCorpus.Corpus.FindSystemsPartial("Metric");
 			Assert.AreEqual(6, results.Count);
 			Assert.AreEqual("metric", results[0].Key);
 			Assert.AreEqual("canada", results[5].Key);
@@ -312,15 +307,15 @@ namespace ForgedSoftware.MeasurementTests {
 		public void TestPrefixFilter() {
 			var prefix = new Prefix { Key = "test", Type = PrefixType.Si};
 
-			Assert.IsTrue(MeasurementCorpus.PrefixFilter(prefix));
+			Assert.IsTrue(MeasurementCorpus.Corpus.PrefixFilter(prefix));
 			prefix.Type = PrefixType.SiUnofficial;
-			Assert.IsFalse(MeasurementCorpus.PrefixFilter(prefix));
-			MeasurementCorpus.Options.UseUnofficalPrefixes = true;
-			Assert.IsTrue(MeasurementCorpus.PrefixFilter(prefix));
+			Assert.IsFalse(MeasurementCorpus.Corpus.PrefixFilter(prefix));
+			MeasurementCorpus.Corpus.Options.UseUnofficalPrefixes = true;
+			Assert.IsTrue(MeasurementCorpus.Corpus.PrefixFilter(prefix));
 			prefix.IsRare = true;
-			Assert.IsFalse(MeasurementCorpus.PrefixFilter(prefix));
-			MeasurementCorpus.Options.UseRarePrefixes = true;
-			Assert.IsTrue(MeasurementCorpus.PrefixFilter(prefix));
+			Assert.IsFalse(MeasurementCorpus.Corpus.PrefixFilter(prefix));
+			MeasurementCorpus.Corpus.Options.UseRarePrefixes = true;
+			Assert.IsTrue(MeasurementCorpus.Corpus.PrefixFilter(prefix));
 		}
 
 		[Test]
@@ -351,40 +346,38 @@ namespace ForgedSoftware.MeasurementTests {
 		}
 
 		[Test]
-		[ExpectedException(typeof (ArgumentException))]
 		public void TestPrefixFindNoInput() {
-			MeasurementCorpus.FindPrefix("");
+			Assert.Throws<ArgumentException>(() => MeasurementCorpus.Corpus.FindPrefix(""));
 		}
 
 		[Test]
-		[ExpectedException(typeof (ArgumentException))]
 		public void TestPrefixFindPartialNoInput() {
-			MeasurementCorpus.FindPrefixPartial("");
+			Assert.Throws<ArgumentException>(() => MeasurementCorpus.Corpus.FindPrefixPartial(""));
 		}
 
 		[Test]
 		public void TestPrefixFind() {
-			MeasurementCorpus.Options.UseRarePrefixes = true;
-			Assert.IsNull(MeasurementCorpus.FindPrefix("xyz"));
-			Assert.IsNull(MeasurementCorpus.FindPrefix("cent"));
-			Assert.AreEqual("kilo", MeasurementCorpus.FindPrefix("kilo").Key);
-			Assert.AreEqual("mega", MeasurementCorpus.FindPrefix("M").Key);
+			MeasurementCorpus.Corpus.Options.UseRarePrefixes = true;
+			Assert.IsNull(MeasurementCorpus.Corpus.FindPrefix("xyz"));
+			Assert.IsNull(MeasurementCorpus.Corpus.FindPrefix("cent"));
+			Assert.AreEqual("kilo", MeasurementCorpus.Corpus.FindPrefix("kilo").Key);
+			Assert.AreEqual("mega", MeasurementCorpus.Corpus.FindPrefix("M").Key);
 		}
 
 		[Test]
 		public void TestPrefixFindPartial() {
-			MeasurementCorpus.Options.UseRarePrefixes = true;
-			Assert.IsNull(MeasurementCorpus.FindPrefixPartial("xyz"));
-			Assert.AreEqual("centi", MeasurementCorpus.FindPrefixPartial("cent").Key);
-			Assert.AreEqual("kilo", MeasurementCorpus.FindPrefixPartial("kilo").Key);
-			Assert.AreEqual("kibi", MeasurementCorpus.FindPrefixPartial("kib").Key);
-			Assert.AreEqual("micro", MeasurementCorpus.FindPrefixPartial("Mi").Key);
-			Assert.AreEqual("mebi", MeasurementCorpus.FindPrefixPartial("Mi", false).Key);
+			MeasurementCorpus.Corpus.Options.UseRarePrefixes = true;
+			Assert.IsNull(MeasurementCorpus.Corpus.FindPrefixPartial("xyz"));
+			Assert.AreEqual("centi", MeasurementCorpus.Corpus.FindPrefixPartial("cent").Key);
+			Assert.AreEqual("kilo", MeasurementCorpus.Corpus.FindPrefixPartial("kilo").Key);
+			Assert.AreEqual("kibi", MeasurementCorpus.Corpus.FindPrefixPartial("kib").Key);
+			Assert.AreEqual("micro", MeasurementCorpus.Corpus.FindPrefixPartial("Mi").Key);
+			Assert.AreEqual("mebi", MeasurementCorpus.Corpus.FindPrefixPartial("Mi", false).Key);
 		}
 
 		[Test]
 		public void TestPrefixFindMultiple() {
-			List<Prefix> results = MeasurementCorpus.FindPrefixesPartial("to");
+			List<Prefix> results = MeasurementCorpus.Corpus.FindPrefixesPartial("to");
 			Assert.AreEqual(4, results.Count);
 			Assert.AreEqual("atto", results[0].Key);
 			Assert.AreEqual("zepto", results[3].Key);

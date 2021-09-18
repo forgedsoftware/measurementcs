@@ -41,10 +41,7 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="prefix">The optional prefix of the dimension</param>
 		public Dimension(Unit unit, int power, Prefix prefix = null)
 			: this() {
-			if (unit == null) {
-				throw new ArgumentException("A Dimension may not have a Unit that is null");
-			}
-			Unit = unit;
+			Unit = unit ?? throw new ArgumentException("A Dimension may not have a Unit that is null");
 			Power = power;
 			Prefix = prefix;
 		}
@@ -56,8 +53,8 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="power">The power of the dimension</param>
 		/// <param name="prefixName">The optional name of the prefix</param>
 		public Dimension(string unitName, int power, string prefixName = null)
-			: this(MeasurementCorpus.FindUnit(unitName), power,
-				(prefixName == null) ? null : MeasurementCorpus.FindPrefix(prefixName)) {
+			: this(MeasurementCorpus.Corpus.FindUnit(unitName), power,
+				(prefixName == null) ? null : MeasurementCorpus.Corpus.FindPrefix(prefixName)) {
 		}
 
 		/// <summary>
@@ -78,8 +75,8 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="power">The power of the dimension</param>
 		/// <param name="prefixName">The optional name of the prefix</param>
 		public Dimension(string unitName, string systemName, int power, string prefixName = null)
-			: this(MeasurementCorpus.FindUnit(unitName, systemName), power,
-				MeasurementCorpus.FindPrefix(prefixName)) {
+			: this(MeasurementCorpus.Corpus.FindUnit(unitName, systemName), power,
+				MeasurementCorpus.Corpus.FindPrefix(prefixName)) {
 		}
 
 		/// <summary>
@@ -303,12 +300,12 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="value">The value that the prefix will be applied to</param>
 		/// <returns>If no usable prefix that is better than no prefix, returns null, else the prefix</returns>
 		private Prefix FindPrefix<TNumber>(TNumber value) where TNumber : INumber<TNumber> {
-			IEnumerable<Prefix> possiblePrefixes = MeasurementCorpus.Prefixes.Where(p => Unit.IsCompatible(p));
-			KeyValuePair<Prefix, double> bestPrefixKv = possiblePrefixes
+			var possiblePrefixes = MeasurementCorpus.Corpus.Prefixes.Where(p => Unit.IsCompatible(p));
+			var (prefix, prefixRating) = possiblePrefixes
 				.Select(p => new KeyValuePair<Prefix, double>(p, GetPrefixRating(p.Apply(value), p)))
 				.OrderBy(kv => kv.Value)
 				.First();
-			return (bestPrefixKv.Value < GetPrefixRating(value)) ? bestPrefixKv.Key : null;
+			return (prefixRating < GetPrefixRating(value)) ? prefix : null;
 		}
 
 		/// <summary>
@@ -326,15 +323,15 @@ namespace ForgedSoftware.Measurement {
 		/// <param name="prefix">The prefix that has been applied, or null if no prefix</param>
 		/// <returns>A rating of the 'fitness' of the prefix for the value, lower is better</returns>
 		private double GetPrefixRating<TNumber>(TNumber value, Prefix prefix = null) where TNumber : INumber<TNumber> {
-			double upper = MeasurementCorpus.Options.UpperPrefixValue;
-			double lower = MeasurementCorpus.Options.LowerPrefixValue;
+			double upper = MeasurementCorpus.Corpus.Options.UpperPrefixValue;
+			double lower = MeasurementCorpus.Corpus.Options.LowerPrefixValue;
 			if (upper <= lower) {
 				throw new Exception("The UpperPrefixValue must be greater than the LowerPrefixValue");
 			}
 			double score = (value.EquivalentValue > upper || value.EquivalentValue < lower) ? upper : value.EquivalentValue;
 			// Prefer no prefix
 			if (prefix != null) {
-				score += MeasurementCorpus.Options.HavingPrefixScoreOffset;
+				score += MeasurementCorpus.Corpus.Options.HavingPrefixScoreOffset;
 			}
 			// If a unit has a prefix applied by default, we should apply that prefix if possible.
 			// This deals with the edge case of preferring kilogramme over gramme.
@@ -415,9 +412,9 @@ namespace ForgedSoftware.Measurement {
 		/// </summary>
 		object IObjectReference.GetRealObject(StreamingContext context) {
 			return new Dimension {
-				Unit = MeasurementCorpus.FindUnit(_unitName, _systemName),
+				Unit = MeasurementCorpus.Corpus.FindUnit(_unitName, _systemName),
 				Power = _power ?? DEFAULT_POWER,
-				Prefix = (_prefixName == null) ? null : MeasurementCorpus.FindPrefix(_prefixName)
+				Prefix = (_prefixName == null) ? null : MeasurementCorpus.Corpus.FindPrefix(_prefixName)
 			};
 		}
 
@@ -430,26 +427,26 @@ namespace ForgedSoftware.Measurement {
 
 		[DataMember(Name = "unitName")]
 		public string UnitName {
-			get { return Unit.Name; }
-			private set { _unitName = value; }
+			get => Unit.Name;
+			private set => _unitName = value;
 		}
 
 		[DataMember(Name = "dimensionName")]
 		public string DimensionName {
-			get { return Unit.DimensionDefinition.Name; }
-			private set { _systemName = value; }
+			get => Unit.DimensionDefinition.Name;
+			private set => _systemName = value;
 		}
 
 		[DataMember(Name = "power", IsRequired = false, EmitDefaultValue = false)]
 		public int? PowerValue {
-			get { return (Power != DEFAULT_POWER) ? (int?)Power : null; }
-			private set { _power = value; }
+			get => (Power != DEFAULT_POWER) ? (int?)Power : null;
+			private set => _power = value;
 		}
 
 		[DataMember(Name = "prefix", IsRequired = false, EmitDefaultValue = false)]
 		public string PrefixName {
-			get { return (Prefix != null) ? Prefix.Key : null; }
-			private set { _prefixName = value; }
+			get => Prefix?.Key;
+			private set => _prefixName = value;
 		}
 
 		#endregion

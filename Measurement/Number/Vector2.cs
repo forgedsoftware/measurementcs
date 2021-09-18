@@ -150,17 +150,18 @@ namespace ForgedSoftware.Measurement.Number {
 		}
 
 		public double Angle(Vector2 vector) {
-			return Math.Acos(Normalize.DotProduct(vector.Normalize));
+			return Math.Acos(Normalize().DotProduct(vector.Normalize()));
 		}
 
-		public Vector2 Normalize {
-			get {
-				if (Math.Abs(Magnitude) < EquatableEpsilon) {
-					throw new DivideByZeroException("A vector must have a magnitude of greater than 0 to normalize");
-				}
-				double inverse = 1 / Magnitude;
-				return Multiply(inverse);
+		public Vector2 Normalize()
+		{
+			if (Math.Abs(Magnitude) < EquatableEpsilon)
+			{
+				throw new DivideByZeroException("A vector must have a magnitude of greater than 0 to normalize");
 			}
+
+			double inverse = 1 / Magnitude;
+			return Multiply(inverse);
 		}
 
 		public double Distance(Vector2 vector) {

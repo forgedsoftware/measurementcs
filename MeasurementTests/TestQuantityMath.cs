@@ -66,10 +66,10 @@ namespace ForgedSoftware.MeasurementTests {
 
 		[Test]
 		public void TestMultiplyComplexCommensurableQuantities() {
-			MeasurementCorpus.Options.AllowDerivedDimensions = false;
+			MeasurementCorpus.Corpus.Options.AllowDerivedDimensions = false;
 			Quantity result = new Quantity(3.2, new[] { "minute", "metre", "coulomb" })
 				.Multiply(new Quantity(3, new[] { "second", "mile", "coulomb" }));
-			MeasurementCorpus.ResetToDefaultOptions();
+			MeasurementCorpus.Corpus.ResetToDefaultOptions();
 			Assert.AreEqual(257.49504, result.Value, 0.0001);
 			Assert.AreEqual(3, result.Dimensions.Count);
 			foreach (Dimension dim in result.Dimensions) {
@@ -175,20 +175,21 @@ namespace ForgedSoftware.MeasurementTests {
 		}
 
 		[Test]
-		[ExpectedException(typeof(Exception))]
-		public void TestAddDimensionlessNoCommensurableQuantity() {
-			new Quantity(15, new[] {"minute"}).Add(new Quantity(2.4));
+		public void TestAddDimensionlessNoCommensurableQuantity()
+		{
+			var quantity = new Quantity(15, new[] {"minute"});
+			Assert.Throws<Exception>(() => quantity.Add(new Quantity(2.4)));
 		}
 
 		[Test]
-		[ExpectedException(typeof(Exception))]
 		public void TestAddNoCommensurableQuantity() {
-			new Quantity(15, new[] { "minute" }).Add(new Quantity(2.4, new[] {"metre" }));
+			var quantity = new Quantity(15, new[] {"minute"});
+			Assert.Throws<Exception>(() => quantity.Add(new Quantity(2.4, new[] {"metre" })));
 		}
 
 		[Test]
 		public void TestAddCommensurableQuantities() {
-			Quantity result = new Quantity(3.2, new[] { "minute" }).Add(new Quantity(30, new[] { "second" }));
+			var result = new Quantity(3.2, new[] { "minute" }).Add(new Quantity(30, new[] { "second" }));
 			Assert.AreEqual(3.7, result.Value);
 			Assert.AreEqual(1, result.Dimensions.Count);
 			Assert.AreEqual("minute", result.Dimensions[0].Unit.Name);
@@ -196,7 +197,7 @@ namespace ForgedSoftware.MeasurementTests {
 
 		[Test]
 		public void TestAddComplexCommensurableQuantities() {
-			Quantity result = new Quantity(3.2, new[] { "minute", "metre", "coulomb" })
+			var result = new Quantity(3.2, new[] { "minute", "metre", "coulomb" })
 				.Add(new Quantity(3, new[] { "second", "mile", "coulomb" }));
 			Assert.AreEqual(83.6672, result.Value, 0.0001);
 			Assert.AreEqual(3, result.Dimensions.Count);
@@ -236,15 +237,15 @@ namespace ForgedSoftware.MeasurementTests {
 		}
 
 		[Test]
-		[ExpectedException(typeof(Exception))]
 		public void TestSubtractDimensionlessNoCommensurableQuantity() {
-			new Quantity(15, new[] { "minute" }).Subtract(new Quantity(2.4));
+			var quantity = new Quantity(15, new[] {"minute"});
+			Assert.Throws<Exception>(() => quantity.Subtract(new Quantity(2.4)));
 		}
 
 		[Test]
-		[ExpectedException(typeof(Exception))]
 		public void TestSubtractNoCommensurableQuantity() {
-			new Quantity(15, new[] { "minute" }).Subtract(new Quantity(2.4, new[] { "metre" }));
+			var quantity = new Quantity(15, new[] {"minute"});
+			Assert.Throws<Exception>(() => quantity.Subtract(new Quantity(2.4, new[] { "metre" })));
 		}
 
 		[Test]
